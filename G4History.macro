@@ -10,6 +10,7 @@
 /vis/viewer/zoomTo 1
 /vis/viewer/dollyTo 0 cm
 /vis/viewer/set/viewpointThetaPhi 120 20
+/vis/viewer/set/lightsThetaPhi 120 20
 /vis/viewer/set/autoRefresh false
 /vis/verbose errors
 /vis/drawVolume
@@ -58,3 +59,5 @@
 /gui/addButton viewer "Flush viewer (= refresh + update)" "/vis/viewer/flush"
 /gui/addButton viewer "Update scene" "/vis/scene/notifyHandlers"
 /N03/event/printModulo 100
+/vis/viewer/set/style surface
+/vis/viewer/refresh

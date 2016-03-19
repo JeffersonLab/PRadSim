@@ -193,13 +193,13 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4LogicalVolume*   logicColl;
      G4VPhysicalVolume* physiColl[12];
 
-     G4Box*             solidGEMBox;
-     G4Box*             solidGEMHole;
-     G4SubtractionSolid* solidGEM;
+     G4LogicalVolume*   logicGEMFrame;
+     G4VPhysicalVolume* physiGEMFrame1;
+     G4VPhysicalVolume* physiGEMFrame2;
+
      G4LogicalVolume*   logicGEM;
      G4VPhysicalVolume* physiGEM;
      G4VPhysicalVolume* physiGEM2;
-     G4VPhysicalVolume* physiGEM3;
 
      G4Box*             solidBox1;
      G4Box*             solidBox2;

@@ -75,7 +75,8 @@ DetectorConstruction::DetectorConstruction()
  solidCellWin(0),logicCellWin(0),physiWinIn(0),physiWinOut(0),
  solidVacBoxEnd(0),logicVacBoxEnd(0),physiVacBoxEnd(0),
  solidFlange(0),logicFlange(0),physiFlange(0),
- solidGEMBox(0),solidGEMHole(0),solidGEM(0),logicGEM(0),physiGEM(0),physiGEM2(0),
+ logicGEMFrame(0),physiGEMFrame1(0),physiGEMFrame2(0),
+ logicGEM(0),physiGEM(0),physiGEM2(0),
  solidCentral(0),solidHole(0),
  solidCalor(0),logicCalor(0),physiCalor(0),
  solidOuterBox(0),solidCentralBox(0),
@@ -275,26 +276,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4LogicalVolumeStore::GetInstance()->Clean();
   G4SolidStore::GetInstance()->Clean();
 
-  //     
+  //
   // World
   //
-  solidWorld = new G4Box("World", WorldSizeXY, WorldSizeXY, WorldSizeZ);				//its name
-                                 
-            
-  logicWorld = new G4LogicalVolume(solidWorld,		//its solid
-                                   defaultMaterial,	//its material
-                                   "World");		//its name
-                                   
-  physiWorld = new G4PVPlacement(0,			//no rotation
-  				 G4ThreeVector(0., 0. ,0.), //at (0,0,0)
-                                 logicWorld,		//its logical volume				 
-                                 "World",		//its name
-                                 0,			//its mother  volume
-                                 false,			//no boolean operation
-                                 0);			//copy number
-  
-
-
+  solidWorld = new G4Box("World", WorldSizeXY, WorldSizeXY, WorldSizeZ);
+  logicWorld = new G4LogicalVolume(solidWorld,
+                                   defaultMaterial,
+                                   "World");
+  physiWorld = new G4PVPlacement(0,
+                                 G4ThreeVector(0., 0. ,0.),
+                                 logicWorld,
+                                 "World",
+                                 0,
+                                 false,
+                                 0);
   //
   // Target
   //
@@ -318,7 +313,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   solidNeck = new G4SubtractionSolid("Gas inlet", solidNecktube, solidCelltube, G4Transform3D(rm, G4ThreeVector(0., 0., -(NeckHalfL-0.2*cm) - CellOR)));  
   logicNeck = new G4LogicalVolume(solidNeck, CellMaterial, CellMaterial->GetName());
   physiNeck = new G4PVPlacement(G4Transform3D(rm, G4ThreeVector(0., (NeckHalfL-0.2*cm) + CellOR, TargetCenter)), logicNeck, "Neck", logicWorld, false, 0);
- 
+
   solidCell = new G4Tubs("Tube", CellR, CellOR, CellHalfL, 0, twopi);
   logicCell = new G4LogicalVolume(solidCell, CellMaterial, CellMaterial->GetName());
   physiCell = new G4PVPlacement(0, G4ThreeVector(0., 0., TargetCenter), logicCell, "Tube", logicWorld, true, 0);
@@ -389,14 +384,26 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4VPhysicalVolume* physiVacBox4 = new G4PVPlacement(0, G4ThreeVector(0., 0., HyCalCenter - 9.*cm - VacBoxtoHyCal - 2.*cm - 120.*cm), logicVacBox4, "Vacuum Box 4", logicWorld, false, 0);
 
 
+  G4Box *solidGEMFrame1 = new G4Box("GEMFrame1", 332.5*mm, 699.9*mm, 12.*mm);
+  G4Box *solidGEMPiece1 = new G4Box("GEMPiece1", 275.*mm, 674.4*mm, 12.1*mm);
+  G4Box *solidGEMPiece2 = new G4Box("GEMPiece2", 37.*mm, 29.5*mm, 12.2*mm);
+  G4Tubs *solidGEMPipeHole = new G4Tubs("GEMPipeHole", 0., 22.*mm, 12.3*mm, 0, twopi);
+  G4SubtractionSolid *solidGEMPiece = new G4SubtractionSolid("GEMPiece", solidGEMPiece1, solidGEMPiece2, 0, G4ThreeVector(-245.5*mm,0.,0.));
+  G4SubtractionSolid *solidGEMFrame2 = new G4SubtractionSolid("GEMFrame2", solidGEMFrame1, solidGEMPiece);
+  G4SubtractionSolid *solidGEMFrame = new G4SubtractionSolid("GEM_Frame", solidGEMFrame2, solidGEMPipeHole, 0, G4ThreeVector(-253.*mm,0.,0.));
+  logicGEMFrame = new G4LogicalVolume(solidGEMFrame, GEMMaterial, GEMMaterial->GetName());
+  physiGEMFrame1 = new G4PVPlacement(0, G4ThreeVector(25.3*cm, 0., HyCalCenter - VacBoxtoHyCal + 3.*cm), logicGEMFrame, "GEM_Frame", logicWorld, false, 0);
+  G4RotationMatrix rm2;
+  rm2.rotateZ(180.*deg);
+  physiGEMFrame2 = new G4PVPlacement(G4Transform3D(rm2, G4ThreeVector(-25.3*cm, 0., HyCalCenter - VacBoxtoHyCal + 7.*cm)), logicGEMFrame, "GEM_Frame", logicWorld, false,0);
   //Position Detectors
-
+/*
   solidGEMBox = new G4Box("GEMBOX", 60.*cm, 60.*cm, 0.1*cm);
   solidGEMHole = new G4Box("GEMHOLE", 3.9*cm, 3.9*cm, 0.2*cm);
   solidGEM = new G4SubtractionSolid("GEMFRAME", solidGEMBox, solidGEMHole);
-  logicGEM = new G4LogicalVolume(solidGEM, defaultMaterial, GEMMaterial->GetName());
-  physiGEM = new G4PVPlacement(0, G4ThreeVector(0., 0., HyCalCenter - 9.*cm - VacBoxtoHyCal + 5.*cm), logicGEM, "GEM", logicWorld, false, 0);
-
+  logicGEM = new G4LogicalVolume(solidGEMFrame, defaultMaterial, GEMMaterial->GetName());
+  physiGEM1 = new G4PVPlacement(0, G4ThreeVector(0., 0., HyCalCenter - 9.*cm - VacBoxtoHyCal + 5.*cm), logicGEM, "GEM", logicWorld, false, 0);
+*/
 //  physiGEM2 = new G4PVPlacement(0, G4ThreeVector(0., 0., HyCalCenter - 9.*cm - VacBoxtoHyCal + 18.*cm), logicGEM, "GEM_layer2", logicWorld, false, 0);
 //  physiGEM3 = new G4PVPlacement(0, G4ThreeVector(0., 0., HyCalCenter - 9.*cm - VacBoxtoHyCal + 10.5*cm), logicGEM, "GEM_layer3", logicWorld, false, 0);
 
@@ -412,20 +419,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   solidColl = new G4Box("solidColBox", 1.025*cm, 1.025*cm, 5.*cm);
   logicColl = new G4LogicalVolume(solidColl, ColMaterial, ColMaterial->GetName());
   for(int i = 0; i < 4; ++i) {
-    physiColl[i] = new G4PVPlacement(0, G4ThreeVector((-2.05 - 1.025 + 2.05*(double)i)*cm, (2.05 + 1.025)*cm, HyCalCenter - 9.*cm - 5.1*cm), logicColl, "Collimators", logicWorld, false, 0);   
-  } 
+    physiColl[i] = new G4PVPlacement(0, G4ThreeVector((-2.05 - 1.025 + 2.05*(double)i)*cm, (2.05 + 1.025)*cm, HyCalCenter - 9.*cm - 5.1*cm), logicColl, "Collimators", logicWorld, false, 0);
+  }
 
   for(int i = 4; i < 6; ++i) {
     physiColl[i] = new G4PVPlacement(0, G4ThreeVector((-2.05 - 1.025 + 3*2.05*(double)(i-4))*cm, 1.025*cm, HyCalCenter - 9.*cm - 5.1*cm), logicColl, "Collimators", logicWorld, false, 0);
-  } 
+  }
 
   for(int i = 6; i < 8; ++i) {
     physiColl[i] = new G4PVPlacement(0, G4ThreeVector((-2.05 - 1.025 + 3*2.05*(double)(i-6))*cm, -1.025*cm, HyCalCenter - 9.*cm - 5.1*cm), logicColl, "Collimators", logicWorld, false, 0);
-  } 
+  }
 
   for(int i = 8; i < 12; ++i) {
     physiColl[i] = new G4PVPlacement(0, G4ThreeVector((-2.05 - 1.025 + 2.05*(double)(i-8))*cm, -(2.05 + 1.025)*cm, HyCalCenter - 9.*cm - 5.1*cm), logicColl, "Collimators", logicWorld, false, 0);
-  } 
+  }
 
 
   //HyCal box
@@ -445,7 +452,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
 
   //
-  //HyCal_central part  
+  //HyCal_central part
   //
   solidCentral = new G4Box("Central",             //its name
                          CalorSizeXY, CalorSizeXY, 90.*mm);//size
@@ -453,11 +460,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   solidHole = new G4Box("Hole", 2.05*cm, 2.05*cm, 91.*mm);
 
   solidCalor = new G4SubtractionSolid("Central part with hole", solidCentral, solidHole);
-                             
   logicCalor = new G4LogicalVolume(solidCalor,      //its solid
                                    defaultMaterial, //its material
                                    "Central part");  //its name
-                                       
   physiCalor = new G4PVPlacement(0,                 //no rotation
                                  G4ThreeVector(0.,0., HyCalCenter),      //at (0,0,0)
                                  logicCalor,        //its logical volume
@@ -470,22 +475,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   solidAbsorber = new G4Box ("Crystal Block", 1.025*cm, 1.025*cm, 90.*mm);
   logicAbsorber = new G4LogicalVolume(solidAbsorber, AbsorberMaterial, AbsorberMaterial->GetName());
-  
+
   CalorimeterParameter = new CalorimeterParameterisation(34,        //NbofBlocks in a line
                                                          34,        //NbofBlocks in a column
                                                          CalorSizeXY, //Calorimeter Size
-							 G4ThreeVector(0.*cm, 0.*cm, 0.*cm), //center position      
-							 1.025*cm,  //dimension x
-						 	 1.025*cm); //dimension y
-                                                         
+                             G4ThreeVector(0.*cm, 0.*cm, 0.*cm), //center position
+                             1.025*cm,  //dimension x
+                             1.025*cm); //dimension y
   physiAbsorber = new G4PVParameterised("HyCal_Crystal" ,
-                    	 		 logicAbsorber,
-                    			 logicCalor,
-                    			 kXAxis,
-                    			 1152,                      //NbofBlocks = 34*34-4
-                    			 CalorimeterParameter,
-                    			 false);
- 
+                                        logicAbsorber,
+                                        logicCalor,
+                                        kXAxis,
+                                        1152,                      //NbofBlocks = 34*34-4
+                                        CalorimeterParameter,
+                                        false);
 
  //
   // Lead Glass Part
@@ -507,13 +510,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                  false,             //no boolean operation
                                  0);                //copy number
 
-  
   solidAbsorber2 = new G4Box ("Crystal Block", 1.91*cm, 1.91*cm, 225.*mm);
   logicAbsorber2 = new G4LogicalVolume(solidAbsorber2, Absorber2Material, Absorber2Material->GetName());
 
   LeadGlassPartParameter = new LeadGlassPartParameterisation(24,        //NbofBlocks in a line
                                                              6,        //NbofBlocks in a column
-                                                             G4ThreeVector(0.*cm, 0.*cm, 0.*cm), //center position      
+                                                             G4ThreeVector(0.*cm, 0.*cm, 0.*cm), //center position
                                                              1.91*cm,  //dimension x
                                                              1.91*cm); //dimension y
 
@@ -537,11 +539,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   SDman->AddNewDetector( aTrackerSD );
   logicAbsorber->SetSensitiveDetector(aTrackerSD);
   logicAbsorber2->SetSensitiveDetector(aTrackerSD);
-  logicGEM->SetSensitiveDetector(aTrackerSD);                                              
+//  logicGEM->SetSensitiveDetector(aTrackerSD);
 
 
 
-  //                              
+  //
   // Visualization attributes
   //
   logicWorld->SetVisAttributes (G4VisAttributes::Invisible);
@@ -574,9 +576,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   LeadGlassVisAtt->SetVisibility(true);
   logicAbsorber2->SetVisAttributes(LeadGlassVisAtt);
 
-  G4VisAttributes* GEMVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,0.0));
-  GEMVisAtt->SetVisibility(true);
-  logicGEM->SetVisAttributes(GEMVisAtt);
+  G4VisAttributes* GEMFrameVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,0.63));
+  GEMFrameVisAtt->SetVisibility(true);
+  logicGEMFrame->SetVisAttributes(GEMFrameVisAtt);
 
   G4VisAttributes* FlangeVisAtt= new G4VisAttributes(G4Colour(0.5,0.5,0.0));
   FlangeVisAtt->SetVisibility(true);
@@ -715,9 +717,9 @@ void DetectorConstruction::SetMagField(G4double fieldValue)
   G4FieldManager* fieldMgr
    = G4TransportationManager::GetTransportationManager()->GetFieldManager();
 
-  if(magField) delete magField;		//delete the existing magn field
+  if(magField) delete magField; //delete the existing magn field
 
-  if(fieldValue!=0.)			// create a new one if non nul
+  if(fieldValue!=0.)    // create a new one if non nul
   { magField = new G4UniformMagField(G4ThreeVector(0.,0.,fieldValue));
     fieldMgr->SetDetectorField(magField);
     fieldMgr->CreateChordFinder(magField);
