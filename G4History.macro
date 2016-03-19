@@ -1,0 +1,60 @@
+/run/verbose 2
+/vis/open OGL 1000x1000-0+0
+/vis/sceneHandler/create OGL
+/vis/viewer/create ! ! 1000x1000-0+0
+/vis/viewer/refresh
+/vis/viewer/set/background white
+/vis/drawView 0 0 0
+/vis/viewer/set/viewpointThetaPhi 0 0 deg
+/vis/viewer/panTo 0 0 cm
+/vis/viewer/zoomTo 1
+/vis/viewer/dollyTo 0 cm
+/vis/viewer/set/viewpointThetaPhi 120 20
+/vis/viewer/set/autoRefresh false
+/vis/verbose errors
+/vis/drawVolume
+/vis/scene/create
+/vis/scene/add/volume world
+/vis/sceneHandler/attach
+/vis/scene/add/trajectories smooth
+/tracking/storeTrajectory 2
+/vis/scene/notifyHandlers
+/vis/modeling/trajectories/create/drawByCharge
+/vis/modeling/trajectories/drawByCharge-0/default/setDrawStepPts true
+/vis/scene/notifyHandlers scene-0
+/vis/modeling/trajectories/drawByCharge-0/default/setStepPtsSize 1
+/vis/scene/notifyHandlers scene-0
+/vis/scene/endOfEventAction accumulate
+/vis/viewer/set/autoRefresh true
+/vis/viewer/refresh
+/vis/verbose warnings
+/control/execute gui.mac
+/gui/addMenu g4file G4File
+/gui/addButton g4file Continue continue
+/gui/addButton g4file Exit "exit"
+/gui/addMenu run Run
+/gui/addButton run "beamOn 1" "/run/beamOn 1"
+/gui/addButton run run1 "/control/execute run1.mac"
+/gui/addButton run run2 "/control/execute run2.mac"
+/gui/addMenu gun Gun
+/gui/addButton gun "50 MeV" "/gun/energy 50 MeV"
+/gui/addButton gun "1 GeV" "/gun/energy 1 GeV"
+/gui/addButton gun "10 GeV" "/gun/energy 10 GeV"
+/gui/addButton gun "e-" "/gun/particle e-"
+/gui/addButton gun "pi0" "/gun/particle pi0"
+/gui/addButton gun "pi+" "/gun/particle pi+"
+/gui/addButton gun "neutron" "/gun/particle neutron"
+/gui/addButton gun "proton" "/gun/particle proton"
+/gui/addMenu vis Vis
+/gui/addButton vis DAWNFILE "/control/execute visTutor/exN03Vis0.mac"
+/gui/addButton vis OpenInventor "/control/execute visTutor/exN03Vis5.mac"
+/gui/addButton vis TimeSlicing "/control/execute visTutor/exN03Vis12.mac"
+/gui/addButton vis EmShower "/control/execute visTutor/exN03Vis13.mac"
+/gui/addMenu viewer Viewer
+/gui/addButton viewer "Set style surface" "/vis/viewer/set/style surface"
+/gui/addButton viewer "Set style wireframe" "/vis/viewer/set/style wire"
+/gui/addButton viewer "Refresh viewer" "/vis/viewer/refresh"
+/gui/addButton viewer "Update viewer (interaction or end-of-file)" "/vis/viewer/update"
+/gui/addButton viewer "Flush viewer (= refresh + update)" "/vis/viewer/flush"
+/gui/addButton viewer "Update scene" "/vis/scene/notifyHandlers"
+/N03/event/printModulo 100
