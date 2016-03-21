@@ -536,7 +536,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   SDman->AddNewDetector( aTrackerSD );
   logicAbsorber->SetSensitiveDetector(aTrackerSD);
   logicAbsorber2->SetSensitiveDetector(aTrackerSD);
-//  logicGEM->SetSensitiveDetector(aTrackerSD);
+  logicGEM->SetSensitiveDetector(aTrackerSD);
 
 
 

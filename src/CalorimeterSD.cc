@@ -88,7 +88,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
 
   G4String Name = PhysVol->GetName();
 //  G4cout << Name << G4endl;
-  if(Name == "GEM"){
+  if(Name == "GEM_Foil"){
     position = aStep->GetPreStepPoint()->GetPosition();
 //    position = aStep->GetTrack()->GetPosition();
     G4double KinEne = aStep->GetTrack()->GetKineticEnergy();
@@ -121,7 +121,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void CalorimeterSD::EndOfEvent(G4HCofThisEvent*)
-{ 
+{
 //  datafile.open("EnergyDeposit.dat");
 
   G4double TotEne = 0.;
@@ -150,12 +150,12 @@ void CalorimeterSD::EndOfEvent(G4HCofThisEvent*)
 
 //   if(GEM_n > 0) GEMdata << 0 << "  " << 0 << "  " << 0 << "  " << GEM_n << G4endl;
 
-  if (verboseLevel>0) { 
+  if (verboseLevel>0) {
      G4int NbHits = HitsCollection->entries();
-     G4cout << "\n-------->Hits Collection: in this event they are " << NbHits 
+     G4cout << "\n-------->Hits Collection: in this event they are " << NbHits
             << " hits in the Calorimeter: " << G4endl;
      for (G4int i=0;i<NbHits;i++) (*HitsCollection)[i]->Print();
-    }   
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
