@@ -76,10 +76,8 @@ DetectorConstruction::DetectorConstruction()
  solidVacBoxEnd(0),logicVacBoxEnd(0),physiVacBoxEnd(0),
  solidFlange(0),logicFlange(0),physiFlange(0),
  logicGEMFrame(0),physiGEMFrame1(0),physiGEMFrame2(0),
- logicGEM(0),physiGEM(0),physiGEM2(0),
- solidCentral(0),solidHole(0),
+ logicGEM(0),physiGEM1(0),physiGEM2(0),
  solidCalor(0),logicCalor(0),physiCalor(0),
- solidOuterBox(0),solidCentralBox(0),
  solidOuterCalor(0),logicOuterCalor(0),physiOuterCalor(0),
  solidAbsorber(0),logicAbsorber(0),physiAbsorber(0),
  solidAbsorber2(0),logicAbsorber2(0),physiAbsorber2(0),
@@ -397,15 +395,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   rm2.rotateZ(180.*deg);
   physiGEMFrame2 = new G4PVPlacement(G4Transform3D(rm2, G4ThreeVector(-25.3*cm, 0., HyCalCenter - VacBoxtoHyCal + 7.*cm)), logicGEMFrame, "GEM_Frame", logicWorld, false,0);
   //Position Detectors
-/*
-  solidGEMBox = new G4Box("GEMBOX", 60.*cm, 60.*cm, 0.1*cm);
-  solidGEMHole = new G4Box("GEMHOLE", 3.9*cm, 3.9*cm, 0.2*cm);
-  solidGEM = new G4SubtractionSolid("GEMFRAME", solidGEMBox, solidGEMHole);
-  logicGEM = new G4LogicalVolume(solidGEMFrame, defaultMaterial, GEMMaterial->GetName());
-  physiGEM1 = new G4PVPlacement(0, G4ThreeVector(0., 0., HyCalCenter - 9.*cm - VacBoxtoHyCal + 5.*cm), logicGEM, "GEM", logicWorld, false, 0);
-*/
-//  physiGEM2 = new G4PVPlacement(0, G4ThreeVector(0., 0., HyCalCenter - 9.*cm - VacBoxtoHyCal + 18.*cm), logicGEM, "GEM_layer2", logicWorld, false, 0);
-//  physiGEM3 = new G4PVPlacement(0, G4ThreeVector(0., 0., HyCalCenter - 9.*cm - VacBoxtoHyCal + 10.5*cm), logicGEM, "GEM_layer3", logicWorld, false, 0);
+
+  G4Box *solidGEMPiece3 = new G4Box("GEMPiece3", 275.*mm, 674.4*mm, 3.*mm);
+  G4SubtractionSolid *solidGEMFoil = new G4SubtractionSolid("GEM_Foil", solidGEMPiece3, solidGEMPiece2, 0, G4ThreeVector(-245.5*mm,0.,0.));
+  logicGEM = new G4LogicalVolume(solidGEMFoil, GEMMaterial, GEMMaterial->GetName());
+  physiGEM1 = new G4PVPlacement(0, G4ThreeVector(25.3*cm, 0., HyCalCenter - VacBoxtoHyCal + 3.*cm), logicGEM, "GEM_Foil", logicWorld, false, 0);
+  physiGEM2 = new G4PVPlacement(G4Transform3D(rm2, G4ThreeVector(-25.3*cm, 0., HyCalCenter - VacBoxtoHyCal + 7.*cm)), logicGEM, "GEM_Foil", logicWorld, false,0);
 
 
   //Collimator around the central hole
@@ -437,15 +432,17 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   //HyCal box
 
-  solidBox1 = new G4Box("Box1", 61.*cm, 61.*cm, 0.1*cm);
-  solidBox2 = new G4Box("Box2", 2.05*cm, 2.05*cm, 0.2*cm);
-  solidHyCalBox = new G4SubtractionSolid("HyCal_Box", solidBox1, solidBox2);
-  logicHyCalBox = new G4LogicalVolume(solidHyCalBox, defaultMaterial, NeckMaterial->GetName());
+  G4Box *solidBox1 = new G4Box("Box1", 70.*cm, 70.*cm, 60*cm);
+  G4Box *solidBox2 = new G4Box("Box2", 66*cm, 66*cm, 59.6*cm);
+  G4Tubs *solidBoxHole = new G4Tubs("BoxHole", 0., 25.*mm, 60.5*cm, 0, twopi);
+  G4SubtractionSolid *solidBox3 = new G4SubtractionSolid("Box3", solidBox1, solidBox2);
+  solidHyCalBox = new G4SubtractionSolid("HyCal_Box", solidBox3, solidBoxHole);
+  logicHyCalBox = new G4LogicalVolume(solidHyCalBox, NeckMaterial, NeckMaterial->GetName());
 
   physiHyCalBox = new G4PVPlacement(0,                 //no rotation
-                                   G4ThreeVector(0.*cm, 0.*cm, HyCalCenter -9.*cm - 15.*cm),      //at (0,0,0)
+                                   G4ThreeVector(0.*cm, 0.*cm, HyCalCenter -9.*cm + 30.*cm),      //at (0,0,0)
                                    logicHyCalBox,        //its logical volume
-                                   "Upper_Outerpart",     //its name
+                                   "HyCal_Box",       //its name
                                    logicWorld,        //its mother  volume
                                    false,             //no boolean operation
                                    0);                //copy number
@@ -454,10 +451,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //
   //HyCal_central part
   //
-  solidCentral = new G4Box("Central",             //its name
+  G4Box *solidCentral = new G4Box("Central",             //its name
                          CalorSizeXY, CalorSizeXY, 90.*mm);//size
 
-  solidHole = new G4Box("Hole", 2.05*cm, 2.05*cm, 91.*mm);
+  G4Box *solidHole = new G4Box("Hole", 2.05*cm, 2.05*cm, 91.*mm);
 
   solidCalor = new G4SubtractionSolid("Central part with hole", solidCentral, solidHole);
   logicCalor = new G4LogicalVolume(solidCalor,      //its solid
@@ -495,8 +492,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //
 
 
-  solidOuterBox = new G4Box("OuterBox", 60.*cm, 60.*cm, 225.*mm);
-  solidCentralBox = new G4Box("CentralBox", CalorSizeXY, CalorSizeXY, 226.*mm);
+  G4Box *solidOuterBox = new G4Box("OuterBox", 60.*cm, 60.*cm, 225.*mm);
+  G4Box *solidCentralBox = new G4Box("CentralBox", CalorSizeXY, CalorSizeXY, 226.*mm);
 
   solidOuterCalor = new G4SubtractionSolid("Outer part with hole", solidOuterBox, solidCentralBox);
 
@@ -568,17 +565,24 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   logicCellWin->SetVisAttributes(KaptonVisAtt);
   //logicChamberWin->SetVisAttributes(KaptonVisAtt);
 
-  G4VisAttributes* CrystalVisAtt= new G4VisAttributes(G4Colour(0.0,1.0,1.0));
+  G4VisAttributes* CrystalVisAtt= new G4VisAttributes(G4Colour(0.0,1.0,1.0,0.35));
   CrystalVisAtt->SetVisibility(true);
   logicAbsorber->SetVisAttributes(CrystalVisAtt);
 
-  G4VisAttributes* LeadGlassVisAtt= new G4VisAttributes(G4Colour(0.2,0.0,1.0));
+  G4VisAttributes* LeadGlassVisAtt= new G4VisAttributes(G4Colour(0.2,0.0,1.0,0.3));
   LeadGlassVisAtt->SetVisibility(true);
   logicAbsorber2->SetVisAttributes(LeadGlassVisAtt);
+
+  G4VisAttributes* HyCalBoxVisAtt = new G4VisAttributes(G4Colour(0.0,0.0,0.0,0.3));
+  HyCalBoxVisAtt->SetVisibility(true);
+  logicHyCalBox->SetVisAttributes(HyCalBoxVisAtt);
 
   G4VisAttributes* GEMFrameVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,0.63));
   GEMFrameVisAtt->SetVisibility(true);
   logicGEMFrame->SetVisAttributes(GEMFrameVisAtt);
+
+  G4VisAttributes* GEMFoilVisAtt = new G4VisAttributes(G4Colour(1.0,1.0,0.1,0.3));
+  logicGEM->SetVisAttributes(GEMFoilVisAtt);
 
   G4VisAttributes* FlangeVisAtt= new G4VisAttributes(G4Colour(0.5,0.5,0.0));
   FlangeVisAtt->SetVisibility(true);

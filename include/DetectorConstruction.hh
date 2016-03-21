@@ -198,27 +198,21 @@ class DetectorConstruction : public G4VUserDetectorConstruction
      G4VPhysicalVolume* physiGEMFrame2;
 
      G4LogicalVolume*   logicGEM;
-     G4VPhysicalVolume* physiGEM;
+     G4VPhysicalVolume* physiGEM1;
      G4VPhysicalVolume* physiGEM2;
 
-     G4Box*             solidBox1;
-     G4Box*             solidBox2;
      G4SubtractionSolid* solidHyCalBox;
      G4LogicalVolume*   logicHyCalBox;
      G4VPhysicalVolume* physiHyCalBox;
 
-     G4Box*             solidCentral;    //pointer to the solid Calor 
-     G4Box*             solidHole;
      G4SubtractionSolid* solidCalor;
      G4LogicalVolume*   logicCalor;    //pointer to the logical Calor
      G4VPhysicalVolume* physiCalor;    //pointer to the physical Calor
 
-     G4Box*             solidOuterBox;
-     G4Box*             solidCentralBox;
      G4SubtractionSolid* solidOuterCalor;
      G4LogicalVolume*   logicOuterCalor;    //pointer to the logical Calor
      G4VPhysicalVolume* physiOuterCalor;    //pointer to the physical Calor
-       
+
      G4Box*             solidAbsorber; //pointer to the solid Absorber
      G4LogicalVolume*   logicAbsorber; //pointer to the logical Absorber
      G4VPhysicalVolume* physiAbsorber; //pointer to the physical Absorber

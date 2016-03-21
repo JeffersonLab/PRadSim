@@ -53,11 +53,13 @@
 /gui/addButton vis EmShower "/control/execute visTutor/exN03Vis13.mac"
 /gui/addMenu viewer Viewer
 /gui/addButton viewer "Set style surface" "/vis/viewer/set/style surface"
-/gui/addButton viewer "Set style wireframe" "/vis/viewer/set/style wire"
+/gui/addButton viewer "Set style wireframe" "/vis/viewer/set/style wireframe"
 /gui/addButton viewer "Refresh viewer" "/vis/viewer/refresh"
 /gui/addButton viewer "Update viewer (interaction or end-of-file)" "/vis/viewer/update"
 /gui/addButton viewer "Flush viewer (= refresh + update)" "/vis/viewer/flush"
 /gui/addButton viewer "Update scene" "/vis/scene/notifyHandlers"
 /N03/event/printModulo 100
 /vis/viewer/set/style surface
+/vis/viewer/refresh
+/vis/viewer/set/style wireframe
 /vis/viewer/refresh
