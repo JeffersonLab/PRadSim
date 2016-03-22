@@ -389,14 +389,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4SubtractionSolid *solidGEMPiece = new G4SubtractionSolid("GEMPiece", solidGEMPiece1, solidGEMPiece2, 0, G4ThreeVector(-245.5*mm,0.,0.));
   G4SubtractionSolid *solidGEMFrame2 = new G4SubtractionSolid("GEMFrame2", solidGEMFrame1, solidGEMPiece);
   G4SubtractionSolid *solidGEMFrame = new G4SubtractionSolid("GEM_Frame", solidGEMFrame2, solidGEMPipeHole, 0, G4ThreeVector(-253.*mm,0.,0.));
-  logicGEMFrame = new G4LogicalVolume(solidGEMFrame, GEMMaterial, GEMMaterial->GetName());
+  logicGEMFrame = new G4LogicalVolume(solidGEMFrame, defaultMaterial, GEMMaterial->GetName());
   physiGEMFrame1 = new G4PVPlacement(0, G4ThreeVector(25.3*cm, 0., HyCalCenter - VacBoxtoHyCal + 3.*cm), logicGEMFrame, "GEM_Frame", logicWorld, false, 0);
   G4RotationMatrix rm2;
   rm2.rotateZ(180.*deg);
   physiGEMFrame2 = new G4PVPlacement(G4Transform3D(rm2, G4ThreeVector(-25.3*cm, 0., HyCalCenter - VacBoxtoHyCal + 7.*cm)), logicGEMFrame, "GEM_Frame", logicWorld, false,0);
   //Position Detectors
 
-  G4Box *solidGEMPiece3 = new G4Box("GEMPiece3", 275.*mm, 674.4*mm, 3.*mm);
+  G4Box *solidGEMPiece3 = new G4Box("GEMPiece3", 275.0*mm, 674.4*mm, 3.*mm);
   G4SubtractionSolid *solidGEMFoil = new G4SubtractionSolid("GEM_Foil", solidGEMPiece3, solidGEMPiece2, 0, G4ThreeVector(-245.5*mm,0.,0.));
   logicGEM = new G4LogicalVolume(solidGEMFoil, GEMMaterial, GEMMaterial->GetName());
   physiGEM1 = new G4PVPlacement(0, G4ThreeVector(25.3*cm, 0., HyCalCenter - VacBoxtoHyCal + 3.*cm), logicGEM, "GEM_Foil", logicWorld, false, 0);
@@ -565,35 +565,36 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   logicCellWin->SetVisAttributes(KaptonVisAtt);
   //logicChamberWin->SetVisAttributes(KaptonVisAtt);
 
-  G4VisAttributes* CrystalVisAtt= new G4VisAttributes(G4Colour(0.0,1.0,1.0,0.35));
-  CrystalVisAtt->SetVisibility(true);
+  G4VisAttributes* CrystalVisAtt= new G4VisAttributes(G4Colour(0.5,1.0,1.0,0.6));
+  CrystalVisAtt->SetVisibility(false);
   logicAbsorber->SetVisAttributes(CrystalVisAtt);
 
-  G4VisAttributes* LeadGlassVisAtt= new G4VisAttributes(G4Colour(0.2,0.0,1.0,0.3));
-  LeadGlassVisAtt->SetVisibility(true);
+  G4VisAttributes* LeadGlassVisAtt= new G4VisAttributes(G4Colour(0.2,0.0,1.0,0.1));
+  LeadGlassVisAtt->SetVisibility(false);
   logicAbsorber2->SetVisAttributes(LeadGlassVisAtt);
 
   G4VisAttributes* HyCalBoxVisAtt = new G4VisAttributes(G4Colour(0.0,0.0,0.0,0.3));
-  HyCalBoxVisAtt->SetVisibility(true);
+  HyCalBoxVisAtt->SetVisibility(false);
   logicHyCalBox->SetVisAttributes(HyCalBoxVisAtt);
 
   G4VisAttributes* GEMFrameVisAtt= new G4VisAttributes(G4Colour(1.0,1.0,0.63));
-  GEMFrameVisAtt->SetVisibility(true);
+  GEMFrameVisAtt->SetVisibility(false);
   logicGEMFrame->SetVisAttributes(GEMFrameVisAtt);
 
   G4VisAttributes* GEMFoilVisAtt = new G4VisAttributes(G4Colour(1.0,1.0,0.1,0.3));
+  GEMFoilVisAtt->SetVisibility(false);
   logicGEM->SetVisAttributes(GEMFoilVisAtt);
 
   G4VisAttributes* FlangeVisAtt= new G4VisAttributes(G4Colour(0.5,0.5,0.0));
-  FlangeVisAtt->SetVisibility(true);
+  FlangeVisAtt->SetVisibility(false);
   logicFlange->SetVisAttributes(FlangeVisAtt);
 
   G4VisAttributes* TungstenVisAtt= new G4VisAttributes(G4Colour(0.5,0.5,0.5));
-  TungstenVisAtt->SetVisibility(true);
+  TungstenVisAtt->SetVisibility(false);
   logicColl->SetVisAttributes(TungstenVisAtt);
 
   G4VisAttributes* AluminumVisAtt= new G4VisAttributes(G4Colour(0.8,0.8,0.8));
-  AluminumVisAtt->SetVisibility(true);
+  AluminumVisAtt->SetVisibility(false);
   logicVacBoxEnd->SetVisAttributes(AluminumVisAtt);
   logicVacTube->SetVisAttributes(AluminumVisAtt);
 

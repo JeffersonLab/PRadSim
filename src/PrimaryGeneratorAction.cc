@@ -127,7 +127,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     y0 = 0.*cm;
     z0 = -300.*cm + 4.*(0.5 - G4UniformRand())*cm;
     particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
-    theta = theta/180.*3.14159265358979; 
+    theta = theta/180.*3.14159265358979;
     phi = 2.*3.14159265358979*G4UniformRand();
     kx = sin(theta)*cos(phi);
     ky = sin(theta)*sin(phi);

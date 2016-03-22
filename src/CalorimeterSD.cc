@@ -97,7 +97,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
    if(KinEne > 0.) {
       GEM_x[GEM_n] = G4RandGauss::shoot(position.x()/mm, 0.1)*mm;
       GEM_y[GEM_n] = G4RandGauss::shoot(position.y()/mm, 0.1)*mm;
-//      GEM_z[GEM_n] = position.z();
+      GEM_z[GEM_n] = position.z();
       GEM_E[GEM_n] = KinEne;
       GEM_n += 1;
 //      GEMdata << position.x()/mm << "  " << position.y()/mm << "  " << position.z()/mm << "  " << KinEne << G4endl;
@@ -142,9 +142,9 @@ void CalorimeterSD::EndOfEvent(G4HCofThisEvent*)
     HyCaldata << 0 << "  " << TotEne << G4endl;
 //    G4cout << GEM_n << G4endl;
     for(G4int i = 0; i < GEM_n; ++i) {
-      GEMdata << GEM_x[i] << "  " << GEM_y[i] << G4endl; //"  " << GEM_z[i] << "  "<< TID[i] << G4endl;
+      GEMdata << GEM_x[i] << "  " << GEM_y[i] << "  " << GEM_z[i] << G4endl; //"  " << GEM_z[i] << "  "<< TID[i] << G4endl;
     }
-    GEMdata << 0 << "  " << GEM_n << G4endl;
+    GEMdata << 0 << "  " << GEM_n << "  " << 0 << G4endl;
   }
 //  datafile.close();
 

@@ -58,6 +58,7 @@ class CalorimeterSD : public G4VSensitiveDetector
       G4double EnergyDeposit[1728];
       G4double GEM_x[100];
       G4double GEM_y[100];
+      G4double GEM_z[100];
       G4double GEM_E[100];
  //     G4int TID[100];
       G4int GEM_n;

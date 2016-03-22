@@ -41,18 +41,17 @@ void ReconstructionAnalysis()
 {
   gROOT->Reset(); 
 
-  double tmp1, tmp2, tmp3, tmp4, tmp5;
+  double tmp1, tmp2, tmp3, tmp4, tmp5, tmp6;
   double x, y, rcx, rcy, E;
   double x_tr, y_tr, r_tr, r_last, theta, Final_x, Final_y;
-  double HyCal_z, GEM_z, Target_z;
-  double HyCal_x[100], HyCal_y[100], HyCal_E[100], GEM_x[100], GEM_y[100];
+  double HyCal_z, Target_z;
+  double HyCal_x[100], HyCal_y[100], HyCal_E[100], GEM_x[100], GEM_y[100], GEM_z[100];
   int xindex, yindex, n, GEM_n, HyCal_n, n_tr, i_tr;
   double DEG = 180./3.14159265358979;
 
   Target_z = -3000.;
-  HyCal_z = 2560.;
-  GEM_z = 2060.;
-  
+  HyCal_z = 2650.;
+
   ifstream HyCalData;
   ifstream GEMData;
   ifstream Events;
@@ -67,6 +66,7 @@ void ReconstructionAnalysis()
   Tree->Branch("rcx",       &rcx,           "rcx/D");
   Tree->Branch("rcy",       &rcy,           "rcy/D");
   Tree->Branch("E",             &E,             "E/D");
+  Tree->Branch("theta",     &theta,         "theta/D");
 
   Tree2->Branch("theta", &theta, "theta/D");
   Tree2->Branch("E", &E, "E/D");
@@ -93,17 +93,18 @@ void ReconstructionAnalysis()
         HyCal_n += 1;
       }
     }while(tmp1 != -9999);
-    cout << tmp2 << endl;
+//    cout << tmp2 << endl;
     if(HyCalData.eof()) break;
 
 
     n = 0;
     do {
-      GEMData >> tmp4 >> tmp5;
+      GEMData >> tmp4 >> tmp5 >> tmp6;
       if(GEMData.eof()) {cout << "Warning!" << endl; break;}
       if(tmp4 != 0) {
         GEM_x[n] = tmp4;
         GEM_y[n] = tmp5;
+        GEM_z[n] = tmp6;
         n += 1;
       }
     } while(tmp4 != 0);
@@ -114,6 +115,7 @@ void ReconstructionAnalysis()
     rcx = 10.*HyCal_x[l];
     rcy = 10.*HyCal_y[l];
     E = HyCal_E[l];
+    theta = atan(sqrt(rcx*rcx + rcy*rcy)/(HyCal_z - Target_z))*DEG;
 //    cout << rcx << endl;
     Tree->Fill();
 
@@ -141,8 +143,8 @@ void ReconstructionAnalysis()
 
   if(n > 0) {
     for(int i = 0; i < n; ++i) {
-      x_tr = GEM_x[i]/(GEM_z - Target_z)*(HyCal_z - Target_z);
-      y_tr = GEM_y[i]/(GEM_z - Target_z)*(HyCal_z - Target_z);
+      x_tr = GEM_x[i]/(GEM_z[i] - Target_z)*(HyCal_z - Target_z);
+      y_tr = GEM_y[i]/(GEM_z[i] - Target_z)*(HyCal_z - Target_z);
 //      ReconXY->Fill(x_tr - rcx, y_tr - rcy);
       if(fabs(x_tr - rcx) < 40. && fabs(y_tr - rcy) < 40.) {
         n_tr += 1;
@@ -150,7 +152,7 @@ void ReconstructionAnalysis()
         if(r_tr < r_last) {
           i_tr = i;
           r_last = r_tr;
-          theta = atan(sqrt(GEM_x[i]*GEM_x[i] + GEM_y[i]*GEM_y[i])/(GEM_z - Target_z))*DEG;
+          theta = atan(sqrt(GEM_x[i]*GEM_x[i] + GEM_y[i]*GEM_y[i])/(GEM_z[i] - Target_z))*DEG;
           Final_x = x_tr;
           Final_y = y_tr;
         }
@@ -167,6 +169,7 @@ void ReconstructionAnalysis()
   HyCalData.close();
   GEMData.close();
 
+  /*
   Events.open("../RCEP.dat");
   double ev_theta[3], ev_phi[3], ev_energy[3];
   double ev_x, ev_y;
@@ -183,7 +186,7 @@ void ReconstructionAnalysis()
       }
     }
   }
-
+*/
 
   gStyle->SetPadLeftMargin(0.08);  // Margin left axis 
   gStyle->SetPadRightMargin(0.16); // Margin for palettes in 2D histos
@@ -214,6 +217,7 @@ void ReconstructionAnalysis()
   ReconXY->GetYaxis()->SetTitle("y (mm)");
   ReconXY->GetYaxis()->SetTitleOffset(1.15);
   ReconXY->Draw("COLZ");
+  /*
   C->cd(3);
   gPad->SetLogz();
   Original_AngEne->GetXaxis()->SetTitle("Scat. Angle (degree)");
@@ -226,6 +230,7 @@ void ReconstructionAnalysis()
   Original_XY->GetYaxis()->SetTitle("y (mm)");
   Original_XY->GetYaxis()->SetTitleOffset(1.15);
   Original_XY->Draw("COLZ");
+  */
   C->Print("ReconPlots.pdf");
 
   hfile->Delete("T_HyCal;1");
