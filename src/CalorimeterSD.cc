@@ -66,7 +66,7 @@ void CalorimeterSD::Initialize(G4HCofThisEvent* HCE)
   HitsCollection = new CalorimeterHitsCollection
                           (SensitiveDetectorName,collectionName[0]); 
   static G4int HCID = -1;
-  if(HCID<0)
+  if(HCID < 0)
   { HCID = G4SDManager::GetSDMpointer()->GetCollectionID(collectionName[0]); }
   HCE->AddHitsCollection( HCID, HitsCollection ); 
 
@@ -82,7 +82,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
 {
   G4double edep = aStep->GetTotalEnergyDeposit();
   if (edep == 0.) return false;
-  
+
   G4TouchableHistory* theTouchable = (G4TouchableHistory*)(aStep->GetPreStepPoint()->GetTouchable());
   G4VPhysicalVolume* PhysVol = theTouchable->GetVolume();
 
