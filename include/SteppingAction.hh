@@ -36,7 +36,6 @@
 #define SteppingAction_h 1
 
 #include "G4UserSteppingAction.hh"
-#include <fstream>
 
 class DetectorConstruction;
 class EventAction;
@@ -50,11 +49,10 @@ public:
   virtual ~SteppingAction();
 
   void UserSteppingAction(const G4Step*);
-    
+
 private:
   DetectorConstruction* detector;
-  EventAction*          eventaction;  
-  std::ofstream         ospos;
+  EventAction*          eventaction;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

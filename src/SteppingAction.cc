@@ -39,22 +39,19 @@
 
 #include "G4Step.hh"
 #include "G4ThreeVector.hh"
-////#include "G4RunManager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 SteppingAction::SteppingAction(DetectorConstruction* det,
                                          EventAction* evt)
-:detector(det), eventaction(evt)					 
-{ 
-  ospos.open("position.dat");
+:detector(det), eventaction(evt)
+{
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 SteppingAction::~SteppingAction()
 {
-  ospos.close();  
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -65,34 +62,5 @@ SteppingAction::~SteppingAction()
 
 void SteppingAction::UserSteppingAction(const G4Step* aStep)
 {
-  // get volume of the current step
-/*
-  G4VPhysicalVolume* volume 
-  = aStep->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
-  
-  G4ThreeVector pos;
-  if(volume->GetName() == "Calorimeter") {
-    if(aStep->GetTrack()->GetTrackID() == 1) {
-      pos = aStep->GetPreStepPoint()->GetPosition();
-      ospos << pos/cm << G4endl;
-    }
 }
-*/
-/*
-  G4double stepl = 0.;
-
-
-  
-   if (aStep->GetTrack()->GetDefinition()->GetPDGCharge() != 0.)
-      stepl = aStep->GetStepLength();
-      
-   if (volume == detector->GetAbsorber()) eventaction->AddAbs(edep,stepl);
-   if (volume == detector->GetGap())      eventaction->AddGap(edep,stepl);
-*/ 
-  //example of saving random number seed of this event, under condition
-  //// if (condition) G4RunManager::GetRunManager()->rndmSaveThisEvent(); 
-}
-
-
- 
 
