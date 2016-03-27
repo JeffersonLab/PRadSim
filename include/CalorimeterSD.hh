@@ -36,15 +36,17 @@
 
 #include "G4VSensitiveDetector.hh"
 #include "CalorimeterHit.hh"
-#include <fstream>
+#include "Digitization.hh"
+#include <vector>
 
 class G4Step;
 class G4HCofThisEvent;
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class CalorimeterSD : public G4VSensitiveDetector
 {
+  public:
+
   public:
       CalorimeterSD(G4String);
      ~CalorimeterSD();
@@ -55,17 +57,10 @@ class CalorimeterSD : public G4VSensitiveDetector
 
   private:
       CalorimeterHitsCollection* HitsCollection;
-      G4double EnergyDeposit[1728];
-      G4double GEM_x[100];
-      G4double GEM_y[100];
-      G4double GEM_z[100];
-      G4double GEM_E[100];
- //     G4int TID[100];
-      G4int GEM_n;
-      G4int TrackID;
-      G4ThreeVector position;
-      std::ofstream HyCaldata;
-      std::ofstream GEMdata;
+      double TotalEnergy;
+      double ModuleEnergy[MAX_MODULE];
+      std::vector<Digitization::GEM_Hit> gem_hits;
+      Digitization *daq_system;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

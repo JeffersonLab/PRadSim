@@ -40,15 +40,15 @@
 #include "G4SystemOfUnits.hh"
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-LeadGlassPartParameterisation::LeadGlassPartParameterisation(  
+LeadGlassPartParameterisation::LeadGlassPartParameterisation(
         G4int    NoBlocksX,
-        G4int    NoBlocksY, 
+        G4int    NoBlocksY,
         G4ThreeVector CenterPosition,          //  center of the first 
         G4double HalfsizeX,
-        G4double HalfsizeY) 
+        G4double HalfsizeY)
 {
-   fNoBlocksX =  NoBlocksX; 
-   fNoBlocksY =  NoBlocksY; 
+   fNoBlocksX =  NoBlocksX;
+   fNoBlocksY =  NoBlocksY;
    fCenterPosition = CenterPosition;
    fHalfsizeX  =  HalfsizeX;
    fHalfsizeY  =  HalfsizeY;
@@ -62,7 +62,7 @@ LeadGlassPartParameterisation::LeadGlassPartParameterisation(
                    "Width>Spacing");
      }
    }
-*/   
+*/
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

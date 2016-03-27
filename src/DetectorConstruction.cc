@@ -482,7 +482,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   physiAbsorber = new G4PVParameterised("HyCal_Crystal" ,
                                         logicAbsorber,
                                         logicCalor,
-                                        kXAxis,
+                                        kUndefined,
                                         1152,                      //NbofBlocks = 34*34-4
                                         CalorimeterParameter,
                                         false);
@@ -519,7 +519,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   physiAbsorber2 = new G4PVParameterised("HyCal_Leadglass" ,
                                          logicAbsorber2,
                                          logicOuterCalor,
-                                         kXAxis,
+                                         kUndefined,
                                          576,                      //NbofBlocks = 34*34-4
                                          LeadGlassPartParameter,
                                          false);

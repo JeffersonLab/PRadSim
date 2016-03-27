@@ -59,4 +59,3 @@
 /gui/addButton viewer "Flush viewer (= refresh + update)" "/vis/viewer/flush"
 /gui/addButton viewer "Update scene" "/vis/scene/notifyHandlers"
 /N03/event/printModulo 100
-/vis/viewer/select viewer-0 (OpenGLStoredQt)
