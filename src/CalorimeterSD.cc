@@ -57,6 +57,7 @@ CalorimeterSD::CalorimeterSD(G4String name)
 
 CalorimeterSD::~CalorimeterSD()
 {
+    delete daq_system;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

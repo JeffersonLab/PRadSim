@@ -5,12 +5,12 @@
 #include <iomanip>
 #include <fstream>
 #include <sstream>
+#include "sys/time.h"
 
 Digitization::Digitization()
 : event_number(0)
 {
     gem_out.open("output/gem_pos.dat");
-    hycal_buffer = new uint32_t[MAX_HYCAL_BUFFER];
     InitializeHyCalBuffer(hycal_buffer);
 
     std::ifstream leadglass_id("config/leadglass_map.txt");
@@ -28,7 +28,6 @@ Digitization::Digitization()
     }
     leadglass_id.close();
 
-    modules = new daq_info[MAX_MODULE];
     std::ifstream module_list("config/module_list.txt");
 
     if(module_list.is_open()) {
@@ -49,12 +48,30 @@ Digitization::Digitization()
 
     module_list.close();
 
+    int fHandle;
+    char outf[] = "output/simrun.evio";
+    char mode[] = "w";
+
+    int status = evOpen(outf, mode, &hycal_out);
+    if(status != S_SUCCESS) {
+        std::cerr << "ERROR CODE "
+                  << "0x" << std::hex << std::setw(8) << std::setfill('0') << status
+                  << ": cannot open output file \"" << outf << "\"" << std::endl;
+    }
+
+    uint32_t now = time(NULL);
+    uint32_t prestart[5] = {0x00000004, 0x001101cc, now, 0x00000260, 0x00000000};
+    uint32_t go[5] = {0x00000004, 0x001201cc, now+1, 0x00000000, 0x00000000};
+
+    evWrite(hycal_out, prestart);
+    evWrite(fHandle, go);
 }
 
 Digitization::~Digitization()
 {
-    delete modules;
-    delete hycal_buffer;
+    uint32_t now = time(NULL);
+    uint32_t end[5] = {0x00000004, 0x002001cc, now, event_number, 0x00000000};
+    evClose(hycal_out);
 }
 
 void Digitization::Event(double *hycal_energy, std::vector<GEM_Hit> &gem_hits)
@@ -66,24 +83,9 @@ void Digitization::Event(double *hycal_energy, std::vector<GEM_Hit> &gem_hits)
         FillBuffer(hycal_buffer, modules[i], hycal_energy[i]);
     }
 
-    int fHandle;
-    char outf[] = "output/simrun.evio";
-    char mode[] = "a";
-
-    int status = evOpen(outf, mode, &fHandle);
-    if(status != S_SUCCESS) {
-        std::cerr << "ERROR CODE "
-                  << "0x" << std::hex << std::setw(8) << std::setfill('0') << status
-                  << ": cannot open output file \"" << outf << "\"" << std::endl;
+    if(evWrite(hycal_out, hycal_buffer) != S_SUCCESS) {
+        std::cerr << "ERROR: cannot write event to output file!" << std::endl;
     }
-
-    status = evWrite(fHandle, hycal_buffer);
-    if(status != S_SUCCESS) {
-        std::cerr << "ERROR CODE "
-                  << "0x" << std::hex << std::setw(8) << std::setfill('0') << status
-                  << ": cannot write event to output file!" << std::endl;
-    }
-    evClose(fHandle);
 
 /* text file format
     for(unsigned int i = 0; i <= hycal_buffer[0]; ++i)
@@ -114,14 +116,11 @@ int Digitization::IdToCopyNo(const std::string &id)
         return leadglass_map[index];
 }
 
-int Digitization::ReverseCalibration(const double &energy)
+unsigned short Digitization::Digitize(const daq_info &module, const double &energy)
 {
-    return int(energy+0.5);
-}
+    double ped = G4RandGauss::shoot(module.pedestal_mean, module.pedestal_sigma);
 
-void Digitization::Digitize()
-{
-
+    return ped + energy*3.;
 }
 
 void Digitization::InitializeHyCalBuffer(uint32_t *buffer)
@@ -206,6 +205,6 @@ void Digitization::FillBuffer(uint32_t *buffer, const daq_info &module, const do
     int pos = (6-crate)*10 + ((23-slot)/2);
 
     int index = data_index[pos] + channel;
-    unsigned short val = (unsigned short)(G4RandGauss::shoot(module.pedestal_mean, module.pedestal_sigma) + ReverseCalibration(energy));
+    unsigned short val = Digitize(module, energy);
     buffer[index] = (slot << 27) | (channel << 17) | val;
 }

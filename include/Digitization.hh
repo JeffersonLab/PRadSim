@@ -51,23 +51,23 @@ public:
     Digitization();
     virtual ~Digitization();
     void Event(double *hycal_energy, std::vector<GEM_Hit> &gem_hits);
-    void Digitize();
     void InitializeHyCalBuffer(uint32_t *buffer);
     void FillBuffer(uint32_t *buffer, const daq_info &module, const double &energy);
+    unsigned short Digitize(const daq_info &module, const double &energy);
     int IdToCopyNo(const std::string &id);
-    int ReverseCalibration(const double &energy);
 
 private:
     int addEventInfoBank(uint32_t *buffer);
     int addRocData(uint32_t *buffer, int roc_id, int base_index);
 
-    daq_info *modules;
-    uint32_t *hycal_buffer;
+    daq_info modules[MAX_MODULE];
+    uint32_t hycal_buffer[MAX_HYCAL_BUFFER];
     uint32_t event_number;
     std::unordered_map<int, int> leadglass_map;
     int data_index[30];
     int event_number_index;
     std::ofstream gem_out;
+    int hycal_out;
 };
 
 #endif
