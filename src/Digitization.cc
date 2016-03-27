@@ -2,13 +2,15 @@
 #include "Randomize.hh"
 #include "evio.h"
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 #include <sstream>
 
 Digitization::Digitization()
 : event_number(0)
 {
-    hycal_buffer = new uint32_t[2000];
+    out.open("output/data.txt");
+    hycal_buffer = new uint32_t[MAX_HYCAL_BUFFER];
     InitializeHyCalBuffer(hycal_buffer);
 
     std::ifstream leadglass_id("config/leadglass_map.txt");
@@ -31,7 +33,7 @@ Digitization::Digitization()
 
     if(module_list.is_open()) {
         std::string line, id;
-        int crate, slot, channel, tdc_group, type;
+        int crate, slot, channel, tdc_group;
         double mean, sigma;
         while(std::getline(module_list, line))
         {
@@ -47,7 +49,7 @@ Digitization::Digitization()
 
     module_list.close();
 
-    char outf[] = "output/simrun.dat";
+    char outf[] = "output/simrun.evio";
     char mode[] = "w";
 
     int status = evOpen(outf, mode, &fHandle);
@@ -67,7 +69,8 @@ Digitization::~Digitization()
 
 void Digitization::Event(double *hycal_energy, std::vector<GEM_Hit> &gem_hits)
 {
-    ++event_number;
+    hycal_buffer[event_number_index] = ++event_number;
+
     for(int i = 0; i < MAX_MODULE; ++i)
     {
         FillBuffer(hycal_buffer, modules[i], hycal_energy[i]);
@@ -76,6 +79,11 @@ void Digitization::Event(double *hycal_energy, std::vector<GEM_Hit> &gem_hits)
     int status = evWrite(fHandle, hycal_buffer);
     if(status != S_SUCCESS) {
         std::cerr << "ERROR: cannot write event to output file!" << std::endl;
+    }
+
+    for(unsigned int i = 0; i <= hycal_buffer[0]; ++i)
+    {
+        out << "0x" << std::hex << std::setw(8) << std::setfill('0') << hycal_buffer[i] << std::endl;
     }
 }
 
@@ -104,65 +112,78 @@ void Digitization::Digitize()
 
 void Digitization::InitializeHyCalBuffer(uint32_t *buffer)
 {
-    // event header
-    buffer[0] = 0x000007cc;
-    buffer[1] = 0x000110cc;
+    int index = 0;
 
-    // event info header
-    buffer[2] = 0x00000004;
-    buffer[3] = 0xc0000100;
-
-    event_number_index = 4;
-
-    // ROC 6 header
-    buffer[7] = 0x00000296;
-    buffer[8] = 0x00061001;
-
-    // Fastbus bank
-    buffer[9] = 0x00000294;
-    buffer[10] = 0x00070100;
-    buffer[11] = 0xdc6adc0a;
-    for(int i = 0; i < 10; ++i)
+    // event header;
+    buffer[index++] = 0x00000000;
+    buffer[index++] = 0x000110cc;
+    std::cout << index << std::endl;
+    event_number_index = index + 2;
+    index += addEventInfoBank(&buffer[index]);
+    std::cout << index << std::endl;
+    for(int roc_id = 6; roc_id >= 4; --roc_id)
     {
-        data_index[i] = 13 + i*65;
-        buffer[12+i*65] = ((23-2*i)<<27) | 65;
-    }
-    // End word
-    buffer[661] = 0xfabc0005;
-
-    // ROC 5 header
-    buffer[669] = 0x00000296;
-    buffer[670] = 0x00051001;
-
-    // Fastbus bank
-    buffer[671] = 0x00000294;
-    buffer[672] = 0x00070100;
-    buffer[673] = 0xdc5adc0a;
-    for(int i = 0; i < 10; ++i)
-    {
-        data_index[10+i] = 675 + i*65;
-        buffer[674 + i*65] = ((23-2*i)<<27) | 65;
+        index += addRocData(&buffer[index], roc_id, index);
     }
 
-    // End word
-    buffer[1323] = 0xfabc0005;
+    buffer[0] = index - 1;
+    std::cout << buffer[0] << std::endl;
+}
 
-    // ROC 4 header
-    buffer[1331] = 0x00000296;
-    buffer[1332] = 0x00041001;
+int Digitization::addEventInfoBank(uint32_t *buffer)
+{
+    int index = 0;
+    buffer[index++] = 0x00000000;
+    buffer[index++] = 0xc0000100;
+    buffer[index++] = 0x00000000;
+    buffer[index++] = 0x00000000;
+    buffer[index++] = 0x00000000;
 
-    // Fastbus bank
-    buffer[1333] = 0x00000294;
-    buffer[1334] = 0x00070100;
-    buffer[1335] = 0xdc4adc0a;
-    for(int i = 0; i < 10; ++i)
+
+    buffer[0] = index - 1;
+    return index;
+}
+
+int Digitization::addRocData(uint32_t *buffer, int roc_id, int global_index)
+{
+    int index = 0;
+    int nslot, slot[25];
+
+    switch(roc_id)
     {
-        data_index[20+i] = 1337 + i*65;
-        buffer[1336 + i*65] = ((22-2*i)<<27) | 65;
+    default: return 0;
+    case 4:
+        nslot = 10;
+        for(int i = 0; i < nslot; ++i)
+            slot[i] = 22 - 2*i;
+        break;
+    case 5:
+    case 6:
+        nslot = 10;
+        for(int i = 0; i < nslot; ++i)
+            slot[i] = 23 - 2*i;
+        break;
     }
 
-    // End word
-    buffer[1985] = 0xfabc0005;
+    buffer[index++] = 0x00000000;
+    buffer[index++] = (roc_id << 16) | 0x1001;
+
+    buffer[index++] = 0x00000000;
+    buffer[index++] = 0x00070100;
+    buffer[index++] = 0xdc0adc00 | ((roc_id&0xf) << 20) | (nslot & 0xff);
+
+    for(int i = 0; i < nslot; ++i)
+    {
+        buffer[index++] = (slot[i] << 27) | 65;
+        data_index[(6-roc_id)*10+i] = index + global_index;
+        for(int ch = 0; ch < 64; ++ch)
+            buffer[index++] = (slot[i] << 27) | (ch << 17);
+    }
+
+    buffer[index++] = 0xfabb0005;
+    buffer[0] = index - 1;
+    buffer[2] = index - 3;
+    return index;
 }
 
 void Digitization::FillBuffer(uint32_t *buffer, const daq_info &module, const double &energy)

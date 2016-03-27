@@ -4,10 +4,12 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <fstream>
 
 #define MAX_LEAD_TUNGSTATE 1152
 #define MAX_LEAD_GLASS 576
 #define MAX_MODULE MAX_LEAD_TUNGSTATE+MAX_LEAD_GLASS
+#define MAX_HYCAL_BUFFER 2000
 
 class Digitization
 {
@@ -56,6 +58,9 @@ public:
     int ReverseCalibration(const double &energy);
 
 private:
+    int addEventInfoBank(uint32_t *buffer);
+    int addRocData(uint32_t *buffer, int roc_id, int global_index);
+
     daq_info *modules;
     uint32_t *hycal_buffer;
     uint32_t event_number;
@@ -63,6 +68,7 @@ private:
     int fHandle;
     int data_index[30];
     int event_number_index;
+    std::ofstream out;
 };
 
 #endif
