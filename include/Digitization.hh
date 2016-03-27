@@ -67,7 +67,7 @@ private:
     std::unordered_map<int, int> leadglass_map;
     int data_index[30];
     int event_number_index;
-    std::ofstream out;
+    std::ofstream gem_out;
 };
 
 #endif

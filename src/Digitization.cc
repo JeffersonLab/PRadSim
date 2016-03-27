@@ -9,7 +9,7 @@
 Digitization::Digitization()
 : event_number(0)
 {
-    out.open("output/gem_pos.dat");
+    gem_out.open("output/gem_pos.dat");
     hycal_buffer = new uint32_t[MAX_HYCAL_BUFFER];
     InitializeHyCalBuffer(hycal_buffer);
 
@@ -93,11 +93,11 @@ void Digitization::Event(double *hycal_energy, std::vector<GEM_Hit> &gem_hits)
 */
     for(auto &gem_hit : gem_hits)
     {
-        out << std::setw(12) << event_number << "  "
-            << std::setw(12) << gem_hit.x
-            << std::setw(12) << gem_hit.y
-            << std::setw(12) << gem_hit.plane_z
-            << std::endl;
+        gem_out << std::setw(12) << event_number << "  "
+                << std::setw(12) << gem_hit.x
+                << std::setw(12) << gem_hit.y
+                << std::setw(12) << gem_hit.plane_z
+                << std::endl;
     }
 }
 
