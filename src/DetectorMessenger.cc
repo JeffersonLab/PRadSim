@@ -43,26 +43,25 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-DetectorMessenger::DetectorMessenger(
-                                           DetectorConstruction* Det)
+DetectorMessenger::DetectorMessenger(DetectorConstruction* Det)
 :Detector(Det)
-{ 
+{
   epsDir = new G4UIdirectory("/eps/");
   epsDir->SetGuidance("UI commands of this example");
-  
+
   detDir = new G4UIdirectory("/eps/det/");
   detDir->SetGuidance("detector control");
-       
+
   AbsMaterCmd = new G4UIcmdWithAString("/eps/det/setAbsMat",this);
   AbsMaterCmd->SetGuidance("Select Material of the Absorber.");
   AbsMaterCmd->SetParameterName("choice",false);
   AbsMaterCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
-  
+
   TargetMaterCmd = new G4UIcmdWithAString("/eps/det/setTargetMat",this);
   TargetMaterCmd->SetGuidance("Select Material of the Target.");
   TargetMaterCmd->SetParameterName("choice",false);
   TargetMaterCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
- 
+
   CellMaterCmd = new G4UIcmdWithAString("/eps/det/setCellMat",this);
   CellMaterCmd->SetGuidance("Select Material of the Cell.");
   CellMaterCmd->SetParameterName("choice",false);
@@ -72,19 +71,19 @@ DetectorMessenger::DetectorMessenger(
   NeckMaterCmd->SetGuidance("Select Material of the Cell.");
   NeckMaterCmd->SetParameterName("choice", false);
   NeckMaterCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
-   
+
   AbsThickCmd = new G4UIcmdWithADoubleAndUnit("/eps/det/setAbsThick",this);
   AbsThickCmd->SetGuidance("Set Thickness of the Absorber");
   AbsThickCmd->SetParameterName("Size",false);
   AbsThickCmd->SetRange("Size>=0.");
   AbsThickCmd->SetUnitCategory("Length");
   AbsThickCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
-  
+
   SizeXYCmd = new G4UIcmdWithADoubleAndUnit("/eps/det/setSizeXY",this);
   SizeXYCmd->SetGuidance("Set tranverse size of the calorimeter");
   SizeXYCmd->SetParameterName("Size",false);
   SizeXYCmd->SetRange("Size>0.");
-  SizeXYCmd->SetUnitCategory("Length");    
+  SizeXYCmd->SetUnitCategory("Length");
   SizeXYCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 
   UpdateCmd = new G4UIcmdWithoutParameter("/eps/det/update",this);
@@ -92,7 +91,7 @@ DetectorMessenger::DetectorMessenger(
   UpdateCmd->SetGuidance("This command MUST be applied before \"beamOn\" ");
   UpdateCmd->SetGuidance("if you changed geometrical value(s).");
   UpdateCmd->AvailableForStates(G4State_Idle);
-      
+
   MagFieldCmd = new G4UIcmdWithADoubleAndUnit("/eps/det/setField",this);  
   MagFieldCmd->SetGuidance("Define magnetic field.");
   MagFieldCmd->SetGuidance("Magnetic field will be in Z direction.");
@@ -106,12 +105,12 @@ DetectorMessenger::DetectorMessenger(
 DetectorMessenger::~DetectorMessenger()
 {
 
-  delete AbsMaterCmd; delete TargetMaterCmd; delete CellMaterCmd; 
+  delete AbsMaterCmd; delete TargetMaterCmd; delete CellMaterCmd;
   delete AbsThickCmd; delete NeckMaterCmd;
   delete SizeXYCmd;   delete UpdateCmd;
   delete MagFieldCmd;
   delete detDir;
-  delete epsDir;  
+  delete epsDir;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -120,10 +119,10 @@ void DetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
 { 
   if( command == AbsMaterCmd )
    { Detector->SetAbsorberMaterial(newValue);}
-   
+
   if( command == TargetMaterCmd )
    { Detector->SetTargetMaterial(newValue);}
-  
+
   if( command == CellMaterCmd )
    { Detector->SetCellMaterial(newValue);}
 
@@ -133,7 +132,7 @@ void DetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
   if( command == AbsThickCmd )
    { Detector->SetAbsorberThickness(AbsThickCmd
                                                ->GetNewDoubleValue(newValue));}
-   
+
   if( command == SizeXYCmd )
    { Detector->SetCalorSizeXY(SizeXYCmd->GetNewDoubleValue(newValue));}
 
