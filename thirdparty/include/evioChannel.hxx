@@ -8,7 +8,7 @@
 
 
 #include <stdint.h>
-#include <evioException.hxx>
+#include "evioException.hxx"
 
 
 
@@ -95,7 +95,7 @@ public:
     return(NULL);
     //    throw(evioException(0,"?evioChannel::getRandomBuffer...unsupported method"));
   }
-  virtual void getRandomAccessTable(const uint32_t ***table, uint32_t *len) const throw(evioException) {
+  virtual void getRandomAccessTable(uint32_t *** const table, uint32_t *len) const throw(evioException) {
     throw(evioException(0,"?evioChannel::getRandomAccessTable...unsupported method"));
   }
 

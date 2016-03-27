@@ -9,7 +9,7 @@
 Digitization::Digitization()
 : event_number(0)
 {
-    out.open("output/data.txt");
+    out.open("output/gem_pos.dat");
     hycal_buffer = new uint32_t[MAX_HYCAL_BUFFER];
     InitializeHyCalBuffer(hycal_buffer);
 
@@ -49,20 +49,10 @@ Digitization::Digitization()
 
     module_list.close();
 
-    char outf[] = "output/simrun.evio";
-    char mode[] = "w";
-
-    int status = evOpen(outf, mode, &fHandle);
-    if(status != S_SUCCESS) {
-        std::cerr << "ERROR: cannot open output file \"" << outf << "\"" << std::endl;
-    } else {
-        std::cout << "output file is \"" << outf << "\"" << std::endl;
-    }
 }
 
 Digitization::~Digitization()
 {
-    evClose(fHandle);
     delete modules;
     delete hycal_buffer;
 }
@@ -76,14 +66,38 @@ void Digitization::Event(double *hycal_energy, std::vector<GEM_Hit> &gem_hits)
         FillBuffer(hycal_buffer, modules[i], hycal_energy[i]);
     }
 
-    int status = evWrite(fHandle, hycal_buffer);
+    int fHandle;
+    char outf[] = "output/simrun.evio";
+    char mode[] = "a";
+
+    int status = evOpen(outf, mode, &fHandle);
     if(status != S_SUCCESS) {
-        std::cerr << "ERROR: cannot write event to output file!" << std::endl;
+        std::cerr << "ERROR CODE "
+                  << "0x" << std::hex << std::setw(8) << std::setfill('0') << status
+                  << ": cannot open output file \"" << outf << "\"" << std::endl;
     }
 
+    status = evWrite(fHandle, hycal_buffer);
+    if(status != S_SUCCESS) {
+        std::cerr << "ERROR CODE "
+                  << "0x" << std::hex << std::setw(8) << std::setfill('0') << status
+                  << ": cannot write event to output file!" << std::endl;
+    }
+    evClose(fHandle);
+
+/* text file format
     for(unsigned int i = 0; i <= hycal_buffer[0]; ++i)
     {
         out << "0x" << std::hex << std::setw(8) << std::setfill('0') << hycal_buffer[i] << std::endl;
+    }
+*/
+    for(auto &gem_hit : gem_hits)
+    {
+        out << std::setw(12) << event_number << "  "
+            << std::setw(12) << gem_hit.x
+            << std::setw(12) << gem_hit.y
+            << std::setw(12) << gem_hit.plane_z
+            << std::endl;
     }
 }
 
@@ -117,17 +131,14 @@ void Digitization::InitializeHyCalBuffer(uint32_t *buffer)
     // event header;
     buffer[index++] = 0x00000000;
     buffer[index++] = 0x000110cc;
-    std::cout << index << std::endl;
     event_number_index = index + 2;
     index += addEventInfoBank(&buffer[index]);
-    std::cout << index << std::endl;
     for(int roc_id = 6; roc_id >= 4; --roc_id)
     {
         index += addRocData(&buffer[index], roc_id, index);
     }
 
     buffer[0] = index - 1;
-    std::cout << buffer[0] << std::endl;
 }
 
 int Digitization::addEventInfoBank(uint32_t *buffer)
@@ -144,7 +155,7 @@ int Digitization::addEventInfoBank(uint32_t *buffer)
     return index;
 }
 
-int Digitization::addRocData(uint32_t *buffer, int roc_id, int global_index)
+int Digitization::addRocData(uint32_t *buffer, int roc_id, int base_index)
 {
     int index = 0;
     int nslot, slot[25];
@@ -175,7 +186,7 @@ int Digitization::addRocData(uint32_t *buffer, int roc_id, int global_index)
     for(int i = 0; i < nslot; ++i)
     {
         buffer[index++] = (slot[i] << 27) | 65;
-        data_index[(6-roc_id)*10+i] = index + global_index;
+        data_index[(6-roc_id)*10+i] = index + base_index;
         for(int ch = 0; ch < 64; ++ch)
             buffer[index++] = (slot[i] << 27) | (ch << 17);
     }

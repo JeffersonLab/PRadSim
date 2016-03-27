@@ -35,8 +35,8 @@
 #define _evioDictionary_hxx
 
 
-#include <evioTypedefs.hxx>
-#include <evioException.hxx>
+#include "evioTypedefs.hxx"
+#include "evioException.hxx"
 
 #include <expat.h>
 

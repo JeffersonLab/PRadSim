@@ -9,9 +9,9 @@
 
 #include <iostream>
 #include <stdint.h>
-#include <evioChannel.hxx>
-#include <evioUtil.hxx>
-#include <evio.h>
+#include "evioChannel.hxx"
+#include "evioUtil.hxx"
+#include "evio.h"
 
 
 using namespace std;

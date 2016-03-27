@@ -61,11 +61,11 @@
 #include <iomanip>
 #endif
 
-#include <evio.h>
-#include <evioTypedefs.hxx>
-#include <evioException.hxx>
-#include <evioDictionary.hxx>
-#include <evioChannel.hxx>
+#include "evio.h"
+#include "evioTypedefs.hxx"
+#include "evioException.hxx"
+#include "evioDictionary.hxx"
+#include "evioChannel.hxx"
 
 
 

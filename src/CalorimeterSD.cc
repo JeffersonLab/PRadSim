@@ -90,12 +90,15 @@ G4bool CalorimeterSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
     G4String Name = PhysVol->GetName();
     if(Name == "GEM_Foil") {
         G4ThreeVector position = aStep->GetPreStepPoint()->GetPosition();
-        if(edep/eV > 26) {
+//        if(edep/eV > 26) {
+        // currently there is no gem hits reconstruction
+        // thus the gem foil material is set to be vacuum
+        // to avoid multiple hits count here
             double hitx = G4RandGauss::shoot(position.x()/mm, 0.1);
             double hity = G4RandGauss::shoot(position.y()/mm, 0.1);
             double hitz = PhysVol->GetTranslation().z()/mm;
             gem_hits.push_back(Digitization::GEM_Hit(hitx, hity, hitz));
-        }
+//        }
     } else if(Name == "HyCal_Leadglass") {
         int ModuleID = PhysVol->GetCopyNo() + 1152;
         ModuleEnergy[ModuleID] += edep/MeV;

@@ -4,6 +4,14 @@
 
 //  ejw, 5-dec-2006
 
+#include <iostream>
+#include <iomanip>
+
+#include "evio.h"
+#include "evioTypedefs.hxx"
+#include "evioException.hxx"
+#include "evioDictionary.hxx"
+#include "evioChannel.hxx"
 
 
 #ifndef _evioUtilTemplates_hxx

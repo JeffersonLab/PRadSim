@@ -59,13 +59,12 @@ public:
 
 private:
     int addEventInfoBank(uint32_t *buffer);
-    int addRocData(uint32_t *buffer, int roc_id, int global_index);
+    int addRocData(uint32_t *buffer, int roc_id, int base_index);
 
     daq_info *modules;
     uint32_t *hycal_buffer;
     uint32_t event_number;
     std::unordered_map<int, int> leadglass_map;
-    int fHandle;
     int data_index[30];
     int event_number_index;
     std::ofstream out;

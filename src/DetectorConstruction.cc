@@ -398,7 +398,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
   G4Box *solidGEMPiece3 = new G4Box("GEMPiece3", 275.0*mm, 674.4*mm, 3.*mm);
   G4SubtractionSolid *solidGEMFoil = new G4SubtractionSolid("GEM_Foil", solidGEMPiece3, solidGEMPiece2, 0, G4ThreeVector(-245.5*mm,0.,0.));
-  logicGEM = new G4LogicalVolume(solidGEMFoil, GEMMaterial, GEMMaterial->GetName());
+  logicGEM = new G4LogicalVolume(solidGEMFoil, defaultMaterial, GEMMaterial->GetName());
   physiGEM1 = new G4PVPlacement(0, G4ThreeVector(25.3*cm, 0., HyCalCenter - VacBoxtoHyCal + 3.*cm), logicGEM, "GEM_Foil", logicWorld, false, 0);
   physiGEM2 = new G4PVPlacement(G4Transform3D(rm2, G4ThreeVector(-25.3*cm, 0., HyCalCenter - VacBoxtoHyCal + 7.*cm)), logicGEM, "GEM_Foil", logicWorld, false,0);
 

@@ -9,9 +9,9 @@
 
 #include <iostream>
 #include <stdint.h>
-#include <evioChannel.hxx>
-#include <evioUtil.hxx>
-#include <evio.h>
+#include "evioChannel.hxx"
+#include "evioUtil.hxx"
+#include "evio.h"
 
 
 using namespace std;
@@ -32,7 +32,10 @@ class evioFileChannel : public evioChannel {
 
 public:
   evioFileChannel(const string &fileName, const string &mode = "r", int size = 1000000) throw(evioException);
-  evioFileChannel(const string &fileName, evioDictionary *dict, const string &mode = "r", int size = 1000000) throw(evioException);
+  evioFileChannel(const string &fileName, evioDictionary *dict,
+                  const string &mode = "r", int size = 1000000) throw(evioException);
+  evioFileChannel(const string &fileName, evioDictionary *dict, const uint32_t *firstEvent,
+                  const string &mode = "w", int size = 1000000) throw(evioException);
   virtual ~evioFileChannel(void);
 
 
@@ -59,7 +62,7 @@ public:
   int getBufSize(void) const;
   const uint32_t *getNoCopyBuffer(void) const throw(evioException);
   const uint32_t *getRandomBuffer(void) const throw(evioException);
-  void getRandomAccessTable(const uint32_t ***table, uint32_t *len) const throw(evioException);
+  void getRandomAccessTable(uint32_t *** const table, uint32_t *len) const throw(evioException);
 
   string getFileName(void) const;
   string getMode(void) const;
@@ -68,10 +71,12 @@ public:
 
 private:
   string filename;            /**<Name of evio file.*/
-  string mode;                /**<Open mode, "r" or "ra" or "w" or "a".*/
+  string mode;                /**<Open mode, "r" for read, "ra" for random access read,
+                                * "w" for write, "a" for append, "s" for splitting while writing.*/
   int handle;                 /**<Internal evio handle.*/
   uint32_t *buf;              /**<Pointer to internal event buffer.*/
   int bufSize;                /**<Size of internal event buffer.*/
+  const uint32_t *firstEvent; /**<Pointer first event buffer.*/
   const uint32_t *noCopyBuf;  /**<Pointer to no copy event buffer.*/
   const uint32_t *randomBuf;  /**<Pointer to random read buffer.*/
   string fileXMLDictionary;   /**<XML dictionary in file.*/
