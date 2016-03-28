@@ -8,7 +8,7 @@
 #include "sys/time.h"
 
 Digitization::Digitization()
-: event_number(0)
+: event_number(0), hycal_out(-1)
 {
     gem_out.open("output/gem_pos.dat");
     InitializeHyCalBuffer(hycal_buffer);
@@ -48,7 +48,6 @@ Digitization::Digitization()
 
     module_list.close();
 
-    int fHandle;
     char outf[] = "output/simrun.evio";
     char mode[] = "w";
 
@@ -64,13 +63,14 @@ Digitization::Digitization()
     uint32_t go[5] = {0x00000004, 0x001201cc, now+1, 0x00000000, 0x00000000};
 
     evWrite(hycal_out, prestart);
-    evWrite(fHandle, go);
+    evWrite(hycal_out, go);
 }
 
 Digitization::~Digitization()
 {
     uint32_t now = time(NULL);
     uint32_t end[5] = {0x00000004, 0x002001cc, now, event_number, 0x00000000};
+    evWrite(hycal_out, end);
     evClose(hycal_out);
 }
 

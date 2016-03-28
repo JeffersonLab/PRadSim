@@ -52,20 +52,14 @@ class DetectorMessenger: public G4UImessenger
   public:
     DetectorMessenger(DetectorConstruction* );
    ~DetectorMessenger();
-    
+
     void SetNewValue(G4UIcommand*, G4String);
-    
+
   private:
     DetectorConstruction* Detector;
-    
     G4UIdirectory*             epsDir;
     G4UIdirectory*             detDir;
-    G4UIcmdWithAString*        AbsMaterCmd;
     G4UIcmdWithAString*        TargetMaterCmd;
-    G4UIcmdWithAString*        CellMaterCmd;
-    G4UIcmdWithAString*        NeckMaterCmd;
-    G4UIcmdWithADoubleAndUnit* AbsThickCmd;
-    G4UIcmdWithADoubleAndUnit* SizeXYCmd;
     G4UIcmdWithADoubleAndUnit* MagFieldCmd;
     G4UIcmdWithoutParameter*   UpdateCmd;
 };

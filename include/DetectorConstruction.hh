@@ -41,6 +41,7 @@
 class G4Tubs;
 class G4Box;
 class G4Sphere;
+class G4Polycone;
 class G4SubtractionSolid;
 class G4LogicalVolume;
 class G4VPhysicalVolume;
@@ -84,8 +85,6 @@ public:
      G4Material* GetGEMGasMaterial() {return GEMGasMaterial;};
 
      const G4VPhysicalVolume* GetphysiWorld() {return physiWorld;};
-     const G4VPhysicalVolume* GetAbsorber() {return physiAbsorber;};
-     const G4VPhysicalVolume* GetCell() {return physiCell;};
 
 private:
      G4Material* CenterHyCalMaterial;
@@ -146,13 +145,12 @@ private:
      G4VPhysicalVolume*     physiWinIn;
      G4VPhysicalVolume*     physiWinOut;
 
-     G4Sphere*              solidVacBoxSph;
-     G4Box*                 solidVacBoxBox;
-     G4SubtractionSolid*    solidVacBoxShl;
-     G4Tubs*                solidVacBoxTub;
-     G4SubtractionSolid*    solidVacBoxEnd;
-     G4LogicalVolume*       logicVacBoxEnd;
-     G4VPhysicalVolume*     physiVacBoxEnd;
+     G4Polycone*            solidVacBox;
+     G4LogicalVolume*       logicVacBox;
+     G4VPhysicalVolume*     physiVacBox;
+     G4SubtractionSolid*    solidVacBoxWin;
+     G4LogicalVolume*       logicVacBoxWin;
+     G4VPhysicalVolume*     physiVacBoxWin;
 
      G4Tubs*                solidFlange;
      G4LogicalVolume*       logicFlange;

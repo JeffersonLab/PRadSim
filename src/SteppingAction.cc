@@ -60,7 +60,7 @@ SteppingAction::~SteppingAction()
 //For further improvement
 //
 
-void SteppingAction::UserSteppingAction(const G4Step* aStep)
+void SteppingAction::UserSteppingAction(const G4Step* /*aStep*/)
 {
 }
 

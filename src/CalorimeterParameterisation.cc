@@ -111,8 +111,10 @@ void CalorimeterParameterisation::ComputeTransformation
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 
-void CalorimeterParameterisation::ComputeDimensions
-(G4Box& CalBlock, const G4int copyNo, const G4VPhysicalVolume*) const
+void CalorimeterParameterisation::ComputeDimensions(G4Box& /*CalBlock*/,
+                                                    const G4int /*copyNo*/,
+                                                    const G4VPhysicalVolume*)
+const
 {
 /*
   if(copyNo >= 1152 ) {

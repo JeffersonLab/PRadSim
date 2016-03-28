@@ -118,11 +118,13 @@ void LeadGlassPartParameterisation::ComputeTransformation
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 
-void LeadGlassPartParameterisation::ComputeDimensions
-(G4Box& CalBlock, const G4int copyNo, const G4VPhysicalVolume*) const
+void LeadGlassPartParameterisation::ComputeDimensions(G4Box& /*CalBlock*/,
+                                                      const G4int /*copyNo*/,
+                                                      const G4VPhysicalVolume* /*volume*/)
+const
 {
 //Nothing
- }
+}
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -56,83 +56,69 @@ CalorimeterHit::~CalorimeterHit() {}
 CalorimeterHit::CalorimeterHit(const CalorimeterHit& right)
   : G4VHit()
 {
-  parnam    = right.parnam;
-  trackID   = right.trackID;
-  stepe     = right.stepe;
-  edep      = right.edep;
-  pos       = right.pos;
-  dir       = right.dir;
-  ver       = right.ver;
-  voln      = right.voln;
+    parnam = right.parnam;
+    trackID = right.trackID;
+    stepe = right.stepe;
+    edep = right.edep;
+    pos = right.pos;
+    dir = right.dir;
+    ver = right.ver;
+    voln = right.voln;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 const CalorimeterHit& CalorimeterHit::operator=(const CalorimeterHit& right)
 {
-  parnam    = right.parnam;
-  trackID   = right.trackID;
-  stepe     = right.stepe;
-  edep      = right.edep;
-  pos       = right.pos;
-  dir       = right.dir;
-  ver       = right.ver;
-  voln      = right.voln;
-  return *this;
+    parnam = right.parnam;
+    trackID = right.trackID;
+    stepe = right.stepe;
+    edep = right.edep;
+    pos = right.pos;
+    dir = right.dir;
+    ver = right.ver;
+    voln = right.voln;
+    return *this;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4int CalorimeterHit::operator==(const CalorimeterHit& right) const
 {
-  return (this==&right) ? 1 : 0;
+    return (this==&right) ? 1 : 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void CalorimeterHit::Draw()
 {
-  G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
-  if(pVVisManager)
-  {
-    G4Circle circle(pos);
-    circle.SetScreenSize(2.);
-    circle.SetFillStyle(G4Circle::filled);
-    G4Colour colour(1.,0.,0.);
-    G4VisAttributes attribs(colour);
-    circle.SetVisAttributes(attribs);
-    pVVisManager->Draw(circle);
-  }
+    G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
+    if(pVVisManager) {
+        G4Circle circle(pos);
+        circle.SetScreenSize(2.);
+        circle.SetFillStyle(G4Circle::filled);
+        G4Colour colour(1.,0.,0.);
+        G4VisAttributes attribs(colour);
+        circle.SetVisAttributes(attribs);
+        pVVisManager->Draw(circle);
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void CalorimeterHit::Printf(std::ostream & os)
 {
-/*
- if( (ver.x()*ver.x()+ver.y()*ver.y())/0.4*0.4*mm*mm >1)
- {flag = 1;}
- else
- {flag = 0;}
-*/
-/*
- BolckNo = voln;
- if (voln >= 560) BlockNo = voln+2;
- if (voln >= 592) BlockNo = voln+4;
-*/
-/*
-os << pos.x() <<" "<< pos.y()<<" " << pos.z()<<" ";
-os << stepe <<"     ";
-os << dir.x() <<" "<< dir.y()<<" " << dir.z()<<" ";
-os << voln;
-os << G4endl;
-*/
+    os << pos.x() <<" "<< pos.y()<<" " << pos.z()<<" ";
+    os << stepe <<"     ";
+    os << dir.x() <<" "<< dir.y()<<" " << dir.z()<<" ";
+    os << voln;
+    os << std::endl;
 }
 
 std::ostream &operator<<(std::ostream &os, CalorimeterHit &hit)
 {
-  hit.Printf(os);
-  return os;
+    hit.Printf(os);
+    return os;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
