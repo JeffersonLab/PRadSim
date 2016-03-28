@@ -61,16 +61,7 @@ public:
 
 public:
      G4VPhysicalVolume* Construct();
-     void SetAbsorberMaterial (G4String);
-     void SetAbsorber2Material (G4String);
-     void SetAbsorberThickness(G4double);
      void SetTargetMaterial (G4String);
-     void SetCellMaterial (G4String);
-     void SetNeckMaterial (G4String);
-     void SetColMaterial (G4String);
-     void SetVacBoxMaterial (G4String);
-     void SetGEMMaterial (G4String);
-     void SetCalorSizeXY(G4double);
      void SetMagField(G4double);
      void UpdateGeometry();
 
@@ -81,29 +72,32 @@ public:
      G4double GetCalorThickness() {return CalorThickness;};
      G4double GetCalorSizeXY() {return CalorSizeXY;};
 
-     G4Material* GetAbsorberMaterial() {return AbsorberMaterial;};
-     G4Material* GetAbsorber2Material() {return Absorber2Material;};
-     G4double GetAbsorberThickness() {return AbsorberThickness;};
+     G4Material* GetCenterHyCalMaterial() {return CenterHyCalMaterial;};
+     G4Material* GetOuterHyCalMaterial() {return OuterHyCalMaterial;};
      G4Material* GetTargetMaterial() {return TargetMaterial;};
      G4Material* GetCellMaterial() {return CellMaterial;};
-     G4Material* GetNeckMaterial() {return NeckMaterial;};
-     G4Material* GetColMaterial() {return ColMaterial;};
-     G4Material* GetVacBoxMaterial() {return VacBoxMaterial;};
-     G4Material* GetGEMMaterial() {return GEMMaterial;};
+     G4Material* GetHyCalBoxMaterial() {return HyCalBoxMaterial;};
+     G4Material* GetCollimatorMaterial() {return CollimatorMaterial;};
+     G4Material* GetVacuumBoxMaterial() {return VacuumBoxMaterial;};
+     G4Material* GetGEMFrameMaterial() {return GEMFrameMaterial;};
+     G4Material* GetGEMFoilMaterial() {return GEMFoilMaterial;};
+     G4Material* GetGEMGasMaterial() {return GEMGasMaterial;};
 
      const G4VPhysicalVolume* GetphysiWorld() {return physiWorld;};
      const G4VPhysicalVolume* GetAbsorber() {return physiAbsorber;};
      const G4VPhysicalVolume* GetCell() {return physiCell;};
 
 private:
-     G4Material* AbsorberMaterial;
-     G4Material* Absorber2Material;
+     G4Material* CenterHyCalMaterial;
+     G4Material* OuterHyCalMaterial;
      G4Material* TargetMaterial;
      G4Material* CellMaterial;
-     G4Material* NeckMaterial;
-     G4Material* ColMaterial;
-     G4Material* VacBoxMaterial;
-     G4Material* GEMMaterial;
+     G4Material* HyCalBoxMaterial;
+     G4Material* CollimatorMaterial;
+     G4Material* VacuumBoxMaterial;
+     G4Material* GEMFrameMaterial;
+     G4Material* GEMFoilMaterial;
+     G4Material* GEMGasMaterial;
      G4Material* defaultMaterial;
 
      G4double CalorSizeXY;
@@ -208,6 +202,7 @@ private:
 
 private:
      void DefineMaterials();
+     void SetDefaultMaterials();
 };
 
 

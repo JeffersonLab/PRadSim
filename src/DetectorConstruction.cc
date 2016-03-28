@@ -66,9 +66,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::DetectorConstruction()
-: AbsorberMaterial(0),Absorber2Material(0),TargetMaterial(0),CellMaterial(0),
-  NeckMaterial(0),ColMaterial(0),VacBoxMaterial(0),defaultMaterial(0),
-  solidWorld(0),logicWorld(0),physiWorld(0),
+: solidWorld(0),logicWorld(0),physiWorld(0),
   solidNeck(0),logicNeck(0),physiNeck(0),
   solidCell(0),logicCell(0),physiCell(0),
   solidTarget(0),logicTarget(0),physiTarget(0),
@@ -114,14 +112,7 @@ DetectorConstruction::DetectorConstruction()
 
     // materials
     DefineMaterials();
-    SetAbsorberMaterial("PbWO4");
-    SetAbsorber2Material("Lead Glass");
-    SetTargetMaterial("H2 Gas");
-    SetCellMaterial("Kapton");
-    SetNeckMaterial("Iron");
-    SetColMaterial("Tungsten");
-    SetVacBoxMaterial("Aluminum");
-    SetGEMMaterial("NemaG10");
+    SetDefaultMaterials();
 
     detectorMessenger = new DetectorMessenger(this);
 }
@@ -244,9 +235,22 @@ void DetectorConstruction::DefineMaterials()
 
     // Print out material table
     G4cout << *(G4Material::GetMaterialTable()) << G4endl;
+}
 
+void DetectorConstruction::SetDefaultMaterials()
+{
     //default materials of the World
-    defaultMaterial  = Vacuum;
+    defaultMaterial = G4Material::GetMaterial("Galactic");
+    CenterHyCalMaterial = G4Material::GetMaterial("PbWO4");
+    OuterHyCalMaterial = G4Material::GetMaterial("Lead Glass");
+    TargetMaterial = G4Material::GetMaterial("H2 Gas");
+    CellMaterial = G4Material::GetMaterial("Kapton");
+    HyCalBoxMaterial = G4Material::GetMaterial("Torlon");
+    CollimatorMaterial = G4Material::GetMaterial("Tungsten");
+    VacuumBoxMaterial = G4Material::GetMaterial("Aluminum");
+    GEMFrameMaterial = G4Material::GetMaterial("NemaG10");
+    GEMFoilMaterial = G4Material::GetMaterial("Galactic");
+    GEMGasMaterial = G4Material::GetMaterial("C2H6");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -304,7 +308,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                                            logicChamberWin, "Chamber Windows", logicWorld, false, 0);
 */
 
-  //Vacuum Box End, Flange, and Tube
+    //Vacuum Box End, Flange, and Tube
     G4RotationMatrix rmVB;
     rmVB.rotateX(180.*deg);
     G4double EndDistance = ArcEndR - ArcDistance;
@@ -314,38 +318,38 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     solidVacBoxShl = new G4SubtractionSolid("Shell shape", solidVacBoxSph, solidVacBoxBox);
 
     solidVacBoxEnd = new G4SubtractionSolid("Aluminum Cover", solidVacBoxShl, solidVacBoxTub);
-    logicVacBoxEnd = new G4LogicalVolume(solidVacBoxEnd, defaultMaterial, VacBoxMaterial->GetName());
+    logicVacBoxEnd = new G4LogicalVolume(solidVacBoxEnd, VacuumBoxMaterial, VacuumBoxMaterial->GetName());
     physiVacBoxEnd = new G4PVPlacement(G4Transform3D(rmVB, G4ThreeVector(0., 0., HyCalCenter - 9.*cm - VacBoxtoHyCal + EndDistance)),
                                        logicVacBoxEnd, "Vacuum Box End", logicWorld, false, 0);
 
     solidFlange = new G4Tubs("Flange", 1.9*cm, 3.*cm, 0.5*cm, 0, twopi);
-    logicFlange = new G4LogicalVolume(solidFlange, VacBoxMaterial, VacBoxMaterial->GetName());
+    logicFlange = new G4LogicalVolume(solidFlange, VacuumBoxMaterial, VacuumBoxMaterial->GetName());
     physiFlange = new G4PVPlacement(0, G4ThreeVector(0., 0., (HyCalCenter - 9.*cm - VacBoxtoHyCal) - (ArcEndR - EndDistance)),
                                     logicFlange, "Vacuum Box Flange", logicWorld, false, 0);
 
 
     solidVacTube = new G4Tubs("solidVacTube", 1.8*cm, 1.9*cm, VacBoxtoHyCal + ArcDistance + 9.*cm, 0, twopi);
-    logicVacTube = new G4LogicalVolume(solidVacTube, VacBoxMaterial, VacBoxMaterial->GetName());
+    logicVacTube = new G4LogicalVolume(solidVacTube, VacuumBoxMaterial, VacuumBoxMaterial->GetName());
     physiVacTube = new G4PVPlacement(0, G4ThreeVector(0., 0., HyCalCenter), logicVacTube, "Vacuum Tube", logicWorld, false, 0);
 
 
     G4Tubs* solidVacBox1 = new G4Tubs("solid_VacBox1", 17.5*cm, 50.*cm, 1.*cm, 0, twopi);
-    G4LogicalVolume* logicVacBox1 = new G4LogicalVolume(solidVacBox1, VacBoxMaterial, VacBoxMaterial->GetName());
+    G4LogicalVolume* logicVacBox1 = new G4LogicalVolume(solidVacBox1, VacuumBoxMaterial, VacuumBoxMaterial->GetName());
     G4VPhysicalVolume* physiVacBox1 = new G4PVPlacement(0, G4ThreeVector(0., 0., HyCalCenter - VacBoxtoHyCal - 458.*cm),
                                                         logicVacBox1, "Vacuum Box 1", logicWorld, false, 0);
 
     G4Tubs* solidVacBox2 = new G4Tubs("solid_VacBox2", 49.*cm, 50.*cm, 102.*cm, 0, twopi);
-    G4LogicalVolume* logicVacBox2 = new G4LogicalVolume(solidVacBox2, VacBoxMaterial, VacBoxMaterial->GetName());
+    G4LogicalVolume* logicVacBox2 = new G4LogicalVolume(solidVacBox2, VacuumBoxMaterial, VacuumBoxMaterial->GetName());
     G4VPhysicalVolume* physiVacBox2 = new G4PVPlacement(0, G4ThreeVector(0., 0., HyCalCenter - VacBoxtoHyCal - 355.*cm),
                                                         logicVacBox2, "Vacuum Box 2", logicWorld, false, 0);
 
     G4Tubs* solidVacBox3 = new G4Tubs("solid_VacBox3", 50.*cm, 82.*cm, 1.*cm, 0, twopi);
-    G4LogicalVolume* logicVacBox3 = new G4LogicalVolume(solidVacBox3, VacBoxMaterial, VacBoxMaterial->GetName());
+    G4LogicalVolume* logicVacBox3 = new G4LogicalVolume(solidVacBox3, VacuumBoxMaterial, VacuumBoxMaterial->GetName());
     G4VPhysicalVolume* physiVacBox3 = new G4PVPlacement(0, G4ThreeVector(0., 0., HyCalCenter - VacBoxtoHyCal - 252.*cm),
                                                         logicVacBox3, "Vacuum Box 3", logicWorld, false, 0);
 
     G4Tubs* solidVacBox4 = new G4Tubs("solid_VacBox4", 81.*cm, 82.*cm, 120.*cm, 0, twopi);
-    G4LogicalVolume* logicVacBox4 = new G4LogicalVolume(solidVacBox4, VacBoxMaterial, VacBoxMaterial->GetName());
+    G4LogicalVolume* logicVacBox4 = new G4LogicalVolume(solidVacBox4, VacuumBoxMaterial, VacuumBoxMaterial->GetName());
     G4VPhysicalVolume* physiVacBox4 = new G4PVPlacement(0, G4ThreeVector(0., 0., HyCalCenter - 9.*cm - VacBoxtoHyCal - 2.*cm - 120.*cm),
                                                         logicVacBox4, "Vacuum Box 4", logicWorld, false, 0);
 
@@ -360,7 +364,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     G4SubtractionSolid *solidGEMFrame = new G4SubtractionSolid("GEM_Frame", solidGEMFrame2, solidGEMPipeHole,
                                                                0, G4ThreeVector(-253.*mm,0.,0.));
-    logicGEMFrame = new G4LogicalVolume(solidGEMFrame, defaultMaterial, GEMMaterial->GetName());
+    logicGEMFrame = new G4LogicalVolume(solidGEMFrame, defaultMaterial, GEMFrameMaterial->GetName());
     physiGEMFrame1 = new G4PVPlacement(0, G4ThreeVector(25.3*cm, 0., HyCalCenter - VacBoxtoHyCal + 3.*cm),
                                        logicGEMFrame, "GEM_Frame", logicWorld, false, 0);
     G4RotationMatrix rm2;
@@ -371,7 +375,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4Box *solidGEMPiece3 = new G4Box("GEMPiece3", 275.0*mm, 674.4*mm, 3.*mm);
     G4SubtractionSolid *solidGEMFoil = new G4SubtractionSolid("GEM_Foil", solidGEMPiece3, solidGEMPiece2,
                                                               0, G4ThreeVector(-245.5*mm,0.,0.));
-    logicGEM = new G4LogicalVolume(solidGEMFoil, defaultMaterial, GEMMaterial->GetName());
+    logicGEM = new G4LogicalVolume(solidGEMFoil, GEMFoilMaterial, GEMFoilMaterial->GetName());
     physiGEM1 = new G4PVPlacement(0, G4ThreeVector(25.3*cm, 0., HyCalCenter - VacBoxtoHyCal + 3.*cm),
                                                    logicGEM, "GEM_Foil", logicWorld, false, 0);
     physiGEM2 = new G4PVPlacement(G4Transform3D(rm2, G4ThreeVector(-25.3*cm, 0., HyCalCenter - VacBoxtoHyCal + 7.*cm)),
@@ -385,7 +389,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4Tubs *solidBoxHole = new G4Tubs("BoxHole", 0., 25.*mm, 60.5*cm, 0, twopi);
     G4SubtractionSolid *solidBox3 = new G4SubtractionSolid("Box3", solidBox1, solidBox2);
     solidHyCalBox = new G4SubtractionSolid("HyCal_Box", solidBox3, solidBoxHole);
-    logicHyCalBox = new G4LogicalVolume(solidHyCalBox, NeckMaterial, NeckMaterial->GetName());
+    logicHyCalBox = new G4LogicalVolume(solidHyCalBox, HyCalBoxMaterial, HyCalBoxMaterial->GetName());
 
     physiHyCalBox = new G4PVPlacement(0, G4ThreeVector(0.*cm, 0.*cm, HyCalCenter -9.*cm + 30.*cm),
                                       logicHyCalBox, "HyCal_Box", logicWorld, false, 0);
@@ -393,7 +397,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     //Collimators around the central hole
     solidColl = new G4Box("solidColBox", 1.025*cm, 1.025*cm, 5.*cm);
-    logicColl = new G4LogicalVolume(solidColl, ColMaterial, ColMaterial->GetName());
+    logicColl = new G4LogicalVolume(solidColl, CollimatorMaterial, CollimatorMaterial->GetName());
     double pos_x[12] = {-3.075,-1.025, 1.025, 3.075,-3.075, 3.075,-3.075,3.075,-3.075,-1.025,1.025,3.075};
     double pos_y[12] = {-3.075,-3.075,-3.075,-3.075,-1.025,-1.025, 1.025,1.025, 3.075, 3.075,3.075,3.075};
     for(int i = 0; i < 12; ++i)
@@ -412,7 +416,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                    logicCalor, "Central Frame", logicWorld, false, 0);
 
     solidAbsorber = new G4Box ("Crystal Block", 1.025*cm, 1.025*cm, 90.*mm);
-    logicAbsorber = new G4LogicalVolume(solidAbsorber, AbsorberMaterial, AbsorberMaterial->GetName());
+    logicAbsorber = new G4LogicalVolume(solidAbsorber, CenterHyCalMaterial, CenterHyCalMaterial->GetName());
 
     CalorimeterParameter = new CalorimeterParameterisation(34, 34, CalorSizeXY, G4ThreeVector(0., 0., 0.), 1.025*cm, 1.025*cm);
     physiAbsorber = new G4PVParameterised("HyCal_Crystal", logicAbsorber, logicCalor,
@@ -428,7 +432,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                         logicOuterCalor, "Upper_Outerpart", logicWorld, false, 0);
 
     solidAbsorber2 = new G4Box ("Crystal Block", 1.91*cm, 1.91*cm, 225.*mm);
-    logicAbsorber2 = new G4LogicalVolume(solidAbsorber2, Absorber2Material, Absorber2Material->GetName());
+    logicAbsorber2 = new G4LogicalVolume(solidAbsorber2, OuterHyCalMaterial, OuterHyCalMaterial->GetName());
     LeadGlassPartParameter = new LeadGlassPartParameterisation(24, 6, G4ThreeVector(0.*cm, 0.*cm, 0.*cm), 1.91*cm, 1.91*cm);
     physiAbsorber2 = new G4PVParameterised("HyCal_Leadglass", logicAbsorber2, logicOuterCalor,
                                            kUndefined, 576, LeadGlassPartParameter, false);
@@ -499,77 +503,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void DetectorConstruction::SetAbsorberMaterial(G4String materialChoice)
-{
-    G4Material* pttoMaterial = G4Material::GetMaterial(materialChoice);
-    if (pttoMaterial) AbsorberMaterial = pttoMaterial;
-}
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::SetAbsorber2Material(G4String materialChoice)
-{
-    G4Material* pttoMaterial = G4Material::GetMaterial(materialChoice);
-    if (pttoMaterial) Absorber2Material = pttoMaterial;
-}
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void DetectorConstruction::SetTargetMaterial(G4String materialChoice)
 {
     G4Material* pttoMaterial = G4Material::GetMaterial(materialChoice);
     if (pttoMaterial) TargetMaterial = pttoMaterial;
-}
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::SetCellMaterial(G4String materialChoice)
-{
-    G4Material* pttoMaterial = G4Material::GetMaterial(materialChoice);
-    if (pttoMaterial) CellMaterial = pttoMaterial;
-}
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::SetNeckMaterial(G4String materialChoice)
-{
-    G4Material* pttoMaterial = G4Material::GetMaterial(materialChoice);
-    if (pttoMaterial) NeckMaterial = pttoMaterial;
-}
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::SetColMaterial(G4String materialChoice)
-{
-    G4Material* pttoMaterial = G4Material::GetMaterial(materialChoice);
-    if (pttoMaterial) ColMaterial = pttoMaterial;
-}
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::SetVacBoxMaterial(G4String materialChoice)
-{
-    G4Material* pttoMaterial = G4Material::GetMaterial(materialChoice);
-    if (pttoMaterial) VacBoxMaterial = pttoMaterial;
-}
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::SetGEMMaterial(G4String materialChoice)
-{
-    G4Material* pttoMaterial = G4Material::GetMaterial(materialChoice);
-    if (pttoMaterial) GEMMaterial = pttoMaterial;
-}
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::SetAbsorberThickness(G4double val)
-{
-    // change Absorber thickness and recompute the calorimeter parameters
-    AbsorberThickness = val;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::SetCalorSizeXY(G4double val)
-{
-    // change the transverse size and recompute the calorimeter parameters
-    CalorSizeXY = val;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
