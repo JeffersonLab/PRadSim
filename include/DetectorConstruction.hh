@@ -126,15 +126,13 @@ private:
      G4LogicalVolume*       logicWorld;
      G4VPhysicalVolume*     physiWorld;
 
-     G4Tubs*                solidCelltube;
-     G4Tubs*                solidNecktube;
-     G4SubtractionSolid*    solidNeck;
-     G4LogicalVolume*       logicNeck;
-     G4VPhysicalVolume*     physiNeck;
-
      G4Tubs*                solidCell;
      G4LogicalVolume*       logicCell;
      G4VPhysicalVolume*     physiCell;
+
+     G4SubtractionSolid*    solidCellNeck;
+     G4LogicalVolume*       logicCellNeck;
+     G4VPhysicalVolume*     physiCellNeck;
 
      G4Tubs*                solidTarget;
      G4LogicalVolume*       logicTarget;

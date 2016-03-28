@@ -261,7 +261,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     // Target
     /* disabled, events directly comes from event generator
     solidTarget = new G4Tubs("Cell", 0.*cm, 0.4*cm, 2.*cm, 0, twopi);
-    logicTarget = new G4LogicalVolume(solidTarget, defaultMaterial, "H2gas");
+    logicTarget = new G4LogicalVolume(solidTarget, TargetMaterial, TargetMaterial->GetName());
     physiTarget = new G4PVPlacement(0, G4ThreeVector(0.,0.,-250.*cm), logicTarget, "Cell", logicWorld, false, 0);
     */
 
@@ -270,13 +270,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     rm.rotateX(-90.*deg);
     G4double CellOR = CellR + CellThickness;
 
-    solidCelltube = new G4Tubs("Horizontal Tube", 0.*cm, CellOR, CellHalfL, 0, twopi);
-    solidNecktube = new G4Tubs("Inlet Tube", 0.3*cm, 0.3075*cm, NeckHalfL, 0, twopi);
-    solidNeck = new G4SubtractionSolid("Gas inlet", solidNecktube, solidCelltube,
-                                       G4Transform3D(rm, G4ThreeVector(0., 0., -(NeckHalfL-0.2*cm) - CellOR)));
-    logicNeck = new G4LogicalVolume(solidNeck, CellMaterial, CellMaterial->GetName());
-    physiNeck = new G4PVPlacement(G4Transform3D(rm, G4ThreeVector(0., (NeckHalfL-0.2*cm) + CellOR, TargetCenter)),
-                                  logicNeck, "Neck", logicWorld, false, 0);
+    G4Tubs *cellTube = new G4Tubs("Horizontal Tube", 0.*cm, CellOR, CellHalfL, 0, twopi);
+    G4Tubs *neckTube = new G4Tubs("Inlet Tube", 0.3*cm, 0.3075*cm, NeckHalfL, 0, twopi);
+    solidCellNeck = new G4SubtractionSolid("Gas inlet", neckTube, cellTube,
+                                           G4Transform3D(rm, G4ThreeVector(0., 0., -(NeckHalfL-0.2*cm) - CellOR)));
+    logicCellNeck = new G4LogicalVolume(solidCellNeck, CellMaterial, CellMaterial->GetName());
+    physiCellNeck = new G4PVPlacement(G4Transform3D(rm, G4ThreeVector(0., (NeckHalfL-0.2*cm) + CellOR, TargetCenter)),
+                                      logicCellNeck, "Neck", logicWorld, false, 0);
 
     solidCell = new G4Tubs("Tube", CellR, CellOR, CellHalfL, 0, twopi);
     logicCell = new G4LogicalVolume(solidCell, CellMaterial, CellMaterial->GetName());
@@ -429,8 +429,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     G4VisAttributes* KaptonVisAtt = new G4VisAttributes(G4Colour(0.79, 0.53, 0.));
     KaptonVisAtt->SetVisibility(true);
-    logicNeck->SetVisAttributes(KaptonVisAtt);
     logicCell->SetVisAttributes(KaptonVisAtt);
+    logicCellNeck->SetVisAttributes(KaptonVisAtt);
     logicCellWin->SetVisAttributes(KaptonVisAtt);
     //logicChamberWin->SetVisAttributes(KaptonVisAtt);
 
