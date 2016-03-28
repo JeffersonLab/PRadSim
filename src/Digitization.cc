@@ -1,6 +1,7 @@
 #include "Digitization.hh"
 #include "Randomize.hh"
 #include "evio.h"
+#include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -11,8 +12,21 @@ Digitization::Digitization()
 : event_number(0), hycal_out(-1)
 {
     gem_out.open("output/gem_pos.dat");
-    InitializeHyCalBuffer(hycal_buffer);
+    readLeadGlassMap();
+    readModuleList();
+    initDataFile();
+}
 
+Digitization::~Digitization()
+{
+    uint32_t now = time(NULL);
+    uint32_t end[5] = {0x00000004, 0x002001cc, now, event_number, 0x00000000};
+    evWrite(hycal_out, end);
+    evClose(hycal_out);
+}
+
+void Digitization::readLeadGlassMap()
+{
     std::ifstream leadglass_id("config/leadglass_map.txt");
     if(leadglass_id.is_open()) {
         std::string line;
@@ -25,11 +39,13 @@ Digitization::Digitization()
             iss >> copyNo >> id;
             leadglass_map[id] = MAX_LEAD_TUNGSTATE + copyNo - 1;
         }
+        leadglass_id.close();
     }
-    leadglass_id.close();
+}
 
+void Digitization::readModuleList()
+{
     std::ifstream module_list("config/module_list.txt");
-
     if(module_list.is_open()) {
         std::string line, id;
         int crate, slot, channel, tdc_group;
@@ -44,12 +60,43 @@ Digitization::Digitization()
                 >> mean >> sigma;
             modules[IdToCopyNo(id)] = daq_info(id, crate, slot, channel, tdc_group, mean, sigma);
         }
+        module_list.close();
+    }
+}
+
+void Digitization::initDataFile()
+{
+    InitializeHyCalBuffer(hycal_buffer);
+
+    std::ifstream data_file("config/data_file.txt");
+    std::string file_name;
+    int run_number = 1;
+
+    if(data_file.is_open()) {
+        std::string line;
+        while(std::getline(data_file, line))
+        {
+            if(line.at(0) == '#')
+                continue;
+
+            std::stringstream iss(line);
+            iss >> file_name >> run_number;
+            break;
+        }
+        data_file.close();
     }
 
-    module_list.close();
+    if(file_name.empty()) file_name = "simrun";
 
-    char outf[] = "output/simrun.evio";
+    std::ofstream data_file_o("config/data_file.txt");
+    data_file_o << file_name << "  " << run_number+1;
+    data_file_o.close();
+
+    std::string path = "output/" + file_name + "_" + std::to_string(run_number) + ".evio";
     char mode[] = "w";
+    char outf[256];
+
+    strcpy(outf, path.c_str());
 
     int status = evOpen(outf, mode, &hycal_out);
     if(status != S_SUCCESS) {
@@ -64,14 +111,6 @@ Digitization::Digitization()
 
     evWrite(hycal_out, prestart);
     evWrite(hycal_out, go);
-}
-
-Digitization::~Digitization()
-{
-    uint32_t now = time(NULL);
-    uint32_t end[5] = {0x00000004, 0x002001cc, now, event_number, 0x00000000};
-    evWrite(hycal_out, end);
-    evClose(hycal_out);
 }
 
 void Digitization::Event(double *hycal_energy, std::vector<GEM_Hit> &gem_hits)

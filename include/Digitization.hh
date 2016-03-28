@@ -59,6 +59,9 @@ public:
 private:
     int addEventInfoBank(uint32_t *buffer);
     int addRocData(uint32_t *buffer, int roc_id, int base_index);
+    void readLeadGlassMap();
+    void readModuleList();
+    void initDataFile();
 
     daq_info modules[MAX_MODULE];
     uint32_t hycal_buffer[MAX_HYCAL_BUFFER];
