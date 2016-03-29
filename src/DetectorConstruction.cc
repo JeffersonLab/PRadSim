@@ -35,9 +35,9 @@
 
 #include "DetectorConstruction.hh"
 #include "DetectorMessenger.hh"
-#include "CalorimeterParameterisation.hh"
-#include "LeadGlassPartParameterisation.hh"
+#include "Digitization.hh"
 #include "CalorimeterSD.hh"
+#include "GasElectronMultiplierSD.hh"
 
 #include "G4Material.hh"
 #include "G4NistManager.hh"
@@ -103,12 +103,14 @@ DetectorConstruction::DetectorConstruction()
     SetDefaultMaterials();
 
     detectorMessenger = new DetectorMessenger(this);
+    daq_system = new Digitization();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::~DetectorConstruction()
 {
+    delete daq_system;
     delete detectorMessenger;
 }
 
@@ -381,51 +383,35 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                          logicColl, "HyCal_Collimator", logicWorld, false, 0);
     }
 
-    //HyCal_central part
-    G4Box *solidCentral = new G4Box("Central", CalorSizeXY, CalorSizeXY, 90.*mm);
-    G4Box *solidHole = new G4Box("Hole", 2.05*cm, 2.05*cm, 91.*mm);
+    //HyCal
+    G4Box *solidCentral = new G4Box("Container", 60.*cm, 60.*cm, 23.*cm);
+    G4Box *solidHole = new G4Box("Hole", 2.*cm, 2.*cm, 23.1*cm);
 
-    solidCalor = new G4SubtractionSolid("Central part with hole", solidCentral, solidHole);
-    logicCalor = new G4LogicalVolume(solidCalor, defaultMaterial, "Central part");
+    solidCalor = new G4SubtractionSolid("HyCal Container", solidCentral, solidHole);
+    logicCalor = new G4LogicalVolume(solidCalor, defaultMaterial, "Virtual Container");
     physiCalor = new G4PVPlacement(0, G4ThreeVector(0.,0., HyCalCenter),
-                                   logicCalor, "Central Frame", logicWorld, false, 0);
+                                   logicCalor, "HyCal Container", logicWorld, false, 0);
 
     solidAbsorber = new G4Box ("Crystal Block", 1.025*cm, 1.025*cm, 90.*mm);
     logicAbsorber = new G4LogicalVolume(solidAbsorber, CenterHyCalMaterial, CenterHyCalMaterial->GetName());
 
-    CalorimeterParameter = new CalorimeterParameterisation(34, 34, CalorSizeXY, G4ThreeVector(0., 0., 0.), 1.025*cm, 1.025*cm);
+    HyCalParameterisation *param = new HyCalParameterisation("config/module_list.txt");
     physiAbsorber = new G4PVParameterised("HyCal_Crystal", logicAbsorber, logicCalor,
-                                          kUndefined, 1152, CalorimeterParameter, false);
-
-    // Lead Glass Part
-    G4Box *solidOuterBox = new G4Box("OuterBox", 60.*cm, 60.*cm, 225.*mm);
-    G4Box *solidCentralBox = new G4Box("CentralBox", CalorSizeXY, CalorSizeXY, 226.*mm);
-
-    solidOuterCalor = new G4SubtractionSolid("Outer part with hole", solidOuterBox, solidCentralBox);
-    logicOuterCalor = new G4LogicalVolume(solidOuterCalor, defaultMaterial, "Outer part");
-    physiOuterCalor = new G4PVPlacement(0, G4ThreeVector(0.*cm, 0.*cm, HyCalCenter + 13.5*cm - SurfaceDiff),
-                                        logicOuterCalor, "Upper_Outerpart", logicWorld, false, 0);
-
-    solidAbsorber2 = new G4Box ("Crystal Block", 1.91*cm, 1.91*cm, 225.*mm);
-    logicAbsorber2 = new G4LogicalVolume(solidAbsorber2, OuterHyCalMaterial, OuterHyCalMaterial->GetName());
-    LeadGlassPartParameter = new LeadGlassPartParameterisation(24, 6, G4ThreeVector(0.*cm, 0.*cm, 0.*cm), 1.91*cm, 1.91*cm);
-    physiAbsorber2 = new G4PVParameterised("HyCal_Leadglass", logicAbsorber2, logicOuterCalor,
-                                           kUndefined, 576, LeadGlassPartParameter, false);
-
+                                          kUndefined, param->GetNumber(), param, false);
 
     //Sensitive detectors
+    daq_system->RegisterModules(param);
     G4SDManager* SDman = G4SDManager::GetSDMpointer();
-    G4String SDname = "eps/CalorimeterSD";
-    CalorimeterSD* SDetectors = new CalorimeterSD(SDname);
-    SDman->AddNewDetector(SDetectors);
-    logicAbsorber->SetSensitiveDetector(SDetectors);
-    logicAbsorber2->SetSensitiveDetector(SDetectors);
-    logicGEM->SetSensitiveDetector(SDetectors);
+    CalorimeterSD* HyCalSD = new CalorimeterSD("eps/CalorimeterSD", daq_system);
+    GasElectronMultiplierSD *GEMSD = new GasElectronMultiplierSD("eps/GasElectronMultiplierSD", daq_system);
+    SDman->AddNewDetector(HyCalSD);
+    SDman->AddNewDetector(GEMSD);
+    logicAbsorber->SetSensitiveDetector(HyCalSD);
+    logicGEM->SetSensitiveDetector(GEMSD);
 
     // Visualization attributes
     logicWorld->SetVisAttributes (G4VisAttributes::Invisible);
     logicCalor->SetVisAttributes (G4VisAttributes::Invisible);
-    logicOuterCalor->SetVisAttributes (G4VisAttributes::Invisible);
 
     G4VisAttributes* KaptonVisAtt = new G4VisAttributes(G4Colour(0.79, 0.53, 0.));
     KaptonVisAtt->SetVisibility(true);
@@ -434,13 +420,12 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     logicCellWin->SetVisAttributes(KaptonVisAtt);
     //logicChamberWin->SetVisAttributes(KaptonVisAtt);
 
-    G4VisAttributes* CrystalVisAtt= new G4VisAttributes(G4Colour(0.5,1.0,1.0,0.6));
-    CrystalVisAtt->SetVisibility(false);
+    G4VisAttributes* CrystalVisAtt= new G4VisAttributes(G4Colour(0.5,0.5,1.0,0.1));
+    CrystalVisAtt->SetVisibility(true);
     logicAbsorber->SetVisAttributes(CrystalVisAtt);
 
     G4VisAttributes* LeadGlassVisAtt= new G4VisAttributes(G4Colour(0.2,0.0,1.0,0.1));
     LeadGlassVisAtt->SetVisibility(false);
-    logicAbsorber2->SetVisAttributes(LeadGlassVisAtt);
 
     G4VisAttributes* HyCalBoxVisAtt = new G4VisAttributes(G4Colour(0.0,0.0,0.0,0.3));
     HyCalBoxVisAtt->SetVisibility(false);

@@ -1,15 +1,13 @@
 #ifndef DIGITIZATION_H
 #define DIGITIZATION_H
 
-#include <unordered_map>
+#include "HyCalParameterisation.hh"
 #include <string>
 #include <vector>
 #include <fstream>
 
-#define MAX_LEAD_TUNGSTATE 1152
-#define MAX_LEAD_GLASS 576
-#define MAX_MODULE MAX_LEAD_TUNGSTATE+MAX_LEAD_GLASS
 #define MAX_HYCAL_BUFFER 2000
+#define TRIGGER_THRESHOLD 500 //MeV
 
 class Digitization
 {
@@ -32,29 +30,25 @@ public:
         : x(hx), y(hy), plane_z(hz) {};
     };
 
-    struct daq_info
+    enum DAQ_SubSystem
     {
-        std::string name;
-        int crate;
-        int slot;
-        int channel;
-        int tdc_group;
-        double pedestal_mean;
-        double pedestal_sigma;
-        daq_info() {};
-        daq_info(std::string n, int c, int s, int ch, int tdc, double mean, double sigma)
-        : name(n), crate(c), slot(s), channel(ch), tdc_group(tdc),
-          pedestal_mean(mean), pedestal_sigma(sigma) {};
+        HyCal,
+        GEM,
+        MAX_SUBSYSTEM,
     };
 
 public:
     Digitization();
     virtual ~Digitization();
-    void Event(double *hycal_energy, std::vector<GEM_Hit> &gem_hits);
+    void EndofEvent();
+    void Event(DAQ_SubSystem sub);
+    void GEMHits(const double &x, const double &y, const double &z);
     void InitializeHyCalBuffer(uint32_t *buffer);
-    void FillBuffer(uint32_t *buffer, const daq_info &module, const double &energy);
-    unsigned short Digitize(const daq_info &module, const double &energy);
-    int IdToCopyNo(const std::string &id);
+    void FillBuffer(uint32_t *buffer, const Module_DAQ &module);
+    void RegisterModules(HyCalParameterisation *param);
+    void UpdateEnergy(const int &copyNo, const double &energy);
+    void Clear();
+    unsigned short Digitize(const Module_DAQ &module);
 
 private:
     int addEventInfoBank(uint32_t *buffer);
@@ -63,14 +57,17 @@ private:
     void readModuleList();
     void initDataFile();
 
-    daq_info modules[MAX_MODULE];
     uint32_t hycal_buffer[MAX_HYCAL_BUFFER];
     uint32_t event_number;
-    std::unordered_map<int, int> leadglass_map;
     int data_index[30];
     int event_number_index;
-    std::ofstream gem_out;
     int hycal_out;
+    double totalEnergy;
+    unsigned int system_ready;
+    unsigned int system_mask;
+    std::ofstream gem_out;
+    std::vector<Module_DAQ> modules;
+    std::vector<GEM_Hit> gem_hits;
 };
 
 #endif

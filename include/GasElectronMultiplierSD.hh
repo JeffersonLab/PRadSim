@@ -24,15 +24,15 @@
 // ********************************************************************
 //
 //
-// $Id: CalorimeterSD.hh, 2012-08-03 $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
+// $Id: GasElectronMultiplierSD.hh, 2016-03-29 $
+// GEANT4 tag $Name: geant4.10.02.p01 $
 // Developer: Chao Peng
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef CalorimeterSD_h
-#define CalorimeterSD_h 1
+#ifndef GasElectronMultiplierSD_h
+#define GasElectronMultiplierSD_h 1
 
 #include "G4VSensitiveDetector.hh"
 
@@ -40,14 +40,14 @@ class G4Step;
 class Digitization;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class CalorimeterSD : public G4VSensitiveDetector
+class GasElectronMultiplierSD : public G4VSensitiveDetector
 {
 public:
-    CalorimeterSD(G4String, Digitization*);
-    ~CalorimeterSD();
+    GasElectronMultiplierSD(G4String, Digitization*);
+    ~GasElectronMultiplierSD();
 
     void Initialize(G4HCofThisEvent*);
-    G4bool ProcessHits(G4Step*, G4TouchableHistory*);
+     G4bool ProcessHits(G4Step*, G4TouchableHistory*);
     void EndOfEvent(G4HCofThisEvent*);
 
 private:

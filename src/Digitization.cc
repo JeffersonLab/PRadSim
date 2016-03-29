@@ -9,12 +9,14 @@
 #include "sys/time.h"
 
 Digitization::Digitization()
-: event_number(0), hycal_out(-1)
+: event_number(0), hycal_out(-1), totalEnergy(0), system_ready(0), system_mask(0)
 {
     gem_out.open("output/gem_pos.dat");
-    readLeadGlassMap();
-    readModuleList();
     initDataFile();
+    for(int i = 0; i < int(MAX_SUBSYSTEM); ++i)
+    {
+        system_mask |= 1 << i;
+    }
 }
 
 Digitization::~Digitization()
@@ -23,45 +25,6 @@ Digitization::~Digitization()
     uint32_t end[5] = {0x00000004, 0x002001cc, now, event_number, 0x00000000};
     evWrite(hycal_out, end);
     evClose(hycal_out);
-}
-
-void Digitization::readLeadGlassMap()
-{
-    std::ifstream leadglass_id("config/leadglass_map.txt");
-    if(leadglass_id.is_open()) {
-        std::string line;
-        int copyNo, id;
-        while(std::getline(leadglass_id, line))
-        {
-            if(line.at(0) == '#')
-                continue;
-            std::stringstream iss(line);
-            iss >> copyNo >> id;
-            leadglass_map[id] = MAX_LEAD_TUNGSTATE + copyNo - 1;
-        }
-        leadglass_id.close();
-    }
-}
-
-void Digitization::readModuleList()
-{
-    std::ifstream module_list("config/module_list.txt");
-    if(module_list.is_open()) {
-        std::string line, id;
-        int crate, slot, channel, tdc_group;
-        double mean, sigma;
-        while(std::getline(module_list, line))
-        {
-            if(line.at(0) == '#')
-                continue;
-
-            std::stringstream iss(line);
-            iss >> id >> crate >> slot >> channel >> tdc_group
-                >> mean >> sigma;
-            modules[IdToCopyNo(id)] = daq_info(id, crate, slot, channel, tdc_group, mean, sigma);
-        }
-        module_list.close();
-    }
 }
 
 void Digitization::initDataFile()
@@ -113,25 +76,66 @@ void Digitization::initDataFile()
     evWrite(hycal_out, go);
 }
 
-void Digitization::Event(double *hycal_energy, std::vector<GEM_Hit> &gem_hits)
+void Digitization::RegisterModules(HyCalParameterisation *param)
 {
+    std::vector<HyCal_Module> moduleList = param->GetModuleList();
+    modules.clear();
+    for(auto &module : moduleList)
+    {
+        modules.push_back(module.daq_config);
+    }
+}
+
+void Digitization::UpdateEnergy(const G4int &copyNo, const double &edep)
+{
+    modules[copyNo].energy += edep;
+    totalEnergy += edep;
+}
+
+void Digitization::GEMHits(const double &x, const double &y, const double &z)
+{
+    gem_hits.push_back(GEM_Hit(x, y, z));
+}
+
+void Digitization::Clear()
+{
+    for(auto &module : modules)
+    {
+        module.energy = 0;
+    }
+    gem_hits.clear();
+
+    totalEnergy = 0;
+    system_ready = 0;
+}
+
+void Digitization::Event(DAQ_SubSystem sub)
+{
+    system_ready |= 1<<int(sub);
+
+    if((system_ready & system_mask) == system_mask)
+        EndofEvent();
+}
+
+void Digitization::EndofEvent()
+{
+    if(totalEnergy < TRIGGER_THRESHOLD) {
+        Clear();
+        return;
+    }
+
     hycal_buffer[event_number_index] = ++event_number;
 
-    for(int i = 0; i < MAX_MODULE; ++i)
+    for(const auto &module : modules)
     {
-        FillBuffer(hycal_buffer, modules[i], hycal_energy[i]);
+        FillBuffer(hycal_buffer, module);
     }
 
     if(evWrite(hycal_out, hycal_buffer) != S_SUCCESS) {
         std::cerr << "ERROR: cannot write event to output file!" << std::endl;
     }
 
-/* text file format
-    for(unsigned int i = 0; i <= hycal_buffer[0]; ++i)
-    {
-        out << "0x" << std::hex << std::setw(8) << std::setfill('0') << hycal_buffer[i] << std::endl;
-    }
-*/
+
     for(auto &gem_hit : gem_hits)
     {
         gem_out << std::setw(12) << event_number << "  "
@@ -140,26 +144,16 @@ void Digitization::Event(double *hycal_energy, std::vector<GEM_Hit> &gem_hits)
                 << std::setw(12) << gem_hit.plane_z
                 << std::endl;
     }
+
+    Clear();
+    return;
 }
 
-int Digitization::IdToCopyNo(const std::string &id)
+unsigned short Digitization::Digitize(const Module_DAQ &module)
 {
-    int index = std::stoi(id.substr(1));
+    double ped = G4RandGauss::shoot(module.ped_mean, module.ped_sigma);
 
-    if(id.at(0) == 'W') {
-        if(index > 594) index -= 4;
-        else if(index > 560) index -= 2;
-        return --index;
-    }
-    else
-        return leadglass_map[index];
-}
-
-unsigned short Digitization::Digitize(const daq_info &module, const double &energy)
-{
-    double ped = G4RandGauss::shoot(module.pedestal_mean, module.pedestal_sigma);
-
-    return ped + energy*3.;
+    return ped + module.energy*3.;
 }
 
 void Digitization::InitializeHyCalBuffer(uint32_t *buffer)
@@ -235,7 +229,7 @@ int Digitization::addRocData(uint32_t *buffer, int roc_id, int base_index)
     return index;
 }
 
-void Digitization::FillBuffer(uint32_t *buffer, const daq_info &module, const double &energy)
+void Digitization::FillBuffer(uint32_t *buffer, const Module_DAQ &module)
 {
     int crate = module.crate;
     int slot = module.slot;
@@ -244,6 +238,6 @@ void Digitization::FillBuffer(uint32_t *buffer, const daq_info &module, const do
     int pos = (6-crate)*10 + ((23-slot)/2);
 
     int index = data_index[pos] + channel;
-    unsigned short val = Digitize(module, energy);
+    unsigned short val = Digitize(module);
     buffer[index] = (slot << 27) | (channel << 17) | val;
 }

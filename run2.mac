@@ -11,18 +11,3 @@
 # 1 event
 #
 /run/beamOn 1
-#
-# shoot randomly 20 events
-#
-/N03/event/printModulo 5
-/N03/gun/rndm on
-/run/beamOn 20
-#
-# activate/inactivate physic processes
-#
-/process/list
-/process/inactivate eBrem
-#
-/run/beamOn 20
-#
-

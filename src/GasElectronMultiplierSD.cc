@@ -1,4 +1,3 @@
-//
 // ********************************************************************
 // * License and Disclaimer                                           *
 // *                                                                  *
@@ -24,101 +23,68 @@
 // ********************************************************************
 //
 //
-// $Id: CalorimeterHit.cc, 2012-08-03 $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
+// $Id: GasElectronMultiplierSD.cc,2016-03-29 $
+// GEANT4 tag $Name: geant4.10.02.p01 $
 // Developer: Chao Peng
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "CalorimeterHit.hh"
-#include "G4UnitsTable.hh"
-#include "G4VVisManager.hh"
-#include "G4Circle.hh"
-#include "G4Colour.hh"
-#include "G4VisAttributes.hh"
-#include "G4ios.hh"
+#include "GasElectronMultiplierSD.hh"
+#include "Digitization.hh"
+#include "G4Step.hh"
+#include "G4Track.hh"
 #include "G4ThreeVector.hh"
-
-
-G4Allocator<CalorimeterHit> CalorimeterHitAllocator;
-
+#include "G4SDManager.hh"
+#include "G4UnitsTable.hh"
+#include "Randomize.hh"
+#include "G4SystemOfUnits.hh"
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-CalorimeterHit::CalorimeterHit() {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-CalorimeterHit::~CalorimeterHit() {}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-CalorimeterHit::CalorimeterHit(const CalorimeterHit& right)
-  : G4VHit()
+GasElectronMultiplierSD::GasElectronMultiplierSD(G4String name, Digitization *pdaq)
+:G4VSensitiveDetector(name), daq_system(pdaq)
 {
-    parnam = right.parnam;
-    trackID = right.trackID;
-    stepe = right.stepe;
-    edep = right.edep;
-    pos = right.pos;
-    dir = right.dir;
-    ver = right.ver;
-    voln = right.voln;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-const CalorimeterHit& CalorimeterHit::operator=(const CalorimeterHit& right)
+GasElectronMultiplierSD::~GasElectronMultiplierSD()
 {
-    parnam = right.parnam;
-    trackID = right.trackID;
-    stepe = right.stepe;
-    edep = right.edep;
-    pos = right.pos;
-    dir = right.dir;
-    ver = right.ver;
-    voln = right.voln;
-    return *this;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4int CalorimeterHit::operator==(const CalorimeterHit& right) const
+void GasElectronMultiplierSD::Initialize(G4HCofThisEvent* /*HCE*/)
 {
-    return (this==&right) ? 1 : 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void CalorimeterHit::Draw()
+
+G4bool GasElectronMultiplierSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
 {
-    G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
-    if(pVVisManager) {
-        G4Circle circle(pos);
-        circle.SetScreenSize(2.);
-        circle.SetFillStyle(G4Circle::filled);
-        G4Colour colour(1.,0.,0.);
-        G4VisAttributes attribs(colour);
-        circle.SetVisAttributes(attribs);
-        pVVisManager->Draw(circle);
-    }
+    G4double edep = aStep->GetTotalEnergyDeposit();
+    if (edep == 0.)
+        return false;
+
+    G4TouchableHistory* theTouchable = (G4TouchableHistory*)(aStep->GetPreStepPoint()->GetTouchable());
+    G4VPhysicalVolume* PhysVol = theTouchable->GetVolume();
+
+    G4ThreeVector position = aStep->GetPreStepPoint()->GetPosition();
+    double hitx = G4RandGauss::shoot(position.x()/mm, 0.1);
+    double hity = G4RandGauss::shoot(position.y()/mm, 0.1);
+    double hitz = PhysVol->GetTranslation().z()/mm;
+
+    daq_system->GEMHits(hitx, hity, hitz);
+    return true;
 }
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void CalorimeterHit::Printf(std::ostream & os)
+void GasElectronMultiplierSD::EndOfEvent(G4HCofThisEvent*)
 {
-    os << pos.x() <<" "<< pos.y()<<" " << pos.z()<<" ";
-    os << stepe <<"     ";
-    os << dir.x() <<" "<< dir.y()<<" " << dir.z()<<" ";
-    os << voln;
-    os << std::endl;
-}
-
-std::ostream &operator<<(std::ostream &os, CalorimeterHit &hit)
-{
-    hit.Printf(os);
-    return os;
+    daq_system->Event(Digitization::GEM);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

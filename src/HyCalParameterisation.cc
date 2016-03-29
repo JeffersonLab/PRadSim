@@ -24,105 +24,96 @@
 // ********************************************************************
 //
 //
-// $Id: CalorimeterParameterisation.cc,2012-08-01 $
-// GEANT4 tag $Name: geant-4-9-4-patch-02 $
+// $Id: HyCalParameterisation.cc,2016-03-29 $
+// GEANT4 tag $Name: geant-4.10.02-p01 $
 // Developer: Chao Peng
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "CalorimeterParameterisation.hh"
+#include "HyCalParameterisation.hh"
 
 #include "G4VPhysicalVolume.hh"
+#include "G4Material.hh"
 #include "G4ThreeVector.hh"
 #include "G4Box.hh"
 #include "G4ios.hh"
 #include "G4SystemOfUnits.hh"
+#include <fstream>
+#include <iostream>
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-CalorimeterParameterisation::CalorimeterParameterisation(  
-        G4int    NoChambersX,
-        G4int    NoChambersY, 
-        G4double widthCalor,
-        G4ThreeVector CenterPos,          //  center of the first 
-        G4double sizeX,
-        G4double sizeY) 
+HyCalParameterisation::HyCalParameterisation(const char* filepath)
 {
-   fNoChambersX =  NoChambersX; 
-   fNoChambersY =  NoChambersY; 
-   fspacingXY = widthCalor;
-   fCenterPos = CenterPos;
-   fsizeX  =  sizeX;
-   fsizeY  =  sizeY;
-/*
-   if( NoChambersX > 0 && NoChambersY > 0 ){
-     G4double widthCalorX = fNoChambersX * fsizeX;
-     G4double widthCalorY = fNoChambersY * fsizeY;
-     if ( (fspacingXY < widthCalorX) || (fspacingXY < widthCalorY) ) {
-       G4Exception("CalorimeterParameterisation::CalorimeterParameterisation()",
-                   "InvalidSetup", FatalException,
-                   "Width>Spacing");
-     }
-   }
-*/   
+    std::ifstream module_list(filepath);
+    if(module_list.is_open()) {
+        std::string line, id;
+        double size, x, y;
+        int crate, slot, channel, tdc_group;
+        double mean, sigma;
+        while(std::getline(module_list, line))
+        {
+            if(line.at(0) == '#')
+                continue;
+
+            std::stringstream iss(line);
+            iss >> id >> size >> x >> y
+                >> crate >> slot >> channel >> tdc_group
+                >> mean >> sigma;
+
+            HyCal_Module_Type t = Lead_Tungstate;
+            double z = 0., l = 180.;
+            if(id.at(0) == 'G') {
+                t = Lead_Glass;
+                l = 450.;
+                z = 7.;
+            }
+            Module_DAQ daq(crate, slot, channel, tdc_group, mean, sigma);
+            moduleList.push_back(HyCal_Module(id, t, size, l, x, y, z, daq));
+        }
+        module_list.close();
+    }
 }
 
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-CalorimeterParameterisation::~CalorimeterParameterisation()
+HyCalParameterisation::~HyCalParameterisation()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void CalorimeterParameterisation::ComputeTransformation
-(const G4int copyNo, G4VPhysicalVolume* physVol) const
-{
-
-  G4int BlockIndex;
-  G4int XIndex, YIndex;
-  G4double Xposition, Yposition;
-
-  //
-  //Rule out the 4 blocks at the center
-  //
-    BlockIndex = copyNo;
-    if (copyNo >= 560) BlockIndex = copyNo+2;
-    if (copyNo >= 592) BlockIndex = copyNo+4;
-
-  //
-  //Calculate X position
-  //
-    XIndex = BlockIndex % fNoChambersX;
-    Xposition = fCenterPos.x() + (XIndex - 16)*2.*fsizeX - fsizeX;
-
-  //
-  //Calculate Y position
-  //
-    YIndex = (BlockIndex - XIndex)/fNoChambersX;
-    Yposition = fCenterPos.y() + (16 - YIndex)*2.*fsizeY + fsizeY;
-
-
-//  G4cout << copyNo << "  " << Xposition << "  " << Yposition << G4endl;
-  G4ThreeVector origin(Xposition, Yposition, 0.*cm);
-  physVol->SetTranslation(origin);
-  physVol->SetRotation(0);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-
-void CalorimeterParameterisation::ComputeDimensions(G4Box& /*CalBlock*/,
-                                                    const G4int /*copyNo*/,
-                                                    const G4VPhysicalVolume*)
+void HyCalParameterisation::ComputeTransformation(const G4int copyNo, G4VPhysicalVolume* physVol)
 const
 {
-/*
-  if(copyNo >= 1152 ) {
-    CalBlock.SetXHalfLength(1.9*cm);
-    CalBlock.SetYHalfLength(1.9*cm);
-  }
-*/
+    G4ThreeVector origin(moduleList[copyNo].x*mm, moduleList[copyNo].y*mm, moduleList[copyNo].z*mm);
+    physVol->SetTranslation(G4ThreeVector(origin));
+    physVol->SetRotation(0);
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void HyCalParameterisation::ComputeDimensions(G4Box& CalBlock,
+                                              const G4int copyNo,
+                                              const G4VPhysicalVolume*)
+const
+{
+    CalBlock.SetXHalfLength(moduleList[copyNo].sizeXY/2.*mm);
+    CalBlock.SetYHalfLength(moduleList[copyNo].sizeXY/2.*mm);
+    CalBlock.SetZHalfLength(moduleList[copyNo].length/2.*mm);
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4Material *HyCalParameterisation::ComputeMaterial(const G4int copyNo,
+                                                   G4VPhysicalVolume * /*currVol*/,
+                                                   const G4VTouchable * /*parentTouch*/)
+{
+    switch(moduleList[copyNo].type)
+    {
+    default: return G4Material::GetMaterial("Galactic");
+    case Lead_Glass: return G4Material::GetMaterial("Lead Glass");
+    case Lead_Tungstate: return G4Material::GetMaterial("PbWO4");
+    }
+}
+

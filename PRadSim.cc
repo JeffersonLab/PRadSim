@@ -37,16 +37,12 @@
 #include "Randomize.hh"
 
 #include "DetectorConstruction.hh"
-#include "CalorimeterParameterisation.hh"
-#include "LeadGlassPartParameterisation.hh"
 #include "PhysicsList.hh"
 #include "PrimaryGeneratorAction.hh"
 #include "RunAction.hh"
 #include "EventAction.hh"
 #include "SteppingAction.hh"
 #include "SteppingVerbose.hh"
-#include "CalorimeterSD.hh"
-#include "CalorimeterHit.hh"
 #include "G4ios.hh"
 #include <ctime>
 
