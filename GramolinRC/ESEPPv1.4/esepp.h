@@ -36,6 +36,8 @@
 #include "Math/Interpolator.h"
 #include "Math/GSLIntegrator.h"
 
+using namespace std;
+
 // Parameters for numerical integration:
 #define IntOpt ROOT::Math::IntegrationOneDim::kADAPTIVE
 #define IntTol 0.00001

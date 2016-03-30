@@ -61,8 +61,11 @@ HyCalParameterisation::HyCalParameterisation(const char* filepath)
                 >> crate >> slot >> channel >> tdc_group
                 >> mean >> sigma;
 
+            // default setting for lead tungstate
             HyCal_Module_Type t = Lead_Tungstate;
             double z = 0., l = 180.;
+
+            // change if the type is lead glass
             if(id.at(0) == 'G') {
                 t = Lead_Glass;
                 l = 450.;

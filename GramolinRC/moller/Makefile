@@ -27,3 +27,6 @@ $(MOLLER):      $(MOLLERO)
 
 .$(SrcSuf).$(ObjSuf):
 	$(CXX)  $(CXXFLAGS) -c $<
+
+clean:
+	rm $(MOLLERO) $(MOLLER)

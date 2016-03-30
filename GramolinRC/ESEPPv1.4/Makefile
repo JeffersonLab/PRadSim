@@ -17,12 +17,14 @@ PROGRAMS      = $(ESEPP)
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
 
 
-$(ESEPP):       $(ESEPPO)
-		$(LD) $(LDFLAGS) $^ $(LIBS) $(OutPutOpt)$@
-		$(MT_EXE)
-		@echo "$@ done"
+$(ESEPP): $(ESEPPO)
+	$(LD) $(LDFLAGS) $^ $(LIBS) $(OutPutOpt)$@
+	$(MT_EXE)
+	@echo "$@ done"
 
 
 .$(SrcSuf).$(ObjSuf):
 	$(CXX)  $(CXXFLAGS) -c $<
 
+clean:
+	rm $(ESEPPO) $(ESEPP)

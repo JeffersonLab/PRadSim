@@ -54,7 +54,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(
 :Detector(DC),rndmFlag("on")
 {
   n_particle = 1;
-  particles.open("./RCEP.dat");
+  particles.open("ep_out_e-.dat");
   particleGun  = new G4ParticleGun(n_particle);
   //create a messenger for this class
   gunMessenger = new PrimaryGeneratorMessenger(this);
@@ -120,7 +120,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     particleGun->SetParticleDefinition(particle);
 */
 
-
+/*
     theta = 0.8;
     Ene = 1097;
     x0 = 0.*cm;
@@ -135,9 +135,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     particleGun->SetParticleMomentumDirection(G4ThreeVector(kx, ky, kz));
     particleGun->SetParticleEnergy(Ene*MeV);
     particleGun->GeneratePrimaryVertex(anEvent);
+*/
 
 
-/*
   //RCEP PART
 
     particles >> tmp1[0] >> tmp2[0] >> tmp3[0] >> tmp1[1] >> tmp2[1] >> tmp3[1] >> tmp1[2] >> tmp2[2] >> tmp3[2];
@@ -148,7 +148,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     y0 = G4RandGauss::shoot(0., 0.008)*cm;
     z0 = -300.*cm + 4.*(0.5 - G4UniformRand())*cm;
     Ene = tmp1[0];
-    theta = tmp2[0]; 
+    theta = tmp2[0];
     phi = tmp3[0];
 //    G4cout << Ene << "  " << theta/3.14159265358979*180. << G4endl;
     kx = sin(theta)*cos(phi);
@@ -174,7 +174,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       particleGun->GeneratePrimaryVertex(anEvent);
     }
 //    particleGun->GeneratePrimaryVertex(anEvent);
-*/
+
 
 /*
   //RCEE PART

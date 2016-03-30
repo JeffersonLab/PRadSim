@@ -24,11 +24,11 @@
 // ********************************************************************
 //
 //
-// $Id: DetectorConstruction.cc, 2012-08-01 $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
+// $Id: DetectorConstruction.cc, 2016-03-29 $
+// GEANT4 tag $Name: geant4.10.02.p01 $
 // Developer: Chao Peng
 //
-// 
+//
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -261,7 +261,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                    "World", 0, false, 0);
 
     // Target
-    /* disabled, events directly comes from event generator
+    /* disabled, events directly come from event generator
     solidTarget = new G4Tubs("Cell", 0.*cm, 0.4*cm, 2.*cm, 0, twopi);
     logicTarget = new G4LogicalVolume(solidTarget, TargetMaterial, TargetMaterial->GetName());
     physiTarget = new G4PVPlacement(0, G4ThreeVector(0.,0.,-250.*cm), logicTarget, "Cell", logicWorld, false, 0);
@@ -291,10 +291,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                    logicCellWin, "Upstream Target Window", logicWorld, true, 0);
     physiWinOut = new G4PVPlacement(0, G4ThreeVector(0., 0., TargetCenter + CellHalfL - 5*um),
                                     logicCellWin, "Downstream Target Window", logicWorld, true, 0);
-/*
+
+/*  TODO a detailed target chamber
     // Chamber Window
     G4Tubs* solidChamberWin = new G4Tubs("chamber windows", 0.3*cm, 17.5*cm, 3.75*um, 0, twopi);
-    G4LogicalVolume* logicChamberWin = new G4LogicalVolume(solidChamberWin, CellMaterial, CellMaterial->GetName());
+    7G4LogicalVolume* logicChamberWin = new G4LogicalVolume(solidChamberWin, CellMaterial, CellMaterial->GetName());
     G4VPhysicalVolume* physiChamberWin = new G4PVPlacement(0, G4ThreeVector(0., 0., HyCalCenter - VacBoxtoHyCal - 458.*cm),
                                                            logicChamberWin, "Chamber Windows", logicWorld, false, 0);
 */
@@ -348,6 +349,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     rm2.rotateZ(180.*deg);
     physiGEMFrame2 = new G4PVPlacement(G4Transform3D(rm2, G4ThreeVector(-25.3*cm, 0., HyCalCenter - VacBoxtoHyCal + 7.*cm)),
                                        logicGEMFrame, "GEM_Frame", logicWorld, false,0);
+
     //GEM Foil
     G4Box *solidGEMPiece3 = new G4Box("GEMPiece3", 275.0*mm, 674.4*mm, 3.*mm);
     G4SubtractionSolid *solidGEMFoil = new G4SubtractionSolid("GEM_Foil", solidGEMPiece3, solidGEMPiece2,
@@ -410,8 +412,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     logicGEM->SetSensitiveDetector(GEMSD);
 
     // Visualization attributes
-    logicWorld->SetVisAttributes (G4VisAttributes::Invisible);
-    logicCalor->SetVisAttributes (G4VisAttributes::Invisible);
+    logicWorld->SetVisAttributes(G4VisAttributes::Invisible);
+    logicCalor->SetVisAttributes(G4VisAttributes::Invisible);
 
     G4VisAttributes* KaptonVisAtt = new G4VisAttributes(G4Colour(0.79, 0.53, 0.));
     KaptonVisAtt->SetVisibility(true);
@@ -423,9 +425,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4VisAttributes* CrystalVisAtt= new G4VisAttributes(G4Colour(0.5,0.5,1.0,0.1));
     CrystalVisAtt->SetVisibility(true);
     logicAbsorber->SetVisAttributes(CrystalVisAtt);
-
-    G4VisAttributes* LeadGlassVisAtt= new G4VisAttributes(G4Colour(0.2,0.0,1.0,0.1));
-    LeadGlassVisAtt->SetVisibility(false);
 
     G4VisAttributes* HyCalBoxVisAtt = new G4VisAttributes(G4Colour(0.0,0.0,0.0,0.3));
     HyCalBoxVisAtt->SetVisibility(false);
