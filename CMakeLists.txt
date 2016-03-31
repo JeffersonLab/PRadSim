@@ -52,7 +52,7 @@ set(PRADSIM_SCRIPTS
   run1.mac
   run2.mac
   vis.mac
-  GramolinRC/esepp-master/vpol.dat
+  vpol.dat
   )
 
 foreach(_script ${PRADSIM_SCRIPTS})
