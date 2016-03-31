@@ -62,11 +62,14 @@ public:
   std::vector<G4double>& GetPz_o(){return pz_o;}
   std::vector<G4double>& GetTheta_o(){return theta_o;}
   std::vector<G4double>& GetPhi_o(){return phi_o;}
+
+  void SetPrintModulo(G4int val) {printModulo = val;};
   
 private:
   
   EventActionMessenger*  eventMessenger;
   PrimaryGeneratorAction* pga;
+  G4int printModulo;
   std::vector<G4String> type_o;
   std::vector<G4int> charge_o;
   std::vector<G4double> mass_o;
