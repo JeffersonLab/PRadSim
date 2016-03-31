@@ -36,41 +36,42 @@
 
 #include "DetectorConstruction.hh"
 #include "PrimaryGeneratorMessenger.hh"
-
 #include "G4Event.hh"
+#include "G4Run.hh"
 #include "G4ParticleGun.hh"
 #include "G4ParticleTable.hh"
-#include "G4ParticleDefinition.hh"
-#include "Randomize.hh"
-#include "G4ios.hh" 
 #include "G4SystemOfUnits.hh"
+#include "G4RunManager.hh"
+#include "Randomize.hh"
 
-#include <math.h>
+#include <cmath>
+#include "GenEvent.hh"
+#include "TLorentzVector.h"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(
-                                             DetectorConstruction* DC)
-:Detector(DC),rndmFlag("on")
+PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* DC)
+  :detector(DC),
+   fl_lepton(1), fl_mode(12), fl_struct(2), fl_tpe(1), fl_vpol(3), fl_quick(false), fl_target(false), fl_rosen(false), fl_esepp(false), fl_moller(false), fl_onlymoller(true),
+   sc_angle(0.8*degrad), E_li_pga(1.), E_g_cut_pga(0.0001), E_g_max_pga(0.7), theta_min_pga(0.2*degrad), theta_max_pga(10.*degrad), phi_min_pga(-180.*degrad), phi_max_pga(180.*degrad) 
+   
 {
-  n_particle = 1;
-  particles.open("ep_out_e-.dat");
-  particleGun  = new G4ParticleGun(n_particle);
-  //create a messenger for this class
+  particleGun  = new G4ParticleGun(1);
   gunMessenger = new PrimaryGeneratorMessenger(this);
-
-  // default particle kinematic
-
-  G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-  G4String particleName;
-  G4ParticleDefinition* particle
-                    = particleTable->FindParticle(particleName="e-");
-  particleGun->SetParticleDefinition(particle);
-  particleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,1.));
-  particleGun->SetParticleEnergy(1100.*MeV);
-//  G4double position = -0.5*(Detector->GetWorldSizeX());
-  particleGun->SetParticlePosition(G4ThreeVector(0.*cm, 0.*cm,-280.*cm));
-
+  
+  m_l_pga = &m_l;
+  event_type_pga = &event_type;
+  coord_pga = &coord;
+  v_li_pga = &v_li;
+  v_pi_pga = &v_pi;
+  l1i_pga = &l1i;
+  l2i_pga = &l2i;
+  v_lf_pga = &v_lf;
+  v_pf_pga = &v_pf;
+  v_kf_pga = &v_kf;
+  l1f_pga = &l1f;
+  l2f_pga = &l2f;
+  vkf_pga = &vkf;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -79,160 +80,119 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
   delete particleGun;
   delete gunMessenger;
-  particles.close();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+void PrimaryGeneratorAction::Initialize_flags()
+{
+  flag_esepp = fl_esepp;
+  flag_lepton = fl_lepton;
+  flag_mode = fl_mode;
+  flag_struct = fl_struct;
+  flag_tpe = fl_tpe;
+  flag_vpol = fl_vpol;
+  flag_quick = fl_quick;
+  flag_target = fl_target;
+  flag_rosen = fl_rosen;
+  flag_moller = fl_moller;
+  flag_onlymoller = fl_onlymoller;
+  
+  E_li = E_li_pga;
+  E_g_cut = E_g_cut_pga;
+  E_g_max = E_g_max_pga;
+  theta_min = theta_min_pga;
+  theta_max = theta_max_pga;
+  phi_min = phi_min_pga;
+  phi_max = phi_max_pga;
+
+  coord = TLorentzVector(0.,0.,-300.*cm,0.);
+  cell_xmin = coord.X()-2.*mm;
+  cell_xmax = coord.X()+2.*mm;
+  cell_ymin = coord.Y()-2.*mm;
+  cell_ymax = coord.Y()+2.*mm;
+  cell_zmin = coord.Z()-2.*cm;
+  cell_zmax = coord.Z()+2.*cm;
+  
+  if (flag_lepton<4) m_l = m_e;
+  else m_l = m_mu;
+  
+  m_l2 = Pow2(m_l); m_l4 = Pow4(m_l);
+  
+  if (flag_esepp) Initialize_genevent();
+
+}
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-  //this function is called at the begining of event
-  // 
+  G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
 
-  if (rndmFlag = "on") 
-  {
-    G4double x0 = 0., y0 = 0., z0 = -330.;
-    G4double Ene = 0.;
-    G4double kx = 0., ky = 0., kz = 1.;
-    G4double theta, phi;
-    G4double tmp1[3], tmp2[3], tmp3[3];
-    G4int EventType;
-    G4ParticleDefinition* particle;
-    G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-    G4String particleName;
+  // initialize flags and kinematics
+  if (anEvent->GetEventID()==0) {
+    nevents = G4RunManager::GetRunManager()->GetCurrentRun()->GetNumberOfEventToBeProcessed();
+    Initialize_flags();
+  }
 
-/*
-    G4double halosig = 0.12;
-    G4double r0 = G4RandGauss::shoot(0, halosig);
-    theta = 3.141592653589793*2.*G4UniformRand();
-    x0 = sin(theta)*r0;
-    y0 = cos(theta)*r0;
+  // generation of vertex position
+  if (flag_target) coord = scell();
+  particleGun->SetParticlePosition(G4ThreeVector(coord.X(), coord.Y(), coord.Z()));
 
-    particleGun->SetParticlePosition(G4ThreeVector(x0*cm,y0*cm,z0*cm));
-    particleGun->SetParticleEnergy(1100.*MeV);
+  // generation of e- without radiative correction at a given angle
+  if (!flag_esepp) {
+    particleGun->SetParticleDefinition(particleTable->FindParticle("e-"));
+    G4double phi = 2.*Pi*G4UniformRand();
+    G4double kx_lf = sin(sc_angle)*cos(phi);
+    G4double ky_lf = sin(sc_angle)*sin(phi);
+    G4double kz_lf = cos(sc_angle);
+    particleGun->SetParticleMomentumDirection(G4ThreeVector(kx_lf, ky_lf, kz_lf));
+    particleGun->SetParticleEnergy(E_li*GeV);
     particleGun->GeneratePrimaryVertex(anEvent);
-*/
-
-//    G4double tmp1, tmp2, tmp3, PID;
-/*
-    G4ParticleDefinition* particle
-                = G4ParticleTable::GetParticleTable()->FindParticle("e-");
-    particleGun->SetParticleDefinition(particle);
-*/
-
-/*
-    theta = 0.8;
-    Ene = 1097;
-    x0 = 0.*cm;
-    y0 = 0.*cm;
-    z0 = -300.*cm + 4.*(0.5 - G4UniformRand())*cm;
-    particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
-    theta = theta/180.*3.14159265358979;
-    phi = 2.*3.14159265358979*G4UniformRand();
-    kx = sin(theta)*cos(phi);
-    ky = sin(theta)*sin(phi);
-    kz = cos(theta);
-    particleGun->SetParticleMomentumDirection(G4ThreeVector(kx, ky, kz));
-    particleGun->SetParticleEnergy(Ene*MeV);
-    particleGun->GeneratePrimaryVertex(anEvent);
-*/
-
-
-  //RCEP PART
-
-    particles >> tmp1[0] >> tmp2[0] >> tmp3[0] >> tmp1[1] >> tmp2[1] >> tmp3[1] >> tmp1[2] >> tmp2[2] >> tmp3[2];
-
-    particle = particleTable->FindParticle(particleName="e-");
-    particleGun->SetParticleDefinition(particle);
-    x0 = G4RandGauss::shoot(0., 0.008)*cm;
-    y0 = G4RandGauss::shoot(0., 0.008)*cm;
-    z0 = -300.*cm + 4.*(0.5 - G4UniformRand())*cm;
-    Ene = tmp1[0];
-    theta = tmp2[0];
-    phi = tmp3[0];
-//    G4cout << Ene << "  " << theta/3.14159265358979*180. << G4endl;
-    kx = sin(theta)*cos(phi);
-    ky = sin(theta)*sin(phi);
-    kz = cos(theta);
-    particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
-    particleGun->SetParticleMomentumDirection(G4ThreeVector(kx, ky, kz));
-    particleGun->SetParticleEnergy(Ene*MeV);
-    particleGun->GeneratePrimaryVertex(anEvent);
-
-    if(tmp1[2] > 0.00) {
-      particle = particleTable->FindParticle(particleName="gamma");
-      particleGun->SetParticleDefinition(particle);
-      Ene = tmp1[2];
-      theta = tmp2[2];
-      phi = tmp3[2];
-      kx = sin(theta)*cos(phi);
-      ky = sin(theta)*sin(phi);
-      kz = cos(theta);
-      particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
-      particleGun->SetParticleMomentumDirection(G4ThreeVector(kx, ky, kz));
-      particleGun->SetParticleEnergy(Ene*MeV);
+  }
+  // generation of events by the RC generator
+  else {
+    
+    Loop_genevent();
+    // moller events
+    if (event_type=="elm" || event_type=="brm") {
+      
+      particleGun->SetParticleDefinition(particleTable->FindParticle("e-"));
+      particleGun->SetParticleMomentumDirection(G4ThreeVector(l1f.Px(),l1f.Py(),l1f.Pz()));
+      particleGun->SetParticleEnergy(l1f.E()*GeV);
       particleGun->GeneratePrimaryVertex(anEvent);
-    }
-//    particleGun->GeneratePrimaryVertex(anEvent);
-
-
-/*
-  //RCEE PART
-    particles >> tmp1[0] >> tmp2[0] >> tmp3[0] >> tmp1[1] >> tmp2[1] >> tmp3[1] >> tmp1[2] >> tmp2[2] >> tmp3[2];
-  //1st e
-    particle = particleTable->FindParticle(particleName="e-");
-    particleGun->SetParticleDefinition(particle);
-    x0 = 0.*cm;
-    y0 = 0.*cm;
-    z0 = -300.*cm + 4.*(0.5 - G4UniformRand())*cm;
-    Ene = tmp1[0];
-    theta = tmp2[0]; 
-    phi = tmp3[0];
-//    G4cout << Ene << "  " << theta/3.14159265358979*180. << G4endl;
-    kx = sin(theta)*cos(phi);
-    ky = sin(theta)*sin(phi);
-    kz = cos(theta);
-    particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
-    particleGun->SetParticleMomentumDirection(G4ThreeVector(kx, ky, kz));
-    particleGun->SetParticleEnergy(Ene*MeV);
-    particleGun->GeneratePrimaryVertex(anEvent);
-
-  //2nd e
-    Ene = tmp1[1];
-    theta = tmp2[1];
-    phi = tmp3[1];
-    kx = sin(theta)*cos(phi);
-    ky = sin(theta)*sin(phi);
-    kz = cos(theta);
-    particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
-    particleGun->SetParticleMomentumDirection(G4ThreeVector(kx, ky, kz));
-    particleGun->SetParticleEnergy(Ene*MeV);
-    particleGun->GeneratePrimaryVertex(anEvent);
-
-    if(tmp1[2] > 0.00) {
-      particle = particleTable->FindParticle(particleName="gamma");
-      particleGun->SetParticleDefinition(particle);
-      Ene = tmp1[2];
-      theta = tmp2[2];
-      phi = tmp3[2];
-      kx = sin(theta)*cos(phi);
-      ky = sin(theta)*sin(phi);
-      kz = cos(theta);
-      particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
-      particleGun->SetParticleMomentumDirection(G4ThreeVector(kx, ky, kz));
-      particleGun->SetParticleEnergy(Ene*MeV);
+      
+      particleGun->SetParticleDefinition(particleTable->FindParticle("e-"));
+      particleGun->SetParticleMomentumDirection(G4ThreeVector(l2f.Px(),l2f.Py(),l2f.Pz()));
+      particleGun->SetParticleEnergy(l2f.E()*GeV);
       particleGun->GeneratePrimaryVertex(anEvent);
+
+      if (event_type=="brm") {
+	particleGun->SetParticleDefinition(particleTable->FindParticle("gamma"));
+	particleGun->SetParticleMomentumDirection(G4ThreeVector(vkf.Px(),vkf.Py(),vkf.Pz()));
+	particleGun->SetParticleEnergy(vkf.E()*GeV);
+	particleGun->GeneratePrimaryVertex(anEvent);
+      }
+      
     }
-*/
+    // proton scattering events
+    else {
+      particleGun->SetParticleDefinition(particleTable->FindParticle("e-"));
+      particleGun->SetParticleMomentumDirection(G4ThreeVector(v_lf.Px(),v_lf.Py(),v_lf.Pz()));
+      particleGun->SetParticleEnergy(v_lf.E()*GeV);
+      particleGun->GeneratePrimaryVertex(anEvent);
+      
+      particleGun->SetParticleDefinition(particleTable->FindParticle("proton"));
+      particleGun->SetParticleMomentumDirection(G4ThreeVector(v_pf.Px(),v_pf.Py(),v_pf.Pz()));
+      particleGun->SetParticleEnergy(v_pf.E()*GeV);
+      particleGun->GeneratePrimaryVertex(anEvent);
 
-
-/*
-    G4cout << x0 <<"  " << y0 << "  " << z0 << G4endl;
-    G4cout << kx << "  " << ky << "  " << kz << G4endl;
-    G4cout << Ene << G4endl;
-    G4cout << particleGun->GetParticleDefinition()->GetParticleName() << G4endl;  
-*/
-//    n_particle += 1;
+      if (event_type=="bre1" || event_type=="bre2") {
+	particleGun->SetParticleDefinition(particleTable->FindParticle("gamma"));
+	particleGun->SetParticleMomentumDirection(G4ThreeVector(v_kf.Px(),v_kf.Py(),v_kf.Pz()));
+	particleGun->SetParticleEnergy(v_kf.E()*GeV);
+	particleGun->GeneratePrimaryVertex(anEvent);
+      }
+    }
   }
 }
 
