@@ -67,6 +67,7 @@ foreach(_script ${PRADSIM_SCRIPTS})
     COPYONLY
     )
 endforeach()
+file(COPY ${PROJECT_SOURCE_DIR}/config DESTINATION ${PROJECT_BINARY_DIR})
 
 #----------------------------------------------------------------------------
 # For internal Geant4 use - but has no effect if you build this
