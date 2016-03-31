@@ -25,7 +25,7 @@
 //
 //
 // $Id: PrimaryGeneratorMessenger.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
+//
 //
 // 
 
@@ -41,6 +41,8 @@
 class PrimaryGeneratorAction;
 class G4UIdirectory;
 class G4UIcmdWithAString;
+class G4UIcmdWithAnInteger;
+class G4UIcmdWithADouble;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -53,9 +55,26 @@ public:
   void SetNewValue(G4UIcommand*, G4String);
     
 private:
-  PrimaryGeneratorAction* Action;
-  G4UIdirectory*          gunDir; 
-  G4UIcmdWithAString*     RndmCmd;
+  PrimaryGeneratorAction* pgaction;
+  G4UIdirectory* genDir; 
+  G4UIcmdWithAString* eseppCmd;
+  G4UIcmdWithAString* mollerCmd;
+  G4UIcmdWithAString* rosenCmd;
+  G4UIcmdWithAString* quickCmd;
+  G4UIcmdWithAString* targetCmd;
+  G4UIcmdWithAnInteger* leptonCmd;
+  G4UIcmdWithAnInteger* modeCmd;
+  G4UIcmdWithAnInteger* structCmd;
+  G4UIcmdWithAnInteger* tpeCmd;
+  G4UIcmdWithAnInteger* vpolCmd;
+  G4UIcmdWithADouble* scangleCmd;
+  G4UIcmdWithADouble* eliCmd;
+  G4UIcmdWithADouble* egcutCmd;
+  G4UIcmdWithADouble* egmaxCmd;
+  G4UIcmdWithADouble* thetaminCmd;
+  G4UIcmdWithADouble* thetamaxCmd;
+  G4UIcmdWithADouble* phiminCmd;
+  G4UIcmdWithADouble* phimaxCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
