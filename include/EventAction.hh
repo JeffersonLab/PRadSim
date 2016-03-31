@@ -36,10 +36,10 @@
 #define EventAction_h 1
 
 #include "G4UserEventAction.hh"
+#include "PrimaryGeneratorAction.hh"
 #include "globals.hh"
-//#include <fstream>
+#include <vector>
 
-class RunAction;
 class EventActionMessenger;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -47,21 +47,37 @@ class EventActionMessenger;
 class EventAction : public G4UserEventAction
 {
 public:
-  EventAction(RunAction*);
+  EventAction(PrimaryGeneratorAction*);
   virtual ~EventAction();
 
   void  BeginOfEventAction(const G4Event*);
-                 
-  void SetPrintModulo(G4int    val)  {printModulo = val;};
-    
-private:
-   RunAction* runAct;
-                     
-   G4int     printModulo;
-                             
-   EventActionMessenger*  eventMessenger;
+  void  EndOfEventAction(const G4Event*);
 
-//   std::ofstream os2;
+  std::vector<G4String>& GetType_o(){return type_o;}
+  std::vector<G4int>& GetCharge_o(){return charge_o;}
+  std::vector<G4double>& GetMass_o(){return mass_o;}
+  std::vector<G4double>& GetE_o(){return E_o;}
+  std::vector<G4double>& GetPx_o(){return px_o;}
+  std::vector<G4double>& GetPy_o(){return py_o;}
+  std::vector<G4double>& GetPz_o(){return pz_o;}
+  std::vector<G4double>& GetTheta_o(){return theta_o;}
+  std::vector<G4double>& GetPhi_o(){return phi_o;}
+  
+private:
+  
+  EventActionMessenger*  eventMessenger;
+  PrimaryGeneratorAction* pga;
+  std::vector<G4String> type_o;
+  std::vector<G4int> charge_o;
+  std::vector<G4double> mass_o;
+  std::vector<G4double> E_o;
+  std::vector<G4double> px_o;
+  std::vector<G4double> py_o;
+  std::vector<G4double> pz_o;
+  std::vector<G4double> theta_o;
+  std::vector<G4double> phi_o;
+  
+
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

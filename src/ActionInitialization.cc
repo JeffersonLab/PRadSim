@@ -23,41 +23,52 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+// $Id: ActionInitialization.cc 68058 2013-03-13 14:47:43Z gcosmo $
 //
-// $Id: RunAction.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
-//
-// 
+/// \file ActionInitialization.cc
+/// \brief Implementation of the ActionInitialization class
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-#ifndef RunAction_h
-#define RunAction_h 1
-
-#include "G4UserRunAction.hh"
-#include "globals.hh"
+#include "ActionInitialization.hh"
+#include "PrimaryGeneratorAction.hh"
+#include "DetectorConstruction.hh"
+#include "RunAction.hh"
+#include "EventAction.hh"
+#include "SteppingAction.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class G4Run;
-class EventAction;
+ActionInitialization::ActionInitialization(DetectorConstruction* detector)
+  :G4VUserActionInitialization(),
+   det(detector)
+{}
 
-class RunAction : public G4UserRunAction
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+ActionInitialization::~ActionInitialization()
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ActionInitialization::BuildForMaster() const
 {
-public:
-  RunAction(EventAction*);
-  virtual ~RunAction();
-
-  void BeginOfRunAction(const G4Run*);
-  void   EndOfRunAction(const G4Run*);
-
-private:
-  EventAction* evAction;
-    
-};
+  PrimaryGeneratorAction* pga = new PrimaryGeneratorAction(det);
+  EventAction* eventAction = new EventAction(pga);
+  SetUserAction(new RunAction(eventAction));
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif
+void ActionInitialization::Build() const
+{
+  
+  PrimaryGeneratorAction* pga = new PrimaryGeneratorAction(det);
+  SetUserAction(pga);
 
+  EventAction* eventAction = new EventAction(pga);
+  SetUserAction(new RunAction(eventAction));
+  SetUserAction(eventAction);
+
+  SetUserAction(new SteppingAction(det,eventAction));
+}  
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

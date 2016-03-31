@@ -38,10 +38,7 @@
 
 #include "DetectorConstruction.hh"
 #include "PhysicsList.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "RunAction.hh"
-#include "EventAction.hh"
-#include "SteppingAction.hh"
+#include "ActionInitialization.hh"
 #include "SteppingVerbose.hh"
 #include "G4ios.hh"
 #include <ctime>
@@ -89,20 +86,7 @@ int main(int argc,char** argv)
   runManager->SetUserInitialization(physics);
     
   // Set user action classes
-  //
-  PrimaryGeneratorAction* gen_action = 
-                          new PrimaryGeneratorAction(detector);
-  runManager->SetUserAction(gen_action);
-  //
-  RunAction* run_action = new RunAction;  
-  runManager->SetUserAction(run_action);
-  //
-  EventAction* event_action = new EventAction(run_action);
-  runManager->SetUserAction(event_action);
-  //
-  SteppingAction* stepping_action =
-                    new SteppingAction(detector, event_action);
-  runManager->SetUserAction(stepping_action);
+  runManager->SetUserInitialization(new ActionInitialization(detector));
   
   // Initialize G4 kernel
   //

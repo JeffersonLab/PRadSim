@@ -23,41 +23,33 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+// $Id: ActionInitialization.hh 68058 2013-03-13 14:47:43Z gcosmo $
 //
-// $Id: RunAction.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
-//
-// 
+/// \file ActionInitialization.hh
+/// \brief Definition of the ActionInitialization class
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#ifndef ActionInitialization_h
+#define ActionInitialization_h 1
 
-#ifndef RunAction_h
-#define RunAction_h 1
+#include "G4VUserActionInitialization.hh"
 
-#include "G4UserRunAction.hh"
-#include "globals.hh"
+class DetectorConstruction;
+/// Action initialization class.
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-class G4Run;
-class EventAction;
-
-class RunAction : public G4UserRunAction
+class ActionInitialization : public G4VUserActionInitialization
 {
 public:
-  RunAction(EventAction*);
-  virtual ~RunAction();
+  ActionInitialization(DetectorConstruction* det);
+  virtual ~ActionInitialization();
 
-  void BeginOfRunAction(const G4Run*);
-  void   EndOfRunAction(const G4Run*);
-
+  virtual void BuildForMaster() const;
+  virtual void Build() const;
+  
 private:
-  EventAction* evAction;
-    
+  DetectorConstruction* det;
+
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
-
