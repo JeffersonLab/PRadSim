@@ -41,18 +41,19 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class G4Run;
+class EventAction;
 
 class RunAction : public G4UserRunAction
 {
 public:
-  RunAction();
+  RunAction(EventAction*);
   virtual ~RunAction();
 
   void BeginOfRunAction(const G4Run*);
-//  void   EndOfRunAction(const G4Run*);
-    
+  void   EndOfRunAction(const G4Run*);
 
-
+private:
+  EventAction* evAction;
     
 };
 

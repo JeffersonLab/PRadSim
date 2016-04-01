@@ -23,68 +23,33 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+// $Id: ActionInitialization.hh 68058 2013-03-13 14:47:43Z gcosmo $
 //
-// $Id: EventAction.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
-//
-// 
+/// \file ActionInitialization.hh
+/// \brief Definition of the ActionInitialization class
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#ifndef ActionInitialization_h
+#define ActionInitialization_h 1
 
-#ifndef EventAction_h
-#define EventAction_h 1
+#include "G4VUserActionInitialization.hh"
 
-#include "G4UserEventAction.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "globals.hh"
-#include <vector>
+class DetectorConstruction;
+/// Action initialization class.
 
-class EventActionMessenger;
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-class EventAction : public G4UserEventAction
+class ActionInitialization : public G4VUserActionInitialization
 {
 public:
-  EventAction(PrimaryGeneratorAction*);
-  virtual ~EventAction();
+  ActionInitialization(DetectorConstruction* det);
+  virtual ~ActionInitialization();
 
-  void  BeginOfEventAction(const G4Event*);
-  void  EndOfEventAction(const G4Event*);
-
-  std::vector<G4String>& GetType_o(){return type_o;}
-  std::vector<G4int>& GetCharge_o(){return charge_o;}
-  std::vector<G4double>& GetMass_o(){return mass_o;}
-  std::vector<G4double>& GetE_o(){return E_o;}
-  std::vector<G4double>& GetPx_o(){return px_o;}
-  std::vector<G4double>& GetPy_o(){return py_o;}
-  std::vector<G4double>& GetPz_o(){return pz_o;}
-  std::vector<G4double>& GetTheta_o(){return theta_o;}
-  std::vector<G4double>& GetPhi_o(){return phi_o;}
-
-  void SetPrintModulo(G4int val) {printModulo = val;};
+  virtual void BuildForMaster() const;
+  virtual void Build() const;
   
 private:
-  
-  EventActionMessenger*  eventMessenger;
-  PrimaryGeneratorAction* pga;
-  G4int printModulo;
-  std::vector<G4String> type_o;
-  std::vector<G4int> charge_o;
-  std::vector<G4double> mass_o;
-  std::vector<G4double> E_o;
-  std::vector<G4double> px_o;
-  std::vector<G4double> py_o;
-  std::vector<G4double> pz_o;
-  std::vector<G4double> theta_o;
-  std::vector<G4double> phi_o;
-  
+  DetectorConstruction* det;
 
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
-
-    

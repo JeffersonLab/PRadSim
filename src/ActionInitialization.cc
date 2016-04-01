@@ -23,68 +23,52 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+// $Id: ActionInitialization.cc 68058 2013-03-13 14:47:43Z gcosmo $
 //
-// $Id: EventAction.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
-//
-// 
+/// \file ActionInitialization.cc
+/// \brief Implementation of the ActionInitialization class
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-#ifndef EventAction_h
-#define EventAction_h 1
-
-#include "G4UserEventAction.hh"
+#include "ActionInitialization.hh"
 #include "PrimaryGeneratorAction.hh"
-#include "globals.hh"
-#include <vector>
-
-class EventActionMessenger;
+#include "DetectorConstruction.hh"
+#include "RunAction.hh"
+#include "EventAction.hh"
+#include "SteppingAction.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class EventAction : public G4UserEventAction
+ActionInitialization::ActionInitialization(DetectorConstruction* detector)
+  :G4VUserActionInitialization(),
+   det(detector)
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+ActionInitialization::~ActionInitialization()
+{}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ActionInitialization::BuildForMaster() const
 {
-public:
-  EventAction(PrimaryGeneratorAction*);
-  virtual ~EventAction();
-
-  void  BeginOfEventAction(const G4Event*);
-  void  EndOfEventAction(const G4Event*);
-
-  std::vector<G4String>& GetType_o(){return type_o;}
-  std::vector<G4int>& GetCharge_o(){return charge_o;}
-  std::vector<G4double>& GetMass_o(){return mass_o;}
-  std::vector<G4double>& GetE_o(){return E_o;}
-  std::vector<G4double>& GetPx_o(){return px_o;}
-  std::vector<G4double>& GetPy_o(){return py_o;}
-  std::vector<G4double>& GetPz_o(){return pz_o;}
-  std::vector<G4double>& GetTheta_o(){return theta_o;}
-  std::vector<G4double>& GetPhi_o(){return phi_o;}
-
-  void SetPrintModulo(G4int val) {printModulo = val;};
-  
-private:
-  
-  EventActionMessenger*  eventMessenger;
-  PrimaryGeneratorAction* pga;
-  G4int printModulo;
-  std::vector<G4String> type_o;
-  std::vector<G4int> charge_o;
-  std::vector<G4double> mass_o;
-  std::vector<G4double> E_o;
-  std::vector<G4double> px_o;
-  std::vector<G4double> py_o;
-  std::vector<G4double> pz_o;
-  std::vector<G4double> theta_o;
-  std::vector<G4double> phi_o;
-  
-
-};
+  PrimaryGeneratorAction* pga = new PrimaryGeneratorAction(det);
+  EventAction* eventAction = new EventAction(pga);
+  SetUserAction(new RunAction(eventAction));
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif
+void ActionInitialization::Build() const
+{
+  
+  PrimaryGeneratorAction* pga = new PrimaryGeneratorAction(det);
+  SetUserAction(pga);
 
-    
+  EventAction* eventAction = new EventAction(pga);
+  SetUserAction(new RunAction(eventAction));
+  SetUserAction(eventAction);
+
+  SetUserAction(new SteppingAction(det,eventAction));
+}  
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
