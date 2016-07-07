@@ -162,7 +162,7 @@ void Digitization::InitializeHyCalBuffer(uint32_t *buffer)
 
     // event header;
     buffer[index++] = 0x00000000;
-    buffer[index++] = 0x000110cc;
+    buffer[index++] = 0x008110cc;
     event_number_index = index + 2;
     index += addEventInfoBank(&buffer[index]);
     for(int roc_id = 6; roc_id >= 4; --roc_id)
@@ -212,7 +212,7 @@ int Digitization::addRocData(uint32_t *buffer, int roc_id, int base_index)
     buffer[index++] = (roc_id << 16) | 0x1001;
 
     buffer[index++] = 0x00000000;
-    buffer[index++] = 0x00070100;
+    buffer[index++] = 0xe1200100;
     buffer[index++] = 0xdc0adc00 | ((roc_id&0xf) << 20) | (nslot & 0xff);
 
     for(int i = 0; i < nslot; ++i)
