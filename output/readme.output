@@ -1,0 +1,7 @@
+# gem_pos.dat is the position data of gem
+# format:
+# event number      hit.x       hit.y       gem_plane.z
+
+# simrun.evio is the output of hycal data in evio format
+# it is fully digitized with the pedestal defined in config/module_list.txt
+# this file can be directly opened by PRadEventViewer
