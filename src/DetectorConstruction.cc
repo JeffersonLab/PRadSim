@@ -397,7 +397,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     solidAbsorber = new G4Box ("Crystal Block", 1.025*cm, 1.025*cm, 90.*mm);
     logicAbsorber = new G4LogicalVolume(solidAbsorber, CenterHyCalMaterial, CenterHyCalMaterial->GetName());
 
-    HyCalParameterisation *param = new HyCalParameterisation("config/module_list.txt", "config/pedestal.dat");
+    HyCalParameterisation *param = new HyCalParameterisation("config/module_list.txt", // load modules
+                                                             "config/pedestal.dat",    // set module pedestals
+                                                             "config/calibration.txt");// set module calibration factors
     physiAbsorber = new G4PVParameterised("HyCal_Crystal", logicAbsorber, logicCalor,
                                           kUndefined, param->GetNumber(), param, false);
 

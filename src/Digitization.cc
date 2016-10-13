@@ -152,8 +152,7 @@ void Digitization::EndofEvent()
 unsigned short Digitization::Digitize(const Module_DAQ &module)
 {
     double ped = G4RandGauss::shoot(module.ped_mean, module.ped_sigma);
-
-    return ped + module.energy*3.;
+    return ped + module.energy/module.gain_factor;
 }
 
 void Digitization::InitializeHyCalBuffer(uint32_t *buffer)
@@ -208,24 +207,32 @@ int Digitization::addRocData(uint32_t *buffer, int roc_id, int base_index)
         break;
     }
 
+    // add roc header
     buffer[index++] = 0x00000000;
     buffer[index++] = (roc_id << 16) | 0x1001;
 
+    // add TI bank 11 words
+    buffer[index++] = 0x0000000a; // 10 + 1 words in total
+    buffer[index++] = 0xe10a0100; // TI bank header
+    buffer[index+2] = 2 << 24; // only 2nd word matters, it defines trigger type, here it is total sum
+    index += 9; // TI bank expects 9 words
+
     buffer[index++] = 0x00000000;
-    buffer[index++] = 0xe1200100;
+    buffer[index++] = 0xe1200100; // Fastbus bank header
+    // roc id and board number
     buffer[index++] = 0xdc0adc00 | ((roc_id&0xf) << 20) | (nslot & 0xff);
 
     for(int i = 0; i < nslot; ++i)
     {
         buffer[index++] = (slot[i] << 27) | 65;
-        data_index[(6-roc_id)*10+i] = index + base_index;
+        data_index[(6 - roc_id)*10 + i] = index + base_index;
         for(int ch = 0; ch < 64; ++ch)
             buffer[index++] = (slot[i] << 27) | (ch << 17);
     }
 
-    buffer[index++] = 0xfabb0005;
-    buffer[0] = index - 1;
-    buffer[2] = index - 3;
+    buffer[index++] = 0xfabc0005; // end word
+    buffer[0] = index - 1; // roc bank size
+    buffer[13] = index - 14; // fastbus bank size
     return index;
 }
 

@@ -6,7 +6,7 @@
 #include <vector>
 #include <fstream>
 
-#define MAX_HYCAL_BUFFER 2000
+#define MAX_HYCAL_BUFFER 3000
 #define TRIGGER_THRESHOLD 500 //MeV
 
 class Digitization

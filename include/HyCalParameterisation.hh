@@ -73,9 +73,11 @@ struct Module_DAQ
     double ped_mean;
     double ped_sigma;
     double energy;
+    double gain_factor;
     Module_DAQ() {};
-    Module_DAQ(int c, int s, int ch, int t, double m = 0., double sig = 0.)
-    : crate(c), slot(s), channel(ch), tdc_group(t), ped_mean(m), ped_sigma{sig}, energy(0)
+    Module_DAQ(int c, int s, int ch, int t)
+    : crate(c), slot(s), channel(ch), tdc_group(t),
+      ped_mean(0), ped_sigma{0}, energy(0), gain_factor(0.)
     {};
 };
 
@@ -104,11 +106,13 @@ class HyCalParameterisation : public G4VPVParameterisation
 {
 public:
     HyCalParameterisation(const std::string &mod_path = "",
-                          const std::string &ped_path = "");
+                          const std::string &ped_path = "",
+                          const std::string &cal_path = "");
     virtual ~HyCalParameterisation();
 
     void LoadModuleList(const std::string &path);
     void LoadPedestal(const std::string &path);
+    void LoadCalibrationFactor(const std::string &path);
     void ComputeTransformation(const G4int copyNo,
                                G4VPhysicalVolume* physVol) const;
     void ComputeDimensions(G4Box & CalBlock,

@@ -45,12 +45,16 @@
 #include <unordered_map>
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-HyCalParameterisation::HyCalParameterisation(const std::string &mod_file, const std::string &ped_file)
+HyCalParameterisation::HyCalParameterisation(const std::string &mod_file,
+                                             const std::string &ped_file,
+                                             const std::string &cal_file)
 {
     if(!mod_file.empty())
         LoadModuleList(mod_file);
     if(!ped_file.empty())
         LoadPedestal(ped_file);
+    if(!cal_file.empty())
+        LoadCalibrationFactor(cal_file);
 }
 
 
@@ -109,6 +113,8 @@ void HyCalParameterisation::LoadModuleList(const std::string &path)
     }
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 void HyCalParameterisation::LoadPedestal(const std::string &path)
 {
     ConfigParser c_parser;
@@ -160,6 +166,57 @@ void HyCalParameterisation::LoadPedestal(const std::string &path)
             continue;
         moduleList[it->second].daq_config.ped_mean = mean;
         moduleList[it->second].daq_config.ped_sigma = sigma;
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void HyCalParameterisation::LoadCalibrationFactor(const std::string &path)
+{
+    ConfigParser c_parser;
+    if(!moduleList.size()) {
+        std::cout << "WARNING: No module loaded, thus cannot load calibration data."
+                  << std::endl;
+        return;
+    }
+
+    // this map is for loading the pedestal
+    std::unordered_map<std::string, size_t> name_map;
+    for(size_t i = 0; i < moduleList.size(); ++i)
+    {
+        auto it = name_map.find(moduleList.at(i).name);
+        if(it != name_map.end()) {
+            std::cout << "WARNING: Name map collision between module "
+                      << moduleList.at(i).name
+                      << " and "
+                      << moduleList.at(it->second).name
+                      << std::endl;
+        }
+        name_map[moduleList.at(i).name] = i;
+    }
+
+    // read pedestal
+    if(!c_parser.OpenFile(path)) {
+        std::cerr << "WARNING: Missing calibration file \""
+                  << path << "\""
+                  << ", no gain factor loaded."
+                  << std::endl;
+        return;
+    }
+
+    std::string name;
+    double factor;
+    while(c_parser.ParseLine())
+    {
+        if(c_parser.NbofElements() < 2)
+            continue;
+
+        c_parser >> name >> factor;
+
+        auto it = name_map.find(name);
+        if(it == name_map.end())
+            continue;
+        moduleList[it->second].daq_config.gain_factor = factor;
     }
 }
 
