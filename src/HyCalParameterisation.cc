@@ -96,7 +96,7 @@ void HyCalParameterisation::LoadModuleList(const std::string &path)
             // length of Pb-glass module
             l = 450.; // mm
             // depth of Pb-glass module
-            z = 70.; // mm
+            z = (450. - 180.)/2. - 101.2; // mm, PWO and Pb-glass diff is 101.2 mm
         } else if(type == 1) {
             // crystal module
             t = Lead_Tungstate;
