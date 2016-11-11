@@ -27,7 +27,7 @@
 // $Id: PrimaryGeneratorAction.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
 // GEANT4 tag $Name: geant4-09-04-patch-02 $
 //
-// 
+//
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -49,24 +49,24 @@ class PrimaryGeneratorMessenger;
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
 public:
-  PrimaryGeneratorAction(DetectorConstruction*);    
-  virtual ~PrimaryGeneratorAction();
+    PrimaryGeneratorAction(DetectorConstruction *);
+    virtual ~PrimaryGeneratorAction();
 
-  void GeneratePrimaries(G4Event*);
-  void SetRndmFlag(G4String val) { rndmFlag = val;}
-  G4int n_particle;
-   
+    void GeneratePrimaries(G4Event *);
+    void SetRndmFlag(G4String val) {rndmFlag = val;}
+    void SetGunType(G4String val);
+    G4int n_particle;
+
 private:
-  G4ParticleGun*           particleGun;	 //pointer a to G4  class
-  DetectorConstruction*    Detector;     //pointer to the geometry
-    
-  PrimaryGeneratorMessenger* gunMessenger;   //messenger of this class
-  G4String                   rndmFlag;	     //flag for a rndm impact point
-  std::ifstream            particles;
+    G4ParticleGun *particleGun;  //pointer a to G4  class
+    DetectorConstruction *Detector;     //pointer to the geometry
+
+    PrimaryGeneratorMessenger *gunMessenger;   //messenger of this class
+    G4String rndmFlag;       //flag for a rndm impact point
+    G4String GunType;     // select event generator
+    std::ifstream particles;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
-
-
