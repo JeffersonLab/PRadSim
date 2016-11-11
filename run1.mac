@@ -17,4 +17,6 @@
 #
 #/gun/particle mu+
 #/gun/energy 300 MeV
+
+/pradsim/gun/type elastic
 /run/beamOn 10000
