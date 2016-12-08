@@ -27,7 +27,7 @@
 // $Id: DetectorMessenger.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
 // GEANT4 tag $Name: geant4-09-04-patch-02 $
 //
-// 
+//
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -49,22 +49,20 @@ class G4UIcmdWithoutParameter;
 
 class DetectorMessenger: public G4UImessenger
 {
-  public:
-    DetectorMessenger(DetectorConstruction* );
-   ~DetectorMessenger();
+public:
+    DetectorMessenger(DetectorConstruction *);
+    ~DetectorMessenger();
 
-    void SetNewValue(G4UIcommand*, G4String);
+    void SetNewValue(G4UIcommand *, G4String);
 
-  private:
-    DetectorConstruction* Detector;
-    G4UIdirectory*             epsDir;
-    G4UIdirectory*             detDir;
-    G4UIcmdWithAString*        TargetMaterCmd;
-    G4UIcmdWithADoubleAndUnit* MagFieldCmd;
-    G4UIcmdWithoutParameter*   UpdateCmd;
+private:
+    DetectorConstruction *Detector;
+    G4UIdirectory             *pradsimDir;
+    G4UIdirectory             *detDir;
+    G4UIcmdWithAString        *TargetMaterCmd;
+    G4UIcmdWithoutParameter   *UpdateCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
-

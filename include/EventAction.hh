@@ -27,7 +27,7 @@
 // $Id: EventAction.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
 // GEANT4 tag $Name: geant4-09-04-patch-02 $
 //
-// 
+//
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -35,9 +35,8 @@
 #ifndef EventAction_h
 #define EventAction_h 1
 
-#include "G4UserEventAction.hh"
 #include "globals.hh"
-//#include <fstream>
+#include "G4UserEventAction.hh"
 
 class RunAction;
 class EventActionMessenger;
@@ -47,25 +46,22 @@ class EventActionMessenger;
 class EventAction : public G4UserEventAction
 {
 public:
-  EventAction(RunAction*);
-  virtual ~EventAction();
+    EventAction(RunAction *);
+    virtual ~EventAction();
 
-  void  BeginOfEventAction(const G4Event*);
-                 
-  void SetPrintModulo(G4int    val)  {printModulo = val;};
-    
+    void BeginOfEventAction(const G4Event *);
+    void EndOfEventAction(const G4Event *);
+
+    void SetPrintModulo(G4int val) {printModulo = val;}
+
 private:
-   RunAction* runAct;
-                     
-   G4int     printModulo;
-                             
-   EventActionMessenger*  eventMessenger;
+    RunAction *runAct;
 
-//   std::ofstream os2;
+    G4int printModulo;
+
+    EventActionMessenger *eventMessenger;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
-
-    

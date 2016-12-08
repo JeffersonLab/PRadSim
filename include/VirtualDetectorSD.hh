@@ -24,39 +24,37 @@
 // ********************************************************************
 //
 //
-// $Id: PrimaryGeneratorMessenger.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
+// $Id: VirtualDetectorSD.hh, 2016-03-29 $
+// GEANT4 tag $Name: geant4.10.02.p01 $
+// Developer: Chao Peng
 //
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef PrimaryGeneratorMessenger_h
-#define PrimaryGeneratorMessenger_h 1
+#ifndef VirtualDetectorSD_h
+#define VirtualDetectorSD_h 1
 
-#include "globals.hh"
-#include "G4UImessenger.hh"
+#include "G4VSensitiveDetector.hh"
 
-class PrimaryGeneratorAction;
-class G4UIdirectory;
-class G4UIcmdWithAString;
+class RootTree;
+class G4Step;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PrimaryGeneratorMessenger: public G4UImessenger
+class VirtualDetectorSD : public G4VSensitiveDetector
 {
 public:
-    PrimaryGeneratorMessenger(PrimaryGeneratorAction *);
-    virtual ~PrimaryGeneratorMessenger();
+    VirtualDetectorSD(G4String, RootTree *);
+    ~VirtualDetectorSD();
 
-    void SetNewValue(G4UIcommand *, G4String);
+    void Initialize(G4HCofThisEvent *);
+    G4bool ProcessHits(G4Step *, G4TouchableHistory *);
+    void EndOfEvent(G4HCofThisEvent *);
 
 private:
-    PrimaryGeneratorAction *Action;
-    G4UIdirectory      *gunDir;
-    G4UIcmdWithAString *RndmCmd;
-    G4UIcmdWithAString *GunTypeCmd;
+    RootTree *otree;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

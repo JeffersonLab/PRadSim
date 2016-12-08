@@ -96,17 +96,19 @@ void HyCalParameterisation::LoadModuleList(const std::string &path)
             // length of Pb-glass module
             l = 450.; // mm
             // depth of Pb-glass module
-            z = (450. - 180.)/2. - 101.2; // mm, PWO and Pb-glass diff is 101.2 mm
+            //z = (450. - 180.)/2. - 101.2; // mm, PWO and Pb-glass diff is 101.2 mm
+            z = 0.;
         } else if(type == 1) {
             // crystal module
             t = Lead_Tungstate;
             l = 180.; // mm
-            z = 0.; // mm
+            //z = 0.; // mm
+            z = 101.2 - (450. - 180.)/2.;
         } else {
             continue;
         }
 
-        std::cout << tdc_group.substr(1) << std::endl;
+        //std::cout << tdc_group.substr(1) << std::endl;
         int tdc_id = std::stoi(tdc_group.substr(1));
         Module_DAQ daq(crate, slot, channel, tdc_id);
         moduleList.push_back(HyCal_Module(name, t, size_x, size_y, l, x, y, z, daq));
@@ -277,7 +279,7 @@ G4Material *HyCalParameterisation::ComputeMaterial(const G4int copyNo,
 
     switch(moduleList[copyNo].type)
     {
-    default: return G4Material::GetMaterial("Galactic");
+    default: return G4Material::GetMaterial("Galaxy");
     case Lead_Glass: return G4Material::GetMaterial("Lead Glass");
     case Lead_Tungstate: return G4Material::GetMaterial("PbWO4");
     }

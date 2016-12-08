@@ -27,7 +27,7 @@
 // $Id: DetectorMessenger.cc, 2012-08-01 $
 // GEANT4 tag $Name: geant4-09-04-patch-02 $
 // Developer: Chao Peng
-// 
+//
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -35,6 +35,7 @@
 #include "DetectorMessenger.hh"
 
 #include "DetectorConstruction.hh"
+
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithAnInteger.hh"
@@ -43,32 +44,24 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-DetectorMessenger::DetectorMessenger(DetectorConstruction* Det)
-: Detector(Det)
+DetectorMessenger::DetectorMessenger(DetectorConstruction *Det) : Detector(Det)
 {
-    epsDir = new G4UIdirectory("/eps/");
-    epsDir->SetGuidance("UI commands of this example");
+    pradsimDir = new G4UIdirectory("/pradsim/");
+    pradsimDir->SetGuidance("UI commands of this example");
 
-    detDir = new G4UIdirectory("/eps/det/");
+    detDir = new G4UIdirectory("/pradsim/det/");
     detDir->SetGuidance("detector control");
 
-    TargetMaterCmd = new G4UIcmdWithAString("/eps/det/setTargetMat", this);
+    TargetMaterCmd = new G4UIcmdWithAString("/pradsim/det/setTargetMat", this);
     TargetMaterCmd->SetGuidance("Select Material of the Target.");
     TargetMaterCmd->SetParameterName("choice", false);
     TargetMaterCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
-    UpdateCmd = new G4UIcmdWithoutParameter("/eps/det/update", this);
+    UpdateCmd = new G4UIcmdWithoutParameter("/pradsim/det/update", this);
     UpdateCmd->SetGuidance("Update calorimeter geometry.");
     UpdateCmd->SetGuidance("This command MUST be applied before \"beamOn\" ");
     UpdateCmd->SetGuidance("if you changed geometrical value(s).");
     UpdateCmd->AvailableForStates(G4State_Idle);
-
-    MagFieldCmd = new G4UIcmdWithADoubleAndUnit("/eps/det/setField", this);
-    MagFieldCmd->SetGuidance("Define magnetic field.");
-    MagFieldCmd->SetGuidance("Magnetic field will be in Z direction.");
-    MagFieldCmd->SetParameterName("Bz", false);
-    MagFieldCmd->SetUnitCategory("Magnetic flux density");
-    MagFieldCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -77,24 +70,19 @@ DetectorMessenger::~DetectorMessenger()
 {
     delete TargetMaterCmd;
     delete UpdateCmd;
-    delete MagFieldCmd;
     delete detDir;
-    delete epsDir;
+    delete pradsimDir;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void DetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
+void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 {
-    if(command == TargetMaterCmd) {
+    if (command == TargetMaterCmd)
         Detector->SetTargetMaterial(newValue);
-    }
-    if(command == UpdateCmd) {
+
+    if (command == UpdateCmd)
         Detector->UpdateGeometry();
-    }
-    if(command == MagFieldCmd) {
-        Detector->SetMagField(MagFieldCmd->GetNewDoubleValue(newValue));
-    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

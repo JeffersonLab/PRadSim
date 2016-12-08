@@ -1,3 +1,4 @@
+//
 // ********************************************************************
 // * License and Disclaimer                                           *
 // *                                                                  *
@@ -27,22 +28,26 @@
 // GEANT4 tag $Name: geant4.10.02.p01 $
 // Developer: Chao Peng
 //
+//
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "GasElectronMultiplierSD.hh"
+
 #include "Digitization.hh"
+
 #include "G4Step.hh"
 #include "G4Track.hh"
 #include "G4ThreeVector.hh"
 #include "G4SDManager.hh"
 #include "G4UnitsTable.hh"
-#include "Randomize.hh"
 #include "G4SystemOfUnits.hh"
+#include "Randomize.hh"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-GasElectronMultiplierSD::GasElectronMultiplierSD(G4String name, Digitization *pdaq)
-:G4VSensitiveDetector(name), daq_system(pdaq)
+GasElectronMultiplierSD::GasElectronMultiplierSD(G4String name, Digitization *pdaq) : G4VSensitiveDetector(name), daq_system(pdaq)
 {
 }
 
@@ -54,38 +59,36 @@ GasElectronMultiplierSD::~GasElectronMultiplierSD()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasElectronMultiplierSD::Initialize(G4HCofThisEvent* /*HCE*/)
+void GasElectronMultiplierSD::Initialize(G4HCofThisEvent * /*HCE*/)
 {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-
-G4bool GasElectronMultiplierSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
+G4bool GasElectronMultiplierSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 {
     G4double edep = aStep->GetTotalEnergyDeposit();
-    if (edep == 0.)
-        return false;
 
-    G4TouchableHistory* theTouchable = (G4TouchableHistory*)(aStep->GetPreStepPoint()->GetTouchable());
-    G4VPhysicalVolume* PhysVol = theTouchable->GetVolume();
+    if (edep == 0.) return false;
+
+    G4TouchableHistory *theTouchable = (G4TouchableHistory *)(aStep->GetPreStepPoint()->GetTouchable());
+    G4VPhysicalVolume *PhysVol = theTouchable->GetVolume();
 
     G4ThreeVector position = aStep->GetPreStepPoint()->GetPosition();
-    double hitx = G4RandGauss::shoot(position.x()/mm, 0.1);
-    double hity = G4RandGauss::shoot(position.y()/mm, 0.1);
-    double hitz = PhysVol->GetTranslation().z()/mm;
+    double hitx = G4RandGauss::shoot(position.x() / mm, 0.1);
+    double hity = G4RandGauss::shoot(position.y() / mm, 0.1);
+    double hitz = PhysVol->GetTranslation().z() / mm;
 
     daq_system->GEMHits(hitx, hity, hitz);
+
     return true;
 }
 
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void GasElectronMultiplierSD::EndOfEvent(G4HCofThisEvent*)
+void GasElectronMultiplierSD::EndOfEvent(G4HCofThisEvent *)
 {
     daq_system->Event(Digitization::GEM);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-

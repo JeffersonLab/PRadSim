@@ -24,39 +24,56 @@
 // ********************************************************************
 //
 //
-// $Id: PrimaryGeneratorMessenger.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
+// $Id: RootTree.cc,v 1.3, 2013/02/26 HRS Exp $
+// GEANT4 tag $Name: geant4-09-04 $
 //
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef PrimaryGeneratorMessenger_h
-#define PrimaryGeneratorMessenger_h 1
+#ifndef RootTree_h
+#define RootTree_h 1
 
-#include "globals.hh"
-#include "G4UImessenger.hh"
+//maximum number of hits in a SD
+#define MaxSDHit 1024
 
-class PrimaryGeneratorAction;
-class G4UIdirectory;
-class G4UIcmdWithAString;
+class TFile;
+class TTree;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PrimaryGeneratorMessenger: public G4UImessenger
+class RootTree
 {
 public:
-    PrimaryGeneratorMessenger(PrimaryGeneratorAction *);
-    virtual ~PrimaryGeneratorMessenger();
+    RootTree();
+    ~RootTree();
 
-    void SetNewValue(G4UIcommand *, G4String);
+    void Initialize();
+    void UpdateValue(int pid, int tid, int ptid, double x, double y, double z, double p, double theta, double phi);
+
+    void FillTree(); // fill tree
 
 private:
-    PrimaryGeneratorAction *Action;
-    G4UIdirectory      *gunDir;
-    G4UIcmdWithAString *RndmCmd;
-    G4UIcmdWithAString *GunTypeCmd;
+    void Reset();
+
+    //for general sensitive detectors
+    int SD_N; //must be initialized before using
+    int SD_PID[MaxSDHit]; // Particle ID
+    int SD_TID[MaxSDHit]; // Track ID
+    int SD_PTID[MaxSDHit]; // Parent Track ID
+    double SD_X[MaxSDHit];
+    double SD_Y[MaxSDHit];
+    double SD_Z[MaxSDHit];
+    double SD_P[MaxSDHit];
+    double SD_Theta[MaxSDHit];
+    double SD_Phi[MaxSDHit];
+    //double SD_Edep[MaxSDHit]; // MeV
+    //double SD_NonIonEdep[MaxSDHit]; // MeV
+
+private:
+    TFile *file;
+    TTree *tree; // hits info, event
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

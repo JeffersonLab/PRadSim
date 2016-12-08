@@ -19,16 +19,31 @@ else()
 endif()
 
 #----------------------------------------------------------------------------
+# Tell CMake where to find the ROOT installation
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{ROOTSYS}/etc/cmake)
+
+#----------------------------------------------------------------------------
+# Find ROOT (required package)
+#
+find_package(ROOT REQUIRED)
+
+#----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
 # Setup include directory for this project
 #
 include(${Geant4_USE_FILE})
+include_directories(${ROOT_INCLUDE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 #---------------------------------------------------------------------------
 # Add thirdparty library and includes
-include_directories(${PROJECT_SOURCE_DIR}/thirdparty/include)
-link_directories(${PROJECT_SOURCE_DIR}/thirdparty/lib64)
+if(NOT EXISTS $ENV{EVIODIR})
+  include_directories(${PROJECT_SOURCE_DIR}/thirdparty/include)
+  link_directories(${PROJECT_SOURCE_DIR}/thirdparty/lib64)
+else()
+  include_directories($ENV{EVIODIR}/include)
+  link_directories($ENV{EVIODIR}/lib)
+endif()
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
@@ -41,7 +56,7 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 # Add the executable, and link it to the Geant4 libraries
 #
 add_executable(PRadSim PRadSim.cc ${sources} ${headers})
-target_link_libraries(PRadSim ${Geant4_LIBRARIES} evio evioxx)
+target_link_libraries(PRadSim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES} evio evioxx)
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
@@ -49,9 +64,7 @@ target_link_libraries(PRadSim ${Geant4_LIBRARIES} evio evioxx)
 # relies on these scripts being in the current working directory.
 #
 set(PRADSIM_SCRIPTS
-  run1.mac
-  run2.mac
-  vis.mac
+  gui.mac run1.mac run2.mac vis.mac
   )
 
 foreach(_script ${PRADSIM_SCRIPTS})
@@ -63,12 +76,6 @@ foreach(_script ${PRADSIM_SCRIPTS})
 endforeach()
 
 #----------------------------------------------------------------------------
-# For internal Geant4 use - but has no effect if you build this
-# example standalone
-#
-add_custom_target(B3 DEPENDS PRadSim)
-
-#----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
-install(TARGETS PRadSim DESTINATION bin )
+install(TARGETS PRadSim DESTINATION bin)

@@ -27,7 +27,7 @@
 // $Id: EventAction.cc,v 1.1 2010-10-18 15:56:17 maire Exp $
 // GEANT4 tag $Name: geant4-09-04-patch-02 $
 //
-// 
+//
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -38,42 +38,40 @@
 #include "EventActionMessenger.hh"
 
 #include "G4Event.hh"
-#include "G4UnitsTable.hh"
-
-//#include "G4ios.hh"
-//#include <fstream>
-
 #include "Randomize.hh"
+
 #include <iomanip>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EventAction::EventAction(RunAction* run)
-:runAct(run),printModulo(100000),eventMessenger(0)
+EventAction::EventAction(RunAction *run) : runAct(run), printModulo(100000)
 {
-//  os2.open("energy.dat");
-  eventMessenger = new EventActionMessenger(this);
+    eventMessenger = new EventActionMessenger(this);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 EventAction::~EventAction()
 {
-  delete eventMessenger;
+    delete eventMessenger;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void EventAction::BeginOfEventAction(const G4Event* evt)
+void EventAction::BeginOfEventAction(const G4Event *evt)
 {
- 
-  G4int evtNb = evt->GetEventID();
-  if (evtNb%printModulo == 0) { 
-    G4cout << "\n---> Begin of event: " << evtNb << G4endl;
-    CLHEP::HepRandom::showEngineStatus();
+    G4int evtNb = evt->GetEventID();
 
-  }
+    if (evtNb % printModulo == 0) {
+        G4cout << "\n---> Begin of event: " << evtNb << G4endl;
+        CLHEP::HepRandom::showEngineStatus();
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+void EventAction::EndOfEventAction(const G4Event *)
+{
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

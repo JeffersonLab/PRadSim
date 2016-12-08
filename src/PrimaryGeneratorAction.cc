@@ -41,9 +41,9 @@
 #include "G4ParticleGun.hh"
 #include "G4ParticleTable.hh"
 #include "G4ParticleDefinition.hh"
-#include "Randomize.hh"
 #include "G4ios.hh"
 #include "G4SystemOfUnits.hh"
+#include "Randomize.hh"
 
 #include <math.h>
 
@@ -63,9 +63,9 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction *DC) : Detec
     G4ParticleDefinition *particle = particleTable->FindParticle(particleName = "e-");
     particleGun->SetParticleDefinition(particle);
     particleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., 1.));
-    particleGun->SetParticleEnergy(1100.*MeV);
+    particleGun->SetParticleEnergy(1100. * MeV);
     //G4double position = -0.5*(Detector->GetWorldSizeX());
-    particleGun->SetParticlePosition(G4ThreeVector(0.*cm, 0.*cm, -280.*cm));
+    particleGun->SetParticlePosition(G4ThreeVector(0. * cm, 0. * cm, -280. * cm));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -97,12 +97,12 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
         /*
         G4double halosig = 0.12;
         G4double r0 = G4RandGauss::shoot(0, halosig);
-        theta = 3.141592653589793*2.*G4UniformRand();
+        theta = 3.141592653589793*2. * G4UniformRand();
         x0 = sin(theta)*r0;
         y0 = cos(theta)*r0;
 
         particleGun->SetParticlePosition(G4ThreeVector(x0*cm,y0*cm,z0*cm));
-        particleGun->SetParticleEnergy(1100.*MeV);
+        particleGun->SetParticleEnergy(1100. * MeV);
         particleGun->GeneratePrimaryVertex(anEvent);
         */
 
@@ -116,12 +116,12 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
         if (GunType == "ring") {
             theta = 0.8;
             Ene = 1097 * MeV;
-            x0 = 0.*cm;
-            y0 = 0.*cm;
-            z0 = -300.*cm + 4.*(0.5 - G4UniformRand()) * cm;
+            x0 = 0. * cm;
+            y0 = 0. * cm;
+            z0 = -300. * cm + 4. * (0.5 - G4UniformRand()) * cm;
             particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
-            theta = theta / 180.*3.14159265358979;
-            phi = 2.*3.14159265358979 * G4UniformRand();
+            theta = theta / 180. * 3.14159265358979;
+            phi = 2. * 3.14159265358979 * G4UniformRand();
             kx = sin(theta) * cos(phi);
             ky = sin(theta) * sin(phi);
             kz = cos(theta);
@@ -138,7 +138,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
             particleGun->SetParticleDefinition(particle);
             x0 = G4RandGauss::shoot(0., 0.008) * cm;
             y0 = G4RandGauss::shoot(0., 0.008) * cm;
-            z0 = -300.*cm + 4.*(0.5 - G4UniformRand()) * cm;
+            z0 = -300. * cm + 4. * (0.5 - G4UniformRand()) * cm;
             Ene = tmp1[0];
             theta = tmp2[0];
             phi = tmp3[0];
@@ -173,9 +173,9 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
             // 1st e
             particle = particleTable->FindParticle(particleName = "e-");
             particleGun->SetParticleDefinition(particle);
-            x0 = 0.*cm;
-            y0 = 0.*cm;
-            z0 = -300.*cm + 4.*(0.5 - G4UniformRand()) * cm;
+            x0 = 0. * cm;
+            y0 = 0. * cm;
+            z0 = -300. * cm + 4. * (0.5 - G4UniformRand()) * cm;
             Ene = tmp1[0];
             theta = tmp2[0];
             phi = tmp3[0];
@@ -241,8 +241,7 @@ void PrimaryGeneratorAction::SetGunType(G4String val)
             particles.open("epelastic.dat");
         }
     }
-
-    if (GunType == "moller") {
+    else if (GunType == "moller") {
         if (particles.is_open()) {
             particles.close();
             particles.open("moller.dat");

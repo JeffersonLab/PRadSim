@@ -24,8 +24,8 @@
 // ********************************************************************
 //
 //
-// $Id: CalorimeterSD.cc,2012-08-01 $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
+// $Id: VirtualDetectorSD.cc,2016-11-20 $
+// GEANT4 tag $Name: geant4.10.02.p01 $
 // Developer: Chao Peng
 //
 //
@@ -33,56 +33,78 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "CalorimeterSD.hh"
+#include "VirtualDetectorSD.hh"
 
-#include "Digitization.hh"
+#include "RootTree.hh"
 
-#include "G4Step.hh"
-#include "G4Track.hh"
 #include "G4ThreeVector.hh"
+#include "G4Track.hh"
+#include "G4TouchableHistory.hh"
 #include "G4SDManager.hh"
-#include "G4UnitsTable.hh"
+#include "G4Step.hh"
+#include "G4StepPoint.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4VPhysicalVolume.hh"
+#include "G4VSensitiveDetector.hh"
+#include "G4ios.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-CalorimeterSD::CalorimeterSD(G4String name, Digitization *pdaq) : G4VSensitiveDetector(name), daq_system(pdaq)
+VirtualDetectorSD::VirtualDetectorSD(G4String name, RootTree *ptree) : G4VSensitiveDetector(name), otree(ptree)
 {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-CalorimeterSD::~CalorimeterSD()
+VirtualDetectorSD::~VirtualDetectorSD()
 {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void CalorimeterSD::Initialize(G4HCofThisEvent * /*HCE*/)
+void VirtualDetectorSD::Initialize(G4HCofThisEvent * /*HCE*/)
 {
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
+G4bool VirtualDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 {
     G4double edep = aStep->GetTotalEnergyDeposit();
-
+    
     if (edep == 0.) return false;
 
-    G4TouchableHistory *theTouchable = (G4TouchableHistory *)(aStep->GetPreStepPoint()->GetTouchable());
+    G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
+    G4TouchableHistory *theTouchable = (G4TouchableHistory *)(preStepPoint->GetTouchable());
     G4VPhysicalVolume *PhysVol = theTouchable->GetVolume();
+
+    G4Track *theTrack = aStep->GetTrack();  
+    int pid = theTrack->GetParticleDefinition()->GetPDGEncoding();
+    int tid = theTrack->GetTrackID();
+    int parenttid = theTrack->GetParentID();
     
-    daq_system->UpdateEnergy(PhysVol->GetCopyNo(), edep / MeV);
+    G4ThreeVector position = preStepPoint->GetPosition();
+    double hitx = position.x() / mm;
+    double hity = position.y() / mm;
+    //double hitz = PhysVol->GetTranslation().z() / mm;
+    double hitz = position.z() / mm;
+    
+    G4ThreeVector momentum = preStepPoint->GetMomentum();
+    double p = momentum.mag() / MeV;
+    double theta = momentum.theta();
+    double phi = momentum.phi();
+
+    //G4cout << " " << pid << " " << tid << " " << parenttid << " " << hitx << " " << hity << " " << hitz << " " << p << " " << theta << " " << phi << G4endl;
+    otree->UpdateValue(pid, tid, parenttid, hitx, hity, hitz, p, theta, phi);
 
     return true;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void CalorimeterSD::EndOfEvent(G4HCofThisEvent *)
+void VirtualDetectorSD::EndOfEvent(G4HCofThisEvent * /*HCE*/)
 {
-    daq_system->Event(Digitization::HyCal);
+    otree->FillTree();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

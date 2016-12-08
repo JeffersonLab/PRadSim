@@ -28,6 +28,8 @@
 // GEANT4 tag $Name: geant4.10.02.p01 $
 // Developer: Chao Peng
 //
+//
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -36,19 +38,20 @@
 
 #include "G4VSensitiveDetector.hh"
 
-class G4Step;
 class Digitization;
+class G4Step;
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class GasElectronMultiplierSD : public G4VSensitiveDetector
 {
 public:
-    GasElectronMultiplierSD(G4String, Digitization*);
+    GasElectronMultiplierSD(G4String, Digitization *);
     ~GasElectronMultiplierSD();
 
-    void Initialize(G4HCofThisEvent*);
-     G4bool ProcessHits(G4Step*, G4TouchableHistory*);
-    void EndOfEvent(G4HCofThisEvent*);
+    void Initialize(G4HCofThisEvent *);
+    G4bool ProcessHits(G4Step *, G4TouchableHistory *);
+    void EndOfEvent(G4HCofThisEvent *);
 
 private:
     Digitization *daq_system;
@@ -57,4 +60,3 @@ private:
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
-
