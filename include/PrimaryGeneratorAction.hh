@@ -35,14 +35,14 @@
 #ifndef PrimaryGeneratorAction_h
 #define PrimaryGeneratorAction_h 1
 
-#include "G4VUserPrimaryGeneratorAction.hh"
 #include "globals.hh"
+#include "G4VUserPrimaryGeneratorAction.hh"
 #include <fstream>
 
-class G4ParticleGun;
-class G4Event;
 class DetectorConstruction;
 class PrimaryGeneratorMessenger;
+class G4Event;
+class G4ParticleGun;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -58,13 +58,15 @@ public:
     G4int n_particle;
 
 private:
-    G4ParticleGun *particleGun;  //pointer a to G4  class
-    DetectorConstruction *Detector;     //pointer to the geometry
+    DetectorConstruction *Detector; //pointer to the geometry
+    
+    G4ParticleGun *particleGun; //pointer a to G4 class
 
-    PrimaryGeneratorMessenger *gunMessenger;   //messenger of this class
-    G4String rndmFlag;       //flag for a rndm impact point
-    G4String GunType;     // select event generator
+    G4String rndmFlag; //flag for a rndm impact point
+    G4String GunType; // select event generator
     std::ifstream particles;
+    
+    PrimaryGeneratorMessenger *gunMessenger; //messenger of this class
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

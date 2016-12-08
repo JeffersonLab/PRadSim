@@ -152,7 +152,7 @@ void Digitization::EndofEvent()
 unsigned short Digitization::Digitize(const Module_DAQ &module)
 {
     double ped = G4RandGauss::shoot(module.ped_mean, module.ped_sigma);
-    return ped + module.energy/module.gain_factor;
+    return ped + (module.energy / 0.93) / module.gain_factor; // TODO: magic number 0.93 here, need to be tuned
 }
 
 void Digitization::InitializeHyCalBuffer(uint32_t *buffer)
