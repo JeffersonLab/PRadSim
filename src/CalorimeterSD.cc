@@ -73,7 +73,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
     G4TouchableHistory *theTouchable = (G4TouchableHistory *)(aStep->GetPreStepPoint()->GetTouchable());
     G4VPhysicalVolume *PhysVol = theTouchable->GetVolume();
     
-    daq_system->UpdateEnergy(PhysVol->GetCopyNo(), edep / MeV);
+    //daq_system->UpdateEnergy(PhysVol->GetCopyNo(), edep / MeV);
 
     return true;
 }
@@ -82,7 +82,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
 void CalorimeterSD::EndOfEvent(G4HCofThisEvent *)
 {
-    daq_system->Event(Digitization::HyCal);
+   // daq_system->Event(Digitization::HyCal);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

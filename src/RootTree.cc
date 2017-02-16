@@ -45,7 +45,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RootTree::RootTree()
+RootTree::RootTree() : SD_N(0)
 {
     Initialize();
     
@@ -113,7 +113,6 @@ void RootTree::UpdateValue(int pid, int tid, int ptid, double x, double y, doubl
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 
 void RootTree::Reset()
 {

@@ -35,6 +35,7 @@
 
 #include "VirtualDetectorSD.hh"
 
+#include "Digitization.hh"
 #include "RootTree.hh"
 
 #include "G4ThreeVector.hh"
@@ -50,7 +51,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-VirtualDetectorSD::VirtualDetectorSD(G4String name, RootTree *ptree) : G4VSensitiveDetector(name), otree(ptree)
+VirtualDetectorSD::VirtualDetectorSD(G4String name, RootTree *ptree, Digitization *pdaq) : G4VSensitiveDetector(name), otree(ptree), daq_system(pdaq)
 {
 }
 
@@ -96,6 +97,8 @@ G4bool VirtualDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
     //G4cout << " " << pid << " " << tid << " " << parenttid << " " << hitx << " " << hity << " " << hitz << " " << p << " " << theta << " " << phi << G4endl;
     otree->UpdateValue(pid, tid, parenttid, hitx, hity, hitz, p, theta, phi);
+    
+    daq_system->Update(p, hitx, hity);
 
     return true;
 }
@@ -105,6 +108,7 @@ G4bool VirtualDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 void VirtualDetectorSD::EndOfEvent(G4HCofThisEvent * /*HCE*/)
 {
     otree->FillTree();
+    daq_system->Event(Digitization::HyCal);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

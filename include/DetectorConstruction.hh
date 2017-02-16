@@ -66,26 +66,10 @@ public:
 private:
     G4VPhysicalVolume *physiWorld;
 
-    G4Material *VacuumMaterial;
     G4Material *TargetMaterial;
-    G4Material *CellMaterial;
-    G4Material *VacuumBoxMaterial;
-    G4Material *GEMFrameMaterial;
-    G4Material *GEMFoilMaterial;
-    G4Material *GEMGasMaterial;
-    G4Material *HyCalBoxMaterial;
-    G4Material *CollimatorMaterial;
-    G4Material *CenterHyCalMaterial;
-    G4Material *OuterHyCalMaterial;
-    G4Material *defaultMaterial;
-
-    std::map<G4String, G4VisAttributes *> mVisAtt;
-
+    
     Digitization *daq_system;
     RootTree *otree;
-
-private:
-    void DefineMaterials();
 
 private:
     DetectorMessenger *detectorMessenger; //pointer to the Messenger

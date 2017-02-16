@@ -38,6 +38,7 @@
 
 #include "G4VSensitiveDetector.hh"
 
+class Digitization;
 class RootTree;
 class G4Step;
 
@@ -46,7 +47,7 @@ class G4Step;
 class VirtualDetectorSD : public G4VSensitiveDetector
 {
 public:
-    VirtualDetectorSD(G4String, RootTree *);
+    VirtualDetectorSD(G4String, RootTree *, Digitization *);
     ~VirtualDetectorSD();
 
     void Initialize(G4HCofThisEvent *);
@@ -55,6 +56,7 @@ public:
 
 private:
     RootTree *otree;
+    Digitization *daq_system;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

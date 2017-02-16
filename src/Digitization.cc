@@ -17,6 +17,9 @@ Digitization::Digitization()
     {
         system_mask |= 1 << i;
     }
+    profile = &PRadClusterProfile::Instance();
+    profile->LoadProfile(0, "config/prof_lg.dat");
+    profile->LoadProfile(1, "config/prof_pwo.dat");
 }
 
 Digitization::~Digitization()
@@ -82,14 +85,27 @@ void Digitization::RegisterModules(HyCalParameterisation *param)
     modules.clear();
     for(auto &module : moduleList)
     {
-        modules.push_back(module.daq_config);
+        modules.push_back(module);
     }
 }
 
 void Digitization::UpdateEnergy(const G4int &copyNo, const double &edep)
 {
-    modules[copyNo].energy += edep;
+    modules[copyNo].daq_config.energy += edep;
     totalEnergy += edep;
+}
+
+void Digitization::Update(const double &e, const double &dx, const double &dy)
+{
+    for(auto &module : modules)
+    {
+        float fx = dx;
+        float fy = dy;
+        float frac = profile->GetProfile(fx, fy, module).frac;
+        double edep = e * frac;
+        module.daq_config.energy = edep;
+        totalEnergy += edep;
+    }
 }
 
 void Digitization::GEMHits(const double &x, const double &y, const double &z)
@@ -101,7 +117,7 @@ void Digitization::Clear()
 {
     for(auto &module : modules)
     {
-        module.energy = 0;
+        module.daq_config.energy = 0;
     }
     gem_hits.clear();
 
@@ -149,10 +165,10 @@ void Digitization::EndofEvent()
     return;
 }
 
-unsigned short Digitization::Digitize(const Module_DAQ &module)
+unsigned short Digitization::Digitize(const HyCal_Module &module)
 {
-    double ped = G4RandGauss::shoot(module.ped_mean, module.ped_sigma);
-    return ped + (module.energy / 0.93) / module.gain_factor; // TODO: magic number 0.93 here, need to be tuned
+    double ped = G4RandGauss::shoot(module.daq_config.ped_mean, module.daq_config.ped_sigma);
+    return ped + (module.daq_config.energy) / module.daq_config.gain_factor; // TODO: magic number 0.93 here, need to be tuned
 }
 
 void Digitization::InitializeHyCalBuffer(uint32_t *buffer)
@@ -236,11 +252,11 @@ int Digitization::addRocData(uint32_t *buffer, int roc_id, int base_index)
     return index;
 }
 
-void Digitization::FillBuffer(uint32_t *buffer, const Module_DAQ &module)
+void Digitization::FillBuffer(uint32_t *buffer, const HyCal_Module &module)
 {
-    int crate = module.crate;
-    int slot = module.slot;
-    int channel = module.channel;
+    int crate = module.daq_config.crate;
+    int slot = module.daq_config.slot;
+    int channel = module.daq_config.channel;
 
     int pos = (6-crate)*10 + ((23-slot)/2);
 

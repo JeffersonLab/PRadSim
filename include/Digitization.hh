@@ -2,6 +2,8 @@
 #define DIGITIZATION_H
 
 #include "HyCalParameterisation.hh"
+#include "PRadClusterProfile.hh"
+
 #include <string>
 #include <vector>
 #include <fstream>
@@ -44,11 +46,12 @@ public:
     void Event(DAQ_SubSystem sub);
     void GEMHits(const double &x, const double &y, const double &z);
     void InitializeHyCalBuffer(uint32_t *buffer);
-    void FillBuffer(uint32_t *buffer, const Module_DAQ &module);
+    void FillBuffer(uint32_t *buffer, const HyCal_Module &module);
     void RegisterModules(HyCalParameterisation *param);
     void UpdateEnergy(const int &copyNo, const double &energy);
+    void Update(const double &e, const double &x, const double &y);
     void Clear();
-    unsigned short Digitize(const Module_DAQ &module);
+    unsigned short Digitize(const HyCal_Module &module);
 
 private:
     int addEventInfoBank(uint32_t *buffer);
@@ -66,8 +69,10 @@ private:
     unsigned int system_ready;
     unsigned int system_mask;
     std::ofstream gem_out;
-    std::vector<Module_DAQ> modules;
+    std::vector<HyCal_Module> modules;
     std::vector<GEM_Hit> gem_hits;
+    
+    PRadClusterProfile *profile;
 };
 
 #endif
