@@ -35,14 +35,14 @@
 #include "StandardDetectorSD.hh"
 
 #include "Globals.hh"
-
-#include "G4ThreeVector.hh"
+#include "RootTree.hh"
 
 #include "G4HCofThisEvent.hh"
 #include "G4SDManager.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4ThreeVector.hh"
 #include "G4TouchableHistory.hh"
 #include "G4Track.hh"
 #include "G4VPhysicalVolume.hh"
@@ -58,6 +58,8 @@ StandardDetectorSD::StandardDetectorSD(G4String name, G4String abbrev) : G4VSens
 
     fHCID = -1;
     fHitsCollection = 0;
+    
+    gRootTree->RegisterSD(fAbbrev.data());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -162,10 +164,13 @@ void StandardDetectorSD::EndOfEvent(G4HCofThisEvent *HCE)
 
     if (NHitC <= 0) return;
 
-    G4cout << NHitC << "hits" << G4endl;
-
-    for (int i = 0; i < NHitC; i++)
-        (*fHitsCollection)[i]->Print();
+    for (int i = 0; i < NHitC; i++) {
+        StandardHit *aHit = (*fHitsCollection)[i];
+        
+        gRootTree->UpdateValue(fAbbrev, aHit->GetPID(), aHit->GetTrackID(), aHit->GetParentTrackID(), aHit->GetInPos().x(), aHit->GetInPos().y(), aHit->GetInPos().z(), aHit->GetInMom().mag(), aHit->GetOutPos().x(), aHit->GetOutPos().y(), aHit->GetOutPos().z(), aHit->GetOutMom().mag(), aHit->GetEdep(), aHit->GetTime(), aHit->GetCopyNo());
+        
+        //aHit->Print();
+    }
 
     return;
 }

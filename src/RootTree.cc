@@ -16,8 +16,8 @@
 #include "TFile.h"
 #include "TTree.h"
 
-#include <cstring>
 #include <iostream>
+#include <map>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -27,11 +27,11 @@ RootTree::RootTree()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RootTree::RootTree(const char *filename) : SD_N(0)
+RootTree::RootTree(const char *filename)
 {
     Initialize(filename);
 
-    Reset();
+    SDMap.clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -40,23 +40,47 @@ void RootTree::Initialize(const char *filename)
 {
     file = new TFile(filename, "RECREATE");
     tree = new TTree("T", "Simulation Results");
+}
 
-    tree->Branch("N", &SD_N, "N/I");
-    tree->Branch("PID", SD_PID, "PID[N]/I");
-    tree->Branch("TID", SD_TID, "TID[N]/I");
-    tree->Branch("PTID", SD_PTID, "PTID[N]/I");
-    tree->Branch("X", SD_X, "X[N]/D");
-    tree->Branch("Y", SD_Y, "Y[N]/D");
-    tree->Branch("Z", SD_Z, "Z[N]/D");
-    tree->Branch("P", SD_P, "P[N]/D");
-    tree->Branch("Theta", SD_Theta, "Theta[N]/D");
-    tree->Branch("Phi", SD_Phi, "Phi[N]/D");
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void RootTree::RegisterSD(const char *sdname)
+{
+    if (SDMap.count(sdname) > 0) {
+        std::cerr << "RootTree: trying to register a sensitive detector \"" << sdname << "\", but the sensitive detector list already has it." << std::endl;
+        exit(1);
+    }
+
+    SDData *newsd = new SDData();
+    SDMap[sdname] = newsd;
+
+    tree->Branch(Form("%s.N", sdname), &newsd->N, Form("%s.N/I", sdname));
+    tree->Branch(Form("%s.PID", sdname), newsd->PID, Form("%s.PID[%s.N]/I", sdname, sdname));
+    tree->Branch(Form("%s.TID", sdname), newsd->TID, Form("%s.TID[%s.N]/I", sdname, sdname));
+    tree->Branch(Form("%s.PTID", sdname), newsd->PTID, Form("%s.PTID[%s.N]/I", sdname, sdname));
+    tree->Branch(Form("%s.In.X", sdname), newsd->InPosX, Form("%s.In.X[%s.N]/D", sdname, sdname));
+    tree->Branch(Form("%s.In.Y", sdname), newsd->InPosY, Form("%s.In.Y[%s.N]/D", sdname, sdname));
+    tree->Branch(Form("%s.In.Z", sdname), newsd->InPosZ, Form("%s.In.Z[%s.N]/D", sdname, sdname));
+    tree->Branch(Form("%s.In.P", sdname), newsd->InMom, Form("%s.In.P[%s.N]/D", sdname, sdname));
+    tree->Branch(Form("%s.Out.X", sdname), newsd->OutPosX, Form("%s.Out.X[%s.N]/D", sdname, sdname));
+    tree->Branch(Form("%s.Out.Y", sdname), newsd->OutPosY, Form("%s.Out.Y[%s.N]/D", sdname, sdname));
+    tree->Branch(Form("%s.Out.Z", sdname), newsd->OutPosZ, Form("%s.Out.Z[%s.N]/D", sdname, sdname));
+    tree->Branch(Form("%s.Out.P", sdname), newsd->OutMom, Form("%s.Out.P[%s.N]/D", sdname, sdname));
+    tree->Branch(Form("%s.Edep", sdname), newsd->Edep, Form("%s.Edep[%s.N]/D", sdname, sdname));
+    tree->Branch(Form("%s.Time", sdname), newsd->Time, Form("%s.Time[%s.N]/D", sdname, sdname));
+    tree->Branch(Form("%s.DID", sdname), newsd->CopyNo, Form("%s.DID[%s.N]/I", sdname, sdname));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 RootTree::~RootTree()
 {
+    for (std::map<const char *, SDData *>::iterator it = SDMap.begin(); it != SDMap.end(); ++it) {
+        SDData *sd = it->second;
+        
+        delete sd;
+    }
+
     file->Write("", TObject::kOverwrite);
     file->Close();
     file->Delete();
@@ -73,44 +97,57 @@ void RootTree::FillTree()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void RootTree::UpdateValue(int pid, int tid, int ptid, double x, double y, double z, double p, double theta, double phi)
+void RootTree::UpdateValue(const char *sdname, int pid, int tid, int ptid, double inx, double iny, double inz, double inp, double outx, double outy, double outz, double outp, double edep, double time, int copyno)
 {
-    if (SD_N < MaxSDHit) {
-        SD_PID[SD_N] = pid;
-        SD_TID[SD_N] = tid;
-        SD_PTID[SD_N] = ptid;
-        SD_X[SD_N] = x;
-        SD_Y[SD_N] = y;
-        SD_Z[SD_N] = z;
-        SD_P[SD_N] = p;
-        SD_Theta[SD_N] = theta;
-        SD_Phi[SD_N] = phi;
-        //SD_Edep[SD_N] = 1e+38;
-        //SD_NonIonEdep[SD_N] = 1e+38;
+    SDData *sd = SDMap[sdname];
 
-        SD_N++;
-    }
+    if (sd->N < MaxSDHits) {
+        sd->PID[sd->N] = pid;
+        sd->TID[sd->N] = tid;
+        sd->PTID[sd->N] = ptid;
+        sd->InPosX[sd->N] = inx;
+        sd->InPosY[sd->N] = iny;
+        sd->InPosZ[sd->N] = inz;
+        sd->InMom[sd->N] = inp;
+        sd->OutPosX[sd->N] = outx;
+        sd->OutPosY[sd->N] = outy;
+        sd->OutPosZ[sd->N] = outz;
+        sd->OutMom[sd->N] = outp;
+        sd->Edep[sd->N] = edep;
+        sd->Time[sd->N] = time;
+        sd->CopyNo[sd->N] = copyno;
+
+        sd->N++;
+    } else
+        std::cout << "RootTree: too many hits in sensitive detector \"" << sdname << "\"." << std::endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void RootTree::Reset()
 {
-    for (int i = 0; i < SD_N; i++) {
-        SD_PID[i] = -999;
-        SD_TID[i] = -999;
-        SD_PTID[i] = -999;
-        SD_X[i] = 1e+38;
-        SD_Y[i] = 1e+38;
-        SD_Z[i] = 1e+38;
-        SD_P[i] = 1e+38;
-        SD_Theta[i] = 1e+38;
-        SD_Phi[i] = 1e+38;
-        //SD_Edep[i] = 1e+38;
-        //SD_NonIonEdep[i] = 1e+38;
-    }
+    for (std::map<const char *, SDData *>::iterator it = SDMap.begin(); it != SDMap.end(); ++it) {
+        SDData *sd = it->second;
 
-    SD_N = 0;
+        for (int i = 0; i < sd->N; i++) {
+            sd->PID[sd->N] = -999;
+            sd->TID[sd->N] = -999;
+            sd->PTID[sd->N] = -999;
+            sd->InPosX[sd->N] = 1e+38;
+            sd->InPosY[sd->N] = 1e+38;
+            sd->InPosZ[sd->N] = 1e+38;
+            sd->InMom[sd->N] = 1e+38;
+            sd->OutPosX[sd->N] = 1e+38;
+            sd->OutPosY[sd->N] = 1e+38;
+            sd->OutPosZ[sd->N] = 1e+38;
+            sd->OutMom[sd->N] = 1e+38;
+            sd->Edep[sd->N] = 1e+38;
+            sd->Time[sd->N] = 1e+38;
+            sd->CopyNo[sd->N] = -999;
+        }
+
+        sd->N = 0;
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

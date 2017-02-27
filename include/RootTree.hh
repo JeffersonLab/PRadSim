@@ -11,11 +11,31 @@
 #ifndef RootTree_h
 #define RootTree_h 1
 
+#include <map>
+
 //maximum number of hits in a SD
-#define MaxSDHit 1024
+#define MaxSDHits 10240
 
 class TFile;
 class TTree;
+
+struct SDData {
+    int N;
+    int PID[MaxSDHits]; // Particle ID
+    int TID[MaxSDHits]; // Track ID
+    int PTID[MaxSDHits]; // Parent Track ID
+    double InPosX[MaxSDHits];
+    double InPosY[MaxSDHits];
+    double InPosZ[MaxSDHits];
+    double OutPosX[MaxSDHits];
+    double OutPosY[MaxSDHits];
+    double OutPosZ[MaxSDHits];
+    double InMom[MaxSDHits];
+    double OutMom[MaxSDHits];
+    double Edep[MaxSDHits];
+    double Time[MaxSDHits];
+    int CopyNo[MaxSDHits];
+};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -26,8 +46,8 @@ public:
     virtual ~RootTree();
 
     void Initialize(const char *filename);
-    void UpdateValue(int pid, int tid, int ptid, double x, double y, double z, double p, double theta, double phi);
-
+    void RegisterSD(const char* sdname);
+    void UpdateValue(const char* sdname, int pid, int tid, int ptid, double inx, double iny, double inz, double inp, double outx, double outy, double outz, double outp, double edep, double time, int copyno);
     void FillTree(); // fill tree
 
 private:
@@ -35,21 +55,11 @@ private:
 
     void Reset();
 
-    //for general sensitive detectors
-    int SD_N; //must be initialized before using
-    int SD_PID[MaxSDHit]; // Particle ID
-    int SD_TID[MaxSDHit]; // Track ID
-    int SD_PTID[MaxSDHit]; // Parent Track ID
-    double SD_X[MaxSDHit];
-    double SD_Y[MaxSDHit];
-    double SD_Z[MaxSDHit];
-    double SD_P[MaxSDHit];
-    double SD_Theta[MaxSDHit];
-    double SD_Phi[MaxSDHit];
-
 private:
     TFile *file;
     TTree *tree; // hits info, event
+    
+    std::map <const char*, SDData *> SDMap;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

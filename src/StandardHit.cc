@@ -106,7 +106,7 @@ void StandardHit::Print()
     G4cout.setf(std::ios::fixed);
     G4cout << G4BestUnit(fInPos, "Length") << "\t" << G4BestUnit(fOutPos, "Length") << "\t";
     G4cout.unsetf(std::ios::fixed);
-    G4cout << std::setw(5) << G4BestUnit(fInMom.mag(), "Energy") << std::setw(9) << G4BestUnit(fOutMom.mag(), "Energy") << std::setw(9) << G4BestUnit(fEdep, "Energy") << " " << std::setw(18) << fPhysV->GetName() << " " << fCopyNo << G4endl;
+    G4cout << std::setw(5) << G4BestUnit(fInMom.mag(), "Energy") << std::setw(9) << G4BestUnit(fOutMom.mag(), "Energy") << std::setw(9) << G4BestUnit(fEdep, "Energy") <<  std::setw(5) << G4BestUnit(fTime, "Time") << " " << std::setw(18) << fPhysV->GetName() << " " << fCopyNo << G4endl;
     G4cout.precision(prec);
 }
 

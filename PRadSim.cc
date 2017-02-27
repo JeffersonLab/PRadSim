@@ -188,6 +188,8 @@ int main(int argc, char **argv)
     delete visManager;
 #endif
     delete runManager;
+    
+    delete gRootTree;
 
     return 0;
 }

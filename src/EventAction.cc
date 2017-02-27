@@ -34,11 +34,13 @@
 
 #include "EventAction.hh"
 
+#include "Globals.hh"
 #include "RunAction.hh"
 #include "EventActionMessenger.hh"
 
 #include "G4Event.hh"
 #include "Randomize.hh"
+#include "RootTree.hh"
 
 #include <iomanip>
 
@@ -72,6 +74,7 @@ void EventAction::BeginOfEventAction(const G4Event *evt)
 
 void EventAction::EndOfEventAction(const G4Event *)
 {
+    gRootTree->FillTree();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
