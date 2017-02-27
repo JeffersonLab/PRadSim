@@ -23,10 +23,12 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+// RunAction.cc
+// Developer : Chao Peng
+// History:
+//   Aug 2012, C. Peng, Original version.
 //
-// $Id: RunAction.cc,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
-//
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -39,24 +41,23 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 RunAction::RunAction()
-{}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-RunAction::~RunAction()
-{}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void RunAction::BeginOfRunAction(const G4Run* aRun)
-{ 
-  G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
-
-  //inform the runManager to save random number seed
-  G4RunManager::GetRunManager()->SetRandomNumberStore(true);
-    
+{
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+RunAction::~RunAction()
+{
+}
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void RunAction::BeginOfRunAction(const G4Run *aRun)
+{
+    G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
+
+    // inform the runManager to save random number seed
+    G4RunManager::GetRunManager()->SetRandomNumberStore(true);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

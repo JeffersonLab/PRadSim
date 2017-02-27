@@ -1,32 +1,8 @@
 //
-// ********************************************************************
-// * License and Disclaimer                                           *
-// *                                                                  *
-// * The  Geant4 software  is  copyright of the Copyright Holders  of *
-// * the Geant4 Collaboration.  It is provided  under  the terms  and *
-// * conditions of the Geant4 Software License,  included in the file *
-// * LICENSE and available at  http://cern.ch/geant4/license .  These *
-// * include a list of copyright holders.                             *
-// *                                                                  *
-// * Neither the authors of this software system, nor their employing *
-// * institutes,nor the agencies providing financial support for this *
-// * work  make  any representation or  warranty, express or implied, *
-// * regarding  this  software system or assume any liability for its *
-// * use.  Please see the license in the file  LICENSE  and URL above *
-// * for the full disclaimer and the limitation of liability.         *
-// *                                                                  *
-// * This  code  implementation is the result of  the  scientific and *
-// * technical work of the GEANT4 collaboration.                      *
-// * By using,  copying,  modifying or  distributing the software (or *
-// * any work based  on the software)  you  agree  to acknowledge its *
-// * use  in  resulting  scientific  publications,  and indicate your *
-// * acceptance of all terms of the Geant4 Software license.          *
-// ********************************************************************
-//
-//
-// $Id: RootTree.cc,v 1.3, 2013/02/26 HRS Exp $
-// GEANT4 tag $Name: geant4-09-04 $
-//
+// RootTree.cc
+// Developer : Chao Gu
+// History:
+//   Jan 2017, C. Gu, Add for ROOT support.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -45,19 +21,25 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RootTree::RootTree() : SD_N(0)
+RootTree::RootTree()
 {
-    Initialize();
-    
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+RootTree::RootTree(const char *filename) : SD_N(0)
+{
+    Initialize(filename);
+
     Reset();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void RootTree::Initialize()
+void RootTree::Initialize(const char *filename)
 {
-    file = new TFile("test.root", "RECREATE");
-    tree = new TTree("T", "PRad Simulation");
+    file = new TFile(filename, "RECREATE");
+    tree = new TTree("T", "Simulation Results");
 
     tree->Branch("N", &SD_N, "N/I");
     tree->Branch("PID", SD_PID, "PID[N]/I");
@@ -69,8 +51,6 @@ void RootTree::Initialize()
     tree->Branch("P", SD_P, "P[N]/D");
     tree->Branch("Theta", SD_Theta, "Theta[N]/D");
     tree->Branch("Phi", SD_Phi, "Phi[N]/D");
-    //tree->Branch("Edep", SD_Edep, "Edep[N]/D");
-    //tree->Branch("NonIoEdep", SD_NonIonEdep, "NonIonEdep[N]/D");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -87,7 +67,7 @@ RootTree::~RootTree()
 void RootTree::FillTree()
 {
     tree->Fill();
-    
+
     Reset();
 }
 

@@ -23,11 +23,11 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-// $Id: DetectorConstruction.cc, 2016-03-29 $
-// GEANT4 tag $Name: geant4.10.02.p01 $
-// Developer: Chao Peng
-//
+// DetectorConstruction.cc
+// Developer : Chao Peng, Chao Gu
+// History:
+//   Aug 2012, C. Peng, Original version.
+//   Jan 2017, C. Gu, Rewrite with ROOT support.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -35,60 +35,51 @@
 
 #include "DetectorConstruction.hh"
 
-#include "Digitization.hh"
-#include "RootTree.hh"
-#include "CalorimeterSD.hh"
-#include "GasElectronMultiplierSD.hh"
-#include "VirtualDetectorSD.hh"
 #include "DetectorMessenger.hh"
+#include "HyCalParameterisation.hh"
+#include "StandardDetectorSD.hh"
 
 #include "G4Material.hh"
 #include "G4NistManager.hh"
 
+#include "G4Box.hh"
+#include "G4LogicalVolume.hh"
+#include "G4LogicalVolumeStore.hh"
+#include "G4Polycone.hh"
+#include "G4PVParameterised.hh"
+#include "G4PVPlacement.hh"
+#include "G4PVReplica.hh"
+#include "G4Sphere.hh"
+#include "G4SubtractionSolid.hh"
+#include "G4Tubs.hh"
+#include "G4VPhysicalVolume.hh"
+#include "G4VSolid.hh"
+
+#include "G4RunManager.hh"
 #include "G4SDManager.hh"
 #include "G4VSensitiveDetector.hh"
 
-#include "G4VSolid.hh"
-#include "G4Box.hh"
-#include "G4Tubs.hh"
-#include "G4Sphere.hh"
-#include "G4Polycone.hh"
-#include "G4SubtractionSolid.hh"
-#include "G4LogicalVolume.hh"
-#include "G4LogicalVolumeStore.hh"
-#include "G4VPhysicalVolume.hh"
-#include "G4PVPlacement.hh"
-#include "G4PVReplica.hh"
-#include "G4PVParameterised.hh"
+#include "G4Colour.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4VisAttributes.hh"
 
 #include "G4String.hh"
-#include "G4VisAttributes.hh"
-#include "G4Colour.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4PhysicalConstants.hh"
-#include "G4RunManager.hh"
 
 #include <cmath>
 #include <map>
-#include <vector>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-DetectorConstruction::DetectorConstruction() : daq_system(NULL), otree(NULL)
+DetectorConstruction::DetectorConstruction()
 {
     detectorMessenger = new DetectorMessenger(this);
-
-    daq_system = new Digitization();
-    otree = new RootTree();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::~DetectorConstruction()
 {
-    delete daq_system;
-    delete otree;
-
     delete detectorMessenger;
 }
 
@@ -98,7 +89,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
 {
     // Material
     std::map<G4String, G4VisAttributes *> mVisAtt;
-    
+
     G4int z;
     G4double a;
     G4double density;
@@ -134,7 +125,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     // Hydrogen Gas
     G4Material *H2Gas =  new G4Material("H2 Gas", density = 8.988e-5 * g / cm3, ncomponents = 1, kStateGas, 25.0 * kelvin, 83.02 * pascal);
     H2Gas->AddElement(H, natoms = 2);
-    
+
     // Copper
     G4Material *Copper = new G4Material("Copper", density = 8.96 * g / cm3, ncomponents = 1);
     Copper->AddElement(Cu, natoms = 1);
@@ -153,9 +144,9 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     // GEM Frame G10
     G4Material *NemaG10 = new G4Material("NemaG10", density = 1.700 * g / cm3, ncomponents = 4);
     NemaG10->AddElement(Si, natoms = 1);
-    NemaG10->AddElement(O , natoms = 2);
-    NemaG10->AddElement(C , natoms = 3);
-    NemaG10->AddElement(H , natoms = 3);
+    NemaG10->AddElement(O, natoms = 2);
+    NemaG10->AddElement(C, natoms = 3);
+    NemaG10->AddElement(H, natoms = 3);
 
     // CO2 Gas
     G4Material *CO2 = new G4Material("CO2", density = 1.842e-3 * g / cm3, ncomponents = 2);
@@ -169,10 +160,10 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
 
     // Torlon4203L
     G4Material *Torlon = new G4Material("Torlon", density = 1.412 * g / cm3, ncomponents = 5);
-    Torlon->AddElement(C , natoms = 9);
-    Torlon->AddElement(H , natoms = 4);
-    Torlon->AddElement(N , natoms = 2);
-    Torlon->AddElement(O , natoms = 3);
+    Torlon->AddElement(C, natoms = 9);
+    Torlon->AddElement(H, natoms = 4);
+    Torlon->AddElement(N, natoms = 2);
+    Torlon->AddElement(O, natoms = 3);
     Torlon->AddElement(Ar, natoms = 1);
 
     // Tungsten
@@ -182,13 +173,13 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     // PbWO4 Crystal
     G4Material *PbWO4 = new G4Material("PbWO4", density = 8.300 * g / cm3, ncomponents = 3);
     PbWO4->AddElement(Pb, natoms = 1);
-    PbWO4->AddElement(W , natoms = 1);
-    PbWO4->AddElement(O , natoms = 4);
+    PbWO4->AddElement(W, natoms = 1);
+    PbWO4->AddElement(O, natoms = 4);
 
     // Lead Glass
     G4Material *SiO2 = new G4Material("Quartz", density = 2.200 * g / cm3, ncomponents = 2);
     SiO2->AddElement(Si, natoms = 1);
-    SiO2->AddElement(O , natoms = 2);
+    SiO2->AddElement(O, natoms = 2);
     G4Material *PbGlass = new G4Material("Lead Glass", density = 3.85 * g / cm3, ncomponents = 2);
     PbGlass->AddElement(Pb, fractionmass = 0.5316);
     PbGlass->AddMaterial(SiO2, fractionmass = 0.4684);
@@ -208,7 +199,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     mVisAtt[PbWO4->GetName()] = new G4VisAttributes(G4Colour::Blue());
     mVisAtt[PbGlass->GetName()] = new G4VisAttributes(G4Colour::Blue());
     mVisAtt[Galaxy->GetName()] = new G4VisAttributes(G4VisAttributes::Invisible);
-   
+
     G4Material *VacuumMaterial = Vacuum;
     G4Material *TarCelMaterial = Copper;
     G4Material *WindowsMaterial = Kapton;
@@ -221,7 +212,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     G4Material *CenterHyCalMaterial = PbWO4;
     //G4Material *OuterHyCalMaterial = PbGlass;
     G4Material *defaultMaterial = Galaxy;
-    
+
     TargetMaterial = H2Gas;
 
     // World
@@ -232,7 +223,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     physiWorld = new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicWorld, "World", 0, false, 0);
 
     // Target
-    G4double TargetCenter = -300.0 * cm;
+    G4double TargetCenter = -300.0 * cm + 88.9 * mm;
     G4VSolid *solidTargetCon = new G4Box("Solid Target Container", 3.5 * cm, 3.5 * cm, 2.1 * cm);
     G4LogicalVolume *logicTargetCon = new G4LogicalVolume(solidTargetCon, defaultMaterial, "Logical Target Container");
     new G4PVPlacement(0, G4ThreeVector(0, 0, TargetCenter), logicTargetCon, "Target Container", logicWorld, false, 0);
@@ -251,7 +242,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     G4SubtractionSolid *solidCell = new G4SubtractionSolid("Solid Target Cell", CellBox, CellTube);
     G4LogicalVolume *logicCell = new G4LogicalVolume(solidCell, TarCelMaterial, "Logical Target Cell");
     new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicCell, "Target Cell", logicTargetCon, false, 0);
-    
+
     // Windows
     G4double CellApertureR = 2.0 * mm;
     G4double CellWinThickness = 7.5 * um;
@@ -263,32 +254,35 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     new G4PVPlacement(0, G4ThreeVector(0, 0, +TargetHalfL + CellWinThickness / 2.0), logicCellWin, "Downstream Target Window", logicTargetCon, false, 0);
 
     // Target chamber
-    G4double DownChamberCenter = -254.705 * cm;
-    G4double DownChamberHalfL = 71.79 / 2.0 * cm;
+    // For now, only built the downstream chamber with window
+    // The downstream chamber window should locate at -3000.0 + 88.9 + 74.0  = -2837.1 mm
+    // The length of the downstream chamber is 381.7 mm
+    // The total length of the downstream chamber and the tube in total is 710.0 mm
+    // Here the downstream chamber and the tube are built together to be the now down stream chamber.
+    // So the center of this geometry should be at -2837.1 + 710.0 / 2 = -2482.1 mm
+    G4double DownChamberCenter = -248.21 * cm;
+    G4double DownChamberHalfL = 71.0 / 2.0 * cm;
     G4double DownChamberUR = 8.00 * cm;
-    G4double DownChamberDR = 17.30 * cm;
 
-    // Downstream chamber // For now, only built the downstream chamber with window
-    G4double rInner1[] = {7.56 * cm, 7.56 * cm, 7.56 * cm, 7.56 * cm, 17.30 * cm, 17.30 * cm};
-    G4double rOuter1[] = {8.00 * cm, 8.00 * cm, 17.78 * cm, 17.78 * cm, 17.78 * cm, 17.78 * cm};
-    G4double zPlane1[] = {0, 33.62 * cm, 33.62 * cm, 36.16 * cm, 36.16 * cm, 71.79 * cm};
-    G4VSolid *solidDownChamber = new G4Polycone("Solid Downstream Chamber", 0, twopi, 6, zPlane1, rInner1, rOuter1);
+    // Downstream chamber
+    G4double rInnerDC[] = {7.56 * cm, 7.56 * cm, 7.56 * cm, 7.56 * cm, 17.30 * cm, 17.30 * cm};
+    G4double rOuterDC[] = {8.00 * cm, 8.00 * cm, 17.78 * cm, 17.78 * cm, 17.78 * cm, 17.78 * cm};
+    G4double zPlaneDC[] = {0, 32.83 * cm, 32.83 * cm, 35.37 * cm, 35.37 * cm, 71.00 * cm};
+    G4VSolid *solidDownChamber = new G4Polycone("Solid Downstream Chamber", 0, twopi, 6, zPlaneDC, rInnerDC, rOuterDC);
     G4LogicalVolume *logicDownChamber = new G4LogicalVolume(solidDownChamber, ChamberMaterial, "Logical Downstream Chamber");
     new G4PVPlacement(0, G4ThreeVector(0, 0, DownChamberCenter - DownChamberHalfL), logicDownChamber, "Downstream Chamber", logicWorld, false, 0);
-    
+
     // Windows
     G4double DownChamberApertureR = 22.8 * mm;
     G4double DownChamberWinThickness = 7.5 * um;
-    G4double DownChamberWinOff = 25.9 * mm;
-    G4Tubs *solidDownChamberWin1 = new G4Tubs("Solid Downstream Chamber Window 1", DownChamberApertureR, DownChamberUR, DownChamberWinThickness / 2.0, 0, twopi);
-    G4Tubs *solidDownChamberWin2 = new G4Tubs("Solid Downstream Chamber Window 2", DownChamberApertureR, DownChamberDR, DownChamberWinThickness / 2.0, 0, twopi);
-    G4LogicalVolume *logicDownChamberWin1 = new G4LogicalVolume(solidDownChamberWin1, WindowsMaterial, "Logical Downstream Chamber Window 1");
-    G4LogicalVolume *logicDownChamberWin2 = new G4LogicalVolume(solidDownChamberWin2, WindowsMaterial, "Logical Downstream Chamber Window 2");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, DownChamberCenter - DownChamberHalfL - DownChamberWinThickness / 2.0), logicDownChamberWin1, "Downstream Chamber Window", logicWorld, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, DownChamberCenter + DownChamberHalfL - DownChamberWinOff), logicDownChamberWin2, "Downstream Chamber Window", logicWorld, false, 0);
+    G4Tubs *solidDownChamberWin = new G4Tubs("Solid Downstream Chamber Window", DownChamberApertureR, DownChamberUR, DownChamberWinThickness / 2.0, 0, twopi);
+    G4LogicalVolume *logicDownChamberWin = new G4LogicalVolume(solidDownChamberWin, WindowsMaterial, "Logical Downstream Chamber Window");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, DownChamberCenter - DownChamberHalfL - DownChamberWinThickness / 2.0), logicDownChamberWin, "Downstream Chamber Window", logicWorld, false, 0);
 
     // Vacuum box
-    G4double VacBoxCenter = -6.31 * cm;
+    // The length of the vacuum box is 4250.0 mm
+    // So the center of this geometry should be at -3000.0 + 88.9 + 74.0 + 710.0 + 2125.0 = -2.1 mm
+    G4double VacBoxCenter = -0.21 * cm;
     G4double VacBoxHalfL = 212.5 * cm;
     G4double VacBoxMaxR = 78.11 * cm;
     G4double rInner2[] = {17.30 * cm, 17.30 * cm, 50.17 * cm, 50.17 * cm, 78.11 * cm, 78.11 * cm};
@@ -315,7 +309,8 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter + VacBoxHalfL - ArcDistance + FlangeHalfL), logicFlange, "Vacuum Flange", logicWorld, false, 0);
 
     // GEM
-    G4double GEMCenter = 220.25 * cm; // Center of two GEM // (522.2 + 518.3) / 2 - 300.0 from Weizhi
+    // Center of two GEM should be at -3000.0 + 88.9 + (5222.0 + 5183.0) / 2 = 2291.4 mm // (5222.0 + 5183.0) / 2 from Weizhi
+    G4double GEMCenter = 229.14 * cm;
     G4double GEMGap = 4.0 * cm; // Gap between two GEM
     G4RotationMatrix rmGEM2;
     rmGEM2.rotateZ(180.0 * deg);
@@ -359,11 +354,12 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     new G4PVPlacement(0, G4ThreeVector(0, 0, 6.0 * mm - GEMCoverThickness / 2.0), logicGEMCover, "GEM CoverFoil", logicGEMGas, false, 0);
 
     // HyCal
+    // The crystal surface should be at -3000.0 + 88.9 + 5640.0 = 2728.9 mm // 5640.0 from Weizhi
     G4double PbGlassL = 45.0 * cm;
     //G4double CrystalL = 18.0 * cm;
     G4double CrystalDiffL = 10.12 * cm;
-    G4double CrystalSurfCenter = 264.0 * cm; // Surface of the PWO // 564.0 - 300.0 from Weizhi
-    G4double HyCalCenter = CrystalSurfCenter - CrystalDiffL + PbGlassL / 2.0; 
+    G4double CrystalSurf = 272.89 * cm; // Surface of the PWO
+    G4double HyCalCenter = CrystalSurf - CrystalDiffL + PbGlassL / 2.0;
     G4double HyCalBoxHalfL = 60.0 * cm;
 
     // HyCal box
@@ -388,9 +384,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     // HyCal modules
     G4VSolid *solidAbsorber = new G4Box("Solid Crystal Block", 1.025 * cm, 1.025 * cm, 90.0 * mm);
     G4LogicalVolume *logicAbsorber = new G4LogicalVolume(solidAbsorber, CenterHyCalMaterial, "Logical Crystal Block");
-    HyCalParameterisation *param = new HyCalParameterisation("config/module_list.txt",  // load modules
-            "config/pedestal.dat",     // set module pedestals
-            "config/calibration.txt"); // set module calibration factors
+    HyCalParameterisation *param = new HyCalParameterisation("config/hycal.conf");
     new G4PVParameterised("HyCal Crystal", logicAbsorber, logicHyCalCon, kUndefined, param->GetNumber(), param, false);
 
     // Collimators around the central hole
@@ -435,10 +429,9 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
 
     // Sensitive detectors
     G4SDManager *SDman = G4SDManager::GetSDMpointer();
-    daq_system->RegisterModules(param);
-    CalorimeterSD *HyCalSD = new CalorimeterSD("pradsim/CalorimeterSD", daq_system);
-    GasElectronMultiplierSD *GEMSD = new GasElectronMultiplierSD("pradsim/GasElectronMultiplierSD", daq_system);
-    VirtualDetectorSD *VirtualSD = new VirtualDetectorSD("pradsim/VirtualDetectorSD", otree, daq_system);
+    StandardDetectorSD *HyCalSD = new StandardDetectorSD("pradsim/HybridCalorimeter", "HC");
+    StandardDetectorSD *GEMSD = new StandardDetectorSD("pradsim/GasElectronMultiplier", "GEM");
+    StandardDetectorSD *VirtualSD = new StandardDetectorSD("pradsim/VirtualDetector", "VD");
     SDman->AddNewDetector(HyCalSD);
     SDman->AddNewDetector(GEMSD);
     SDman->AddNewDetector(VirtualSD);

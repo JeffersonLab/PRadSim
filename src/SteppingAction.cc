@@ -23,11 +23,11 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+// SteppingAction.cc
+// Developer : Geant4 Developers
+// History:
+//   Aug 2012, Copy from ExampleN02.
 //
-// $Id: SteppingAction.cc,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
-//
-// 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -38,13 +38,10 @@
 #include "EventAction.hh"
 
 #include "G4Step.hh"
-#include "G4ThreeVector.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SteppingAction::SteppingAction(DetectorConstruction* det,
-                                         EventAction* evt)
-:detector(det), eventaction(evt)
+SteppingAction::SteppingAction(DetectorConstruction *det, EventAction *evt) : detector(det), eventaction(evt)
 {
 }
 
@@ -56,11 +53,8 @@ SteppingAction::~SteppingAction()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-//
-//For further improvement
-//
-
-void SteppingAction::UserSteppingAction(const G4Step* /*aStep*/)
+void SteppingAction::UserSteppingAction(const G4Step * /*aStep*/)
 {
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

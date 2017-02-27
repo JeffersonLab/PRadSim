@@ -23,10 +23,11 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-// $Id: DetectorConstruction.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
-//
+// DetectorConstruction.hh
+// Developer : Chao Peng, Chao Gu
+// History:
+//   Aug 2012, C. Peng, Original version.
+//   Jan 2017, C. Gu, Rewrite with ROOT support.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -35,17 +36,11 @@
 #ifndef DetectorConstruction_h
 #define DetectorConstruction_h 1
 
-#include "globals.hh"
 #include "G4VUserDetectorConstruction.hh"
-#include <map>
 
-class Digitization;
-class RootTree;
 class DetectorMessenger;
-class G4String;
 class G4Material;
 class G4VPhysicalVolume;
-class G4VisAttributes;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -61,19 +56,21 @@ public:
     void SetTargetMaterial(G4String);
     void UpdateGeometry();
 
-    const G4VPhysicalVolume *GetPhysiWorld() {return physiWorld;}
+    inline const G4VPhysicalVolume *GetPhysiWorld();
 
 private:
     G4VPhysicalVolume *physiWorld;
 
     G4Material *TargetMaterial;
-    
-    Digitization *daq_system;
-    RootTree *otree;
 
 private:
     DetectorMessenger *detectorMessenger; //pointer to the Messenger
 };
+
+inline const G4VPhysicalVolume *DetectorConstruction::GetPhysiWorld()
+{
+    return physiWorld;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

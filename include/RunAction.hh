@@ -23,11 +23,11 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+// RunAction.hh
+// Developer : Chao Peng
+// History:
+//   Aug 2012, C. Peng, Original version.
 //
-// $Id: RunAction.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
-//
-// 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -36,7 +36,6 @@
 #define RunAction_h 1
 
 #include "G4UserRunAction.hh"
-#include "globals.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -45,18 +44,13 @@ class G4Run;
 class RunAction : public G4UserRunAction
 {
 public:
-  RunAction();
-  virtual ~RunAction();
+    RunAction();
+    virtual ~RunAction();
 
-  void BeginOfRunAction(const G4Run*);
-//  void   EndOfRunAction(const G4Run*);
-    
-
-
-    
+    void BeginOfRunAction(const G4Run *);
+    //void EndOfRunAction(const G4Run *);
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
-

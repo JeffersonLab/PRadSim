@@ -23,10 +23,10 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-// $Id: DetectorMessenger.cc, 2012-08-01 $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
-// Developer: Chao Peng
+// DetectorMessenger.cc
+// Developer : Chao Peng
+// History:
+//   Aug 2012, C. Peng, Original version.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

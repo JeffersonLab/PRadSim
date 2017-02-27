@@ -23,10 +23,11 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-// $Id: PrimaryGeneratorAction.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
-//
+// PrimaryGeneratorAction.hh
+// Developer : Chao Peng, Chao Gu
+// History:
+//   Aug 2012, C. Peng, Original version.
+//   Jan 2017, C. Gu, Rewrite with ROOT support.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -35,8 +36,9 @@
 #ifndef PrimaryGeneratorAction_h
 #define PrimaryGeneratorAction_h 1
 
-#include "globals.hh"
+#include "G4String.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
+
 #include <fstream>
 
 class DetectorConstruction;
@@ -53,21 +55,27 @@ public:
     virtual ~PrimaryGeneratorAction();
 
     void GeneratePrimaries(G4Event *);
-    void SetRndmFlag(G4String val) {rndmFlag = val;}
+
+    inline void SetRndmFlag(G4String val);
     void SetGunType(G4String val);
-    G4int n_particle;
 
 private:
     DetectorConstruction *Detector; //pointer to the geometry
-    
+
     G4ParticleGun *particleGun; //pointer a to G4 class
 
     G4String rndmFlag; //flag for a rndm impact point
     G4String GunType; // select event generator
+
     std::ifstream particles;
-    
+
     PrimaryGeneratorMessenger *gunMessenger; //messenger of this class
 };
+
+inline void PrimaryGeneratorAction::SetRndmFlag(G4String val)
+{
+    rndmFlag = val;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

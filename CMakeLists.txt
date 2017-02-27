@@ -38,8 +38,8 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 #---------------------------------------------------------------------------
 # Add thirdparty library and includes
 if(NOT EXISTS $ENV{EVIODIR})
-  include_directories(${PROJECT_SOURCE_DIR}/thirdparty/include)
-  link_directories(${PROJECT_SOURCE_DIR}/thirdparty/lib64)
+  include_directories(${PROJECT_SOURCE_DIR}/evio/include)
+  link_directories(${PROJECT_SOURCE_DIR}/evio/lib64)
 else()
   include_directories($ENV{EVIODIR}/include)
   link_directories($ENV{EVIODIR}/lib)
@@ -49,8 +49,8 @@ endif()
 # Locate sources and headers for this project
 # NB: headers are included so they will show up in IDEs
 #
-file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc)
-file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
+file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc ${PROJECT_SOURCE_DIR}/src/*.cpp)
+file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh ${PROJECT_SOURCE_DIR}/include/*.h)
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries

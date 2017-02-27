@@ -23,11 +23,12 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+// SteppingVerbose.hh
+// Developer : Geant4 Developers
+// History:
+//   Aug 2012, Copy from ExampleN02.
 //
-// $Id: SteppingVerbose.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
-//
-//
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -42,13 +43,13 @@ class SteppingVerbose;
 
 class SteppingVerbose : public G4SteppingVerbose
 {
- public:   
+public:
 
-   SteppingVerbose();
-  ~SteppingVerbose();
+    SteppingVerbose();
+    ~SteppingVerbose();
 
-   void StepInfo();
-   void TrackingStarted();
+    void StepInfo();
+    void TrackingStarted();
 
 };
 

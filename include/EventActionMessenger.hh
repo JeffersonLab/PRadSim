@@ -23,10 +23,10 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-// $Id: EventActionMessenger.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
-//
+// EventActionMessenger.hh
+// Developer : Chao Peng
+// History:
+//   Aug 2012, C. Peng, Original version.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -35,7 +35,6 @@
 #ifndef EventActionMessenger_h
 #define EventActionMessenger_h 1
 
-#include "globals.hh"
 #include "G4UImessenger.hh"
 
 class EventAction;

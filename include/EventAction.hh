@@ -23,10 +23,10 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-//
-// $Id: EventAction.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
-//
+// EventAction.hh
+// Developer : Chao Peng
+// History:
+//   Aug 2012, C. Peng, Original version.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -52,7 +52,7 @@ public:
     void BeginOfEventAction(const G4Event *);
     void EndOfEventAction(const G4Event *);
 
-    void SetPrintModulo(G4int val) {printModulo = val;}
+    inline void SetPrintModulo(G4int val);
 
 private:
     RunAction *runAct;
@@ -61,6 +61,11 @@ private:
 
     EventActionMessenger *eventMessenger;
 };
+
+inline void EventAction::SetPrintModulo(G4int val)
+{
+    printModulo = val;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

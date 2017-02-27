@@ -23,11 +23,11 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+// SteppingAction.hh
+// Developer : Geant4 Developers
+// History:
+//   Aug 2012, Copy from ExampleN02.
 //
-// $Id: SteppingAction.hh,v 1.1 2010-10-18 15:56:17 maire Exp $
-// GEANT4 tag $Name: geant4-09-04-patch-02 $
-//
-// 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -45,14 +45,14 @@ class EventAction;
 class SteppingAction : public G4UserSteppingAction
 {
 public:
-  SteppingAction(DetectorConstruction*, EventAction*);
-  virtual ~SteppingAction();
+    SteppingAction(DetectorConstruction *, EventAction *);
+    virtual ~SteppingAction();
 
-  void UserSteppingAction(const G4Step*);
+    void UserSteppingAction(const G4Step *);
 
 private:
-  DetectorConstruction* detector;
-  EventAction*          eventaction;
+    DetectorConstruction *detector;
+    EventAction          *eventaction;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
