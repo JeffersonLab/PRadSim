@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// EventActionMessenger.cc
+// EventMessenger.hh
 // Developer : Chao Peng
 // History:
 //   Aug 2012, C. Peng, Original version.
@@ -32,40 +32,31 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "EventActionMessenger.hh"
+#ifndef EventMessenger_h
+#define EventMessenger_h 1
 
-#include "EventAction.hh"
+#include "G4UImessenger.hh"
 
-#include "G4UIdirectory.hh"
-#include "G4UIcmdWithAnInteger.hh"
+class EventAction;
+class G4UIdirectory;
+class G4UIcmdWithAnInteger;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EventActionMessenger::EventActionMessenger(EventAction *EvAct) : eventAction(EvAct)
+class EventMessenger: public G4UImessenger
 {
-    eventDir = new G4UIdirectory("/pradsim/event/");
-    eventDir->SetGuidance("event control");
+public:
+    EventMessenger(EventAction *);
+    virtual ~EventMessenger();
 
-    PrintCmd = new G4UIcmdWithAnInteger("/pradsim/event/printModulo", this);
-    PrintCmd->SetGuidance("Print events modulo n");
-    PrintCmd->SetParameterName("EventNb", false);
-    PrintCmd->SetRange("EventNb>0");
-}
+    void SetNewValue(G4UIcommand *, G4String);
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-EventActionMessenger::~EventActionMessenger()
-{
-    delete PrintCmd;
-    delete eventDir;
-}
+private:
+    EventAction          *eventAction;
+    G4UIdirectory        *eventDir;
+    G4UIcmdWithAnInteger *PrintCmd;
+};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void EventActionMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
-{
-    if (command == PrintCmd)
-        eventAction->SetPrintModulo(PrintCmd->GetNewIntValue(newValue));
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#endif

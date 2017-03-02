@@ -46,8 +46,8 @@ public:
     virtual ~RootTree();
 
     void Initialize(const char *filename);
-    void RegisterSD(const char* sdname);
-    void UpdateValue(const char* sdname, int pid, int tid, int ptid, double inx, double iny, double inz, double inp, double outx, double outy, double outz, double outp, double edep, double time, int copyno);
+    void RegisterSD(const char *sdname);
+    void UpdateValue(const char *sdname, int pid, int tid, int ptid, double inx, double iny, double inz, double inp, double outx, double outy, double outz, double outp, double edep, double time, int copyno);
     void FillTree(); // fill tree
 
 private:
@@ -58,8 +58,8 @@ private:
 private:
     TFile *file;
     TTree *tree; // hits info, event
-    
-    std::map <const char*, SDData *> SDMap;
+
+    std::map <const char *, SDData *> SDMap;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

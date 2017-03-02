@@ -60,28 +60,29 @@ class G4Polycone;
 class G4Polyhedra;
 class G4Ellipsoid;
 
-enum HyCal_Module_Type {
-    Lead_Glass,
-    Lead_Tungstate,
-};
-
-struct HyCal_Module {
-    std::string name;
-    HyCal_Module_Type type;
-    double sizex;
-    double sizey;
-    double length;
-    double x;
-    double y;
-    double z;
-    HyCal_Module() {}
-    HyCal_Module(std::string n, HyCal_Module_Type t, double sx, double sy, double l, double xx, double yy, double zz) : name(n), type(t), sizex(sx), sizey(sy), length(l), x(xx), y(yy), z(zz) {}
-};
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class HyCalParameterisation : public G4VPVParameterisation, public ConfigObject
 {
+public:
+    enum HyCal_Module_Type {
+        Lead_Glass,
+        Lead_Tungstate,
+    };
+
+    struct HyCal_Module {
+        std::string name;
+        HyCal_Module_Type type;
+        double sizex;
+        double sizey;
+        double length;
+        double x;
+        double y;
+        double z;
+        HyCal_Module() {}
+        HyCal_Module(std::string n, HyCal_Module_Type t, double sx, double sy, double l, double xx, double yy, double zz) : name(n), type(t), sizex(sx), sizey(sy), length(l), x(xx), y(yy), z(zz) {}
+    };
+
 public:
     HyCalParameterisation(const std::string &path = "");
     virtual ~HyCalParameterisation();
@@ -93,8 +94,6 @@ public:
     void ComputeDimensions(G4Box &CalBlock, const G4int copyNo, const G4VPhysicalVolume *physVol) const;
     G4Material *ComputeMaterial(const G4int copyNo, G4VPhysicalVolume *currVol, const G4VTouchable *pTouch = NULL);
 
-    inline const std::vector<HyCal_Module> &GetModuleList();
-    inline const HyCal_Module &GetModule(size_t i);
     inline size_t GetNumber();
 
 private: // Dummy declarations to get rid of warnings ...
@@ -114,16 +113,6 @@ private: // Dummy declarations to get rid of warnings ...
 private:
     std::vector<HyCal_Module> moduleList;
 };
-
-inline const std::vector<HyCal_Module> &HyCalParameterisation::GetModuleList()
-{
-    return moduleList;
-}
-
-inline const HyCal_Module &HyCalParameterisation::GetModule(size_t i)
-{
-    return moduleList[i];
-}
 
 inline size_t HyCalParameterisation::GetNumber()
 {

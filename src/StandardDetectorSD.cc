@@ -58,7 +58,7 @@ StandardDetectorSD::StandardDetectorSD(G4String name, G4String abbrev) : G4VSens
 
     fHCID = -1;
     fHitsCollection = 0;
-    
+
     gRootTree->RegisterSD(fAbbrev.data());
 }
 
@@ -166,9 +166,9 @@ void StandardDetectorSD::EndOfEvent(G4HCofThisEvent *HCE)
 
     for (int i = 0; i < NHitC; i++) {
         StandardHit *aHit = (*fHitsCollection)[i];
-        
+
         gRootTree->UpdateValue(fAbbrev, aHit->GetPID(), aHit->GetTrackID(), aHit->GetParentTrackID(), aHit->GetInPos().x(), aHit->GetInPos().y(), aHit->GetInPos().z(), aHit->GetInMom().mag(), aHit->GetOutPos().x(), aHit->GetOutPos().y(), aHit->GetOutPos().z(), aHit->GetOutMom().mag(), aHit->GetEdep(), aHit->GetTime(), aHit->GetCopyNo());
-        
+
         //aHit->Print();
     }
 

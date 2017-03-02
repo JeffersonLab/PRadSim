@@ -81,7 +81,7 @@ void HyCalParameterisation::LoadModuleList(const std::string &path)
     ConfigParser c_parser;
 
     if (!c_parser.ReadFile(path)) {
-        std::cerr << "PRad HyCal Detector Error: Failed to read module list file " << "\"" << path << "\"." << std::endl;
+        std::cerr << "Error: Failed to read module list file " << "\"" << path << "\"." << std::endl;
         return;
     }
 

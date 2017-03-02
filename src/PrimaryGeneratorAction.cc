@@ -48,10 +48,11 @@
 
 #include <cmath>
 #include <fstream>
+#include <string>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction *DC) : Detector(DC), rndmFlag("on")
+PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction *DC) : fRandFlag("on"), fGunType("ring"), fStartEvent(0), pradDetector(DC)
 {
     G4double n_particle = 1;
     particleGun  = new G4ParticleGun(n_particle);
@@ -75,7 +76,8 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
     delete particleGun;
     delete gunMessenger;
-    particles.close();
+
+    fEvGunFile.close();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -95,7 +97,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
 
     G4double xrand = 0., yrand = 0., zrand = 0., prand = 0.;
 
-    if (rndmFlag == "on") {
+    if (fRandFlag == "on") {
         xrand = G4RandGauss::shoot(0., 0.008) * cm;
         yrand = G4RandGauss::shoot(0., 0.008) * cm;
         zrand = 4. * (0.5 - G4UniformRand()) * cm;
@@ -103,7 +105,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
     }
 
     // generate a theta ring
-    if (GunType == "ring") {
+    if (fGunType == "ring") {
         theta = 0.8;
         Ene = 1100 * MeV;
         x0 = xrand;
@@ -121,8 +123,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
     }
 
     // RCEP PART
-    if (GunType == "elastic") {
-        particles >> tmp1[0] >> tmp2[0] >> tmp3[0] >> tmp1[1] >> tmp2[1] >> tmp3[1] >> tmp1[2] >> tmp2[2] >> tmp3[2];
+    if (fGunType == "elastic") {
+        fEvGunFile >> tmp1[0] >> tmp2[0] >> tmp3[0] >> tmp1[1] >> tmp2[1] >> tmp3[1] >> tmp1[2] >> tmp2[2] >> tmp3[2];
 
         particle = particleTable->FindParticle(particleName = "e-");
         particleGun->SetParticleDefinition(particle);
@@ -157,8 +159,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
     }
 
     // RCEE PART
-    if (GunType == "moller") {
-        particles >> tmp1[0] >> tmp2[0] >> tmp3[0] >> tmp1[1] >> tmp2[1] >> tmp3[1] >> tmp1[2] >> tmp2[2] >> tmp3[2];
+    if (fGunType == "moller") {
+        fEvGunFile >> tmp1[0] >> tmp2[0] >> tmp3[0] >> tmp1[1] >> tmp2[1] >> tmp3[1] >> tmp1[2] >> tmp2[2] >> tmp3[2];
 
         // 1st e
         particle = particleTable->FindParticle(particleName = "e-");
@@ -211,20 +213,39 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
 
 void PrimaryGeneratorAction::SetGunType(G4String val)
 {
-    GunType = val;
+    fGunType = val;
 
-    if (GunType == "elastic") {
-        if (particles.is_open()) {
-            particles.close();
-            particles.open("epelastic.dat");
+    if (fGunType == "elastic") {
+        if (fEvGunFile.is_open()) {
+            fEvGunFile.close();
+            fEvGunFile.open("epelastic.dat");
         } else
-            particles.open("epelastic.dat");
-    } else if (GunType == "moller") {
-        if (particles.is_open()) {
-            particles.close();
-            particles.open("moller.dat");
+            fEvGunFile.open("epelastic.dat");
+    } else if (fGunType == "moller") {
+        if (fEvGunFile.is_open()) {
+            fEvGunFile.close();
+            fEvGunFile.open("moller.dat");
         } else
-            particles.open("moller.dat");
+            fEvGunFile.open("moller.dat");
+    }
+
+    if (fStartEvent > 0)
+        SetStartEvent(fStartEvent);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void PrimaryGeneratorAction::SetStartEvent(G4int val)
+{
+    fStartEvent = val;
+
+    if (fGunType == "elastic" || fGunType == "moller") {
+        if (fEvGunFile.is_open()) {
+            std::string temp;
+
+            for (int i = 0; i < fStartEvent; i++)
+                std::getline(fEvGunFile, temp);
+        }
     }
 }
 

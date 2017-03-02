@@ -39,7 +39,7 @@
 #include "G4UserEventAction.hh"
 
 class RunAction;
-class EventActionMessenger;
+class EventMessenger;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -59,7 +59,7 @@ private:
 
     G4int printModulo;
 
-    EventActionMessenger *eventMessenger;
+    EventMessenger *eventMessenger;
 };
 
 inline void EventAction::SetPrintModulo(G4int val)

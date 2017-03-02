@@ -36,7 +36,7 @@
 
 #include "Globals.hh"
 #include "RunAction.hh"
-#include "EventActionMessenger.hh"
+#include "EventMessenger.hh"
 
 #include "G4Event.hh"
 #include "Randomize.hh"
@@ -48,7 +48,7 @@
 
 EventAction::EventAction(RunAction *run) : runAct(run), printModulo(100000)
 {
-    eventMessenger = new EventActionMessenger(this);
+    eventMessenger = new EventMessenger(this);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

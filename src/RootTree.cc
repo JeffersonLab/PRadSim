@@ -77,7 +77,7 @@ RootTree::~RootTree()
 {
     for (std::map<const char *, SDData *>::iterator it = SDMap.begin(); it != SDMap.end(); ++it) {
         SDData *sd = it->second;
-        
+
         delete sd;
     }
 
@@ -130,20 +130,20 @@ void RootTree::Reset()
         SDData *sd = it->second;
 
         for (int i = 0; i < sd->N; i++) {
-            sd->PID[sd->N] = -999;
-            sd->TID[sd->N] = -999;
-            sd->PTID[sd->N] = -999;
-            sd->InPosX[sd->N] = 1e+38;
-            sd->InPosY[sd->N] = 1e+38;
-            sd->InPosZ[sd->N] = 1e+38;
-            sd->InMom[sd->N] = 1e+38;
-            sd->OutPosX[sd->N] = 1e+38;
-            sd->OutPosY[sd->N] = 1e+38;
-            sd->OutPosZ[sd->N] = 1e+38;
-            sd->OutMom[sd->N] = 1e+38;
-            sd->Edep[sd->N] = 1e+38;
-            sd->Time[sd->N] = 1e+38;
-            sd->CopyNo[sd->N] = -999;
+            sd->PID[i] = -999;
+            sd->TID[i] = -999;
+            sd->PTID[i] = -999;
+            sd->InPosX[i] = 1e+38;
+            sd->InPosY[i] = 1e+38;
+            sd->InPosZ[i] = 1e+38;
+            sd->InMom[i] = 1e+38;
+            sd->OutPosX[i] = 1e+38;
+            sd->OutPosY[i] = 1e+38;
+            sd->OutPosZ[i] = 1e+38;
+            sd->OutMom[i] = 1e+38;
+            sd->Edep[i] = 1e+38;
+            sd->Time[i] = 1e+38;
+            sd->CopyNo[i] = -999;
         }
 
         sd->N = 0;

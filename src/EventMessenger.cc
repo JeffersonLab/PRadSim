@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// EventActionMessenger.hh
+// EventMessenger.cc
 // Developer : Chao Peng
 // History:
 //   Aug 2012, C. Peng, Original version.
@@ -32,31 +32,40 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef EventActionMessenger_h
-#define EventActionMessenger_h 1
+#include "EventMessenger.hh"
 
-#include "G4UImessenger.hh"
+#include "EventAction.hh"
 
-class EventAction;
-class G4UIdirectory;
-class G4UIcmdWithAnInteger;
+#include "G4UIdirectory.hh"
+#include "G4UIcmdWithAnInteger.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class EventActionMessenger: public G4UImessenger
+EventMessenger::EventMessenger(EventAction *EvAct) : eventAction(EvAct)
 {
-public:
-    EventActionMessenger(EventAction *);
-    virtual ~EventActionMessenger();
+    eventDir = new G4UIdirectory("/pradsim/event/");
+    eventDir->SetGuidance("event control");
 
-    void SetNewValue(G4UIcommand *, G4String);
-
-private:
-    EventAction          *eventAction;
-    G4UIdirectory        *eventDir;
-    G4UIcmdWithAnInteger *PrintCmd;
-};
+    PrintCmd = new G4UIcmdWithAnInteger("/pradsim/event/printModulo", this);
+    PrintCmd->SetGuidance("Print events modulo n");
+    PrintCmd->SetParameterName("EventNb", false);
+    PrintCmd->SetRange("EventNb>0");
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif
+EventMessenger::~EventMessenger()
+{
+    delete PrintCmd;
+    delete eventDir;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void EventMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
+{
+    if (command == PrintCmd)
+        eventAction->SetPrintModulo(PrintCmd->GetNewIntValue(newValue));
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

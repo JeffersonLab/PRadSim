@@ -41,10 +41,10 @@
 
 #include <fstream>
 
-class DetectorConstruction;
-class PrimaryGeneratorMessenger;
 class G4Event;
 class G4ParticleGun;
+class DetectorConstruction;
+class PrimaryGeneratorMessenger;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -56,25 +56,27 @@ public:
 
     void GeneratePrimaries(G4Event *);
 
-    inline void SetRndmFlag(G4String val);
+    inline void SetRandFlag(G4String val);
     void SetGunType(G4String val);
+    void SetStartEvent(G4int val);
 
 private:
-    DetectorConstruction *Detector; //pointer to the geometry
+    G4String fRandFlag; // flag for a rndm impact point
+    G4String fGunType; // select event generator
+    G4int fStartEvent;
 
-    G4ParticleGun *particleGun; //pointer a to G4 class
+    std::ifstream fEvGunFile;
 
-    G4String rndmFlag; //flag for a rndm impact point
-    G4String GunType; // select event generator
-
-    std::ifstream particles;
+private:
+    G4ParticleGun *particleGun;
+    DetectorConstruction *pradDetector;
 
     PrimaryGeneratorMessenger *gunMessenger; //messenger of this class
 };
 
-inline void PrimaryGeneratorAction::SetRndmFlag(G4String val)
+inline void PrimaryGeneratorAction::SetRandFlag(G4String val)
 {
-    rndmFlag = val;
+    fRandFlag = val;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

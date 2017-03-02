@@ -39,6 +39,7 @@
 
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithAString.hh"
+#include "G4UIcmdWithAnInteger.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -47,13 +48,13 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *Gun
     gunDir = new G4UIdirectory("/pradsim/gun/");
     gunDir->SetGuidance("PrimaryGenerator control");
 
-    RndmCmd = new G4UIcmdWithAString("/pradsim/gun/rndm", this);
-    RndmCmd->SetGuidance("Shoot randomly the incident particle.");
-    RndmCmd->SetGuidance("  Choice : on(default), off");
-    RndmCmd->SetParameterName("random", true);
-    RndmCmd->SetDefaultValue("on");
-    RndmCmd->SetCandidates("on off");
-    RndmCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+    RandCmd = new G4UIcmdWithAString("/pradsim/gun/random", this);
+    RandCmd->SetGuidance("Shoot randomly the incident particle.");
+    RandCmd->SetGuidance("  Choice : on(default), off");
+    RandCmd->SetParameterName("random", true);
+    RandCmd->SetDefaultValue("on");
+    RandCmd->SetCandidates("on off");
+    RandCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
     GunTypeCmd = new G4UIcmdWithAString("/pradsim/gun/type", this);
     GunTypeCmd->SetGuidance("Choose a type of event generator.");
@@ -62,14 +63,22 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *Gun
     GunTypeCmd->SetDefaultValue("ring");
     GunTypeCmd->SetCandidates("ring elastic moller");
     GunTypeCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
+    StartEventCmd = new G4UIcmdWithAnInteger("/pradsim/gun/startEvent", this);
+    StartEventCmd->SetGuidance("Set start point for event gun file.");
+    StartEventCmd->SetParameterName("nstart", true);
+    StartEventCmd->SetDefaultValue(0);
+    StartEventCmd->SetRange("nstart>=0");
+    StartEventCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
 {
-    delete RndmCmd;
+    delete RandCmd;
     delete GunTypeCmd;
+    delete StartEventCmd;
     delete gunDir;
 }
 
@@ -78,11 +87,14 @@ PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
 void PrimaryGeneratorMessenger::SetNewValue(
     G4UIcommand *command, G4String newValue)
 {
-    if (command == RndmCmd)
-        Action->SetRndmFlag(newValue);
+    if (command == RandCmd)
+        Action->SetRandFlag(newValue);
 
     if (command == GunTypeCmd)
         Action->SetGunType(newValue);
+
+    if (command == StartEventCmd)
+        Action->SetStartEvent(StartEventCmd->GetNewIntValue(newValue));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

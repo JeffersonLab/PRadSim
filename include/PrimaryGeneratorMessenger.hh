@@ -42,6 +42,7 @@
 class PrimaryGeneratorAction;
 class G4UIdirectory;
 class G4UIcmdWithAString;
+class G4UIcmdWithAnInteger;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -56,8 +57,9 @@ public:
 private:
     PrimaryGeneratorAction *Action;
     G4UIdirectory      *gunDir;
-    G4UIcmdWithAString *RndmCmd;
+    G4UIcmdWithAString *RandCmd;
     G4UIcmdWithAString *GunTypeCmd;
+    G4UIcmdWithAnInteger *StartEventCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
