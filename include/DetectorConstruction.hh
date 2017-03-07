@@ -55,12 +55,12 @@ public:
     G4VPhysicalVolume *Construct();
 
     inline void SetTargetPos(G4double z);
-    inline void SetRecoilDetectorPos(G4double z);
     inline void SetGEMPos(G4double z1, G4double z2);
     inline void SetScitillatorPlanePos(G4double z);
     inline void SetHyCalPos(G4double z);
 
-    inline void SetRecoilDetector(G4int n, G4double ir, G4double l, G4double t);
+    inline void SetTarget(G4double ir, G4double l);
+    inline void SetRecoilDetector(G4int n, G4double l, G4double t);
 
     void UpdateGeometry();
 
@@ -70,10 +70,10 @@ private:
     G4String fConfig;
 
     G4double fTargetCenter;
+    G4double fTargetR;
+    G4double fTargetHalfL;
 
-    G4double fRecoilDetCenter;
     G4int fRecoilDetNSeg;
-    G4double fRecoilDetIR;
     G4double fRecoilDetHalfL;
     G4double fRecoilDetThickness;
 
@@ -95,11 +95,6 @@ inline void DetectorConstruction::SetTargetPos(G4double z)
     fTargetCenter = z;
 }
 
-inline void DetectorConstruction::SetRecoilDetectorPos(G4double z)
-{
-    fRecoilDetCenter = z;
-}
-
 inline void DetectorConstruction::SetGEMPos(G4double z1, G4double z2)
 {
     if (z1 > -9999) fGEM1Center = z1;
@@ -117,11 +112,16 @@ inline void DetectorConstruction::SetHyCalPos(G4double z)
     fCrystalSurf = z;
 }
 
-inline void DetectorConstruction::SetRecoilDetector(G4int n, G4double ir, G4double l, G4double t)
+inline void DetectorConstruction::SetTarget(G4double ir, G4double l)
+{
+    if (ir > -9999) fTargetR = ir;
+
+    if (l > -9999) fTargetHalfL = l;
+}
+
+inline void DetectorConstruction::SetRecoilDetector(G4int n, G4double l, G4double t)
 {
     if (n > -9999) fRecoilDetNSeg = n;
-
-    if (ir > -9999) fRecoilDetIR = ir;
 
     if (l > -9999) fRecoilDetHalfL = l;
 

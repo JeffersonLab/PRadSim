@@ -61,14 +61,15 @@ private:
     G4UIdirectory             *DetDir;
     G4UIdirectory             *ZDir;
     G4UIcmdWithADoubleAndUnit *TargetZCmd;
-    G4UIcmdWithADoubleAndUnit *RecoilDetZCmd;
     G4UIcmdWithADoubleAndUnit *GEM1ZCmd;
     G4UIcmdWithADoubleAndUnit *GEM2ZCmd;
     G4UIcmdWithADoubleAndUnit *SciPlaneZCmd;
     G4UIcmdWithADoubleAndUnit *HyCalZCmd;
+    G4UIdirectory             *TargetDir;
+    G4UIcmdWithADoubleAndUnit *TargetRCmd;
+    G4UIcmdWithADoubleAndUnit *TargetHalfLCmd;
     G4UIdirectory             *RecoilDetDir;
     G4UIcmdWithAnInteger      *RecoilDetNSegCmd;
-    G4UIcmdWithADoubleAndUnit *RecoilDetIRCmd;
     G4UIcmdWithADoubleAndUnit *RecoilDetHalfLCmd;
     G4UIcmdWithADoubleAndUnit *RecoilDetThicknessCmd;
     G4UIcmdWithoutParameter   *UpdateCmd;

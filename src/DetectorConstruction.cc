@@ -47,6 +47,7 @@
 #include "G4LogicalVolume.hh"
 #include "G4LogicalVolumeStore.hh"
 #include "G4Polycone.hh"
+#include "G4Polyhedra.hh"
 #include "G4PVParameterised.hh"
 #include "G4PVPlacement.hh"
 #include "G4Sphere.hh"
@@ -77,11 +78,11 @@ DetectorConstruction::DetectorConstruction(G4String conf) : fConfig(conf)
         fConfig = "prad";
 
     fTargetCenter = -300.0 * cm;
+    fTargetR = 15.0 * cm;
+    fTargetHalfL = 3.0 * cm;
 
-    fRecoilDetCenter = -300.0 * cm;
-    fRecoilDetNSeg = 8;
-    fRecoilDetIR = 10.0 * cm / 2.0;
-    fRecoilDetHalfL = 4.0 * cm;
+    fRecoilDetNSeg = 36;
+    fRecoilDetHalfL = 2.0 * cm;
     fRecoilDetThickness = 2.0 * mm;
 
     fGEM1Center = 200.0 * cm;
@@ -127,22 +128,28 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     G4Element *Cu = pNM->FindOrBuildElement(z = 29);
     G4Element *W  = pNM->FindOrBuildElement(z = 74);
     G4Element *Pb = pNM->FindOrBuildElement(z = 86);
+    G4Element *D = new G4Element("Deuterium", "D", z = 1, a = 2.0141 * g / mole);
 
     // Space Vacuum
-    G4Material *Galaxy = new G4Material("Galaxy", z = 1, a = 1.01 * g / mole, density = universe_mean_density, kStateGas, 0.1 * kelvin, 1.0e-19 * pascal);
+    G4Material *Galaxy = new G4Material("Galaxy", density = universe_mean_density, ncomponents = 1, kStateGas, 0.1 * kelvin, 1.0e-19 * pascal);
+    Galaxy->AddElement(H, fractionmass = 1.0);
 
     // Air
-    G4Material *Air = new G4Material("Air", density = 1.29 * mg / cm3, ncomponents = 2);
+    G4Material *Air = new G4Material("Air", density = 1.292 * mg / cm3, ncomponents = 2);
     Air->AddElement(N, fractionmass = 0.7);
     Air->AddElement(O, fractionmass = 0.3);
 
     // Air vacuum of 1.e-6 torr at room temperature, 1 atmosphere = 760 torr
-    G4Material *Vacuum = new G4Material("Vacuum", density = 1.0e-6 / 760.0 * 1.225 * mg / cm3, ncomponents = 1, kStateGas, STP_Temperature, 1.0e-6 / 760.0 * atmosphere);
+    G4Material *Vacuum = new G4Material("Vacuum", density = 1.0e-6 / 760.0 * 1.292 * mg / cm3, ncomponents = 1, kStateGas, STP_Temperature, 1.0e-6 / 760.0 * atmosphere);
     Vacuum->AddMaterial(Air, fractionmass = 1.0);
 
     // Hydrogen Gas
-    G4Material *H2Gas =  new G4Material("H2 Gas", density = 8.988e-5 * g / cm3, ncomponents = 1, kStateGas, 25.0 * kelvin, 83.02 * pascal);
+    G4Material *H2Gas =  new G4Material("H2 Gas", density = 0.6 / 760.0 * 273.15 / 25.0 * 0.08988 * mg / cm3, ncomponents = 1, kStateGas, 25.0 * kelvin, 0.6 / 760.0 * atmosphere);
     H2Gas->AddElement(H, natoms = 2);
+
+    // Hydrogen Gas
+    G4Material *D2Gas =  new G4Material("H2 Gas", density = 0.6 / 760.0 * 273.15 / 25.0 * 0.1796 * mg / cm3, ncomponents = 1, kStateGas, 25.0 * kelvin, 0.6 / 760.0 * atmosphere);
+    D2Gas->AddElement(D, natoms = 2);
 
     // Copper
     G4Material *Copper = new G4Material("Copper", density = 8.96 * g / cm3, ncomponents = 1);
@@ -180,6 +187,11 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     ArCO2->AddElement(Ar, fractionmass = 0.7);
     ArCO2->AddMaterial(CO2, fractionmass = 0.3);
 
+    // Scintillator EJ204
+    G4Material *EJ204 = new G4Material("EJ204", density = 1.032 * g / cm3, ncomponents = 2);
+    EJ204->AddElement(H, natoms = 521);
+    EJ204->AddElement(C, natoms = 474);
+
     // Torlon4203L
     G4Material *Torlon = new G4Material("Torlon", density = 1.412 * g / cm3, ncomponents = 5);
     Torlon->AddElement(C, natoms = 9);
@@ -211,12 +223,14 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
 
     mVisAtt[Vacuum->GetName()] = new G4VisAttributes(G4Colour(1.0, 1.0, 0.0, 0.5)); // Vacuum;
     mVisAtt[H2Gas->GetName()] = new G4VisAttributes(G4Colour::Cyan());
+    mVisAtt[D2Gas->GetName()] = new G4VisAttributes(G4Colour::Cyan());
     mVisAtt[Copper->GetName()] = new G4VisAttributes(G4Colour::Brown());
     mVisAtt[Kapton->GetName()] = new G4VisAttributes(G4Colour::Brown());
     mVisAtt[Silicon->GetName()] = new G4VisAttributes(G4Colour::Green());
     mVisAtt[Aluminum->GetName()] = new G4VisAttributes(G4Colour::Grey());
     mVisAtt[NemaG10->GetName()] = new G4VisAttributes(G4Colour::Magenta());
     mVisAtt[ArCO2->GetName()] = new G4VisAttributes(G4Colour::Yellow());
+    mVisAtt[EJ204->GetName()] = new G4VisAttributes(G4Colour::Green());
     mVisAtt[Torlon->GetName()] = new G4VisAttributes(G4Colour::Grey());
     mVisAtt[Tungsten->GetName()] = new G4VisAttributes(G4Colour::Black());
     mVisAtt[PbWO4->GetName()] = new G4VisAttributes(G4Colour::Blue());
@@ -232,7 +246,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     G4Material *GEMFrameMaterial = NemaG10;
     G4Material *GEMFoilMaterial = Kapton;
     G4Material *GEMGasMaterial = ArCO2;
-    G4Material *SciPlaneMaterial = Silicon;
+    G4Material *SciPlaneMaterial = EJ204;
     G4Material *HyCalBoxMaterial = Torlon;
     G4Material *CollimatorMaterial = Tungsten;
     G4Material *CenterHyCalMaterial = PbWO4;
@@ -240,7 +254,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     G4Material *defaultMaterial = Galaxy;
 
     if (fConfig == "drad")
-        TarCelMaterial = Kapton;
+        TargetMaterial = D2Gas;
 
     // Sensitive detector manager
     G4SDManager *SDman = G4SDManager::GetSDMpointer();
@@ -285,52 +299,39 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
         new G4PVPlacement(0, G4ThreeVector(0, 0, +TargetHalfL + CellWinThickness / 2.0), logicCellWin, "Downstream Target Window", logicTargetCon, false, 0);
     } else if (fConfig == "drad") {
         // Target
-        G4VSolid *solidTargetCon = new G4Tubs("Solid Target Container", 0, 2.1 * cm, 2.1 * cm, 0, twopi);
+        G4VSolid *solidTargetCon = new G4Tubs("Solid Target Container", 0, fTargetR + 0.1 * cm, fTargetHalfL + 0.1 * cm, 0, twopi);
         G4LogicalVolume *logicTargetCon = new G4LogicalVolume(solidTargetCon, defaultMaterial, "Logical Target Container");
         new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter), logicTargetCon, "Target Container", logicWorld, false, 0);
 
         // Target material
-        G4double TargetR = 20.0 * mm;
-        G4double TargetHalfL = 20.0 * mm;
-        G4VSolid *solidTarget = new G4Tubs("Solid Target Material", 0, TargetR, TargetHalfL, 0, twopi);
+        G4VSolid *solidTarget = new G4Tubs("Solid Target Material", 0, fTargetR, fTargetHalfL, 0, twopi);
         G4LogicalVolume *logicTarget = new G4LogicalVolume(solidTarget, TargetMaterial, "Logical Target Material");
         new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicTarget, "Target Material", logicTargetCon, false, 0);
 
         // Target cell
-        G4double CellThickness = 0.03 * mm;
-        G4VSolid *solidCell = new G4Tubs("Solid Target Cell", TargetR, TargetR + CellThickness, TargetHalfL, 0, twopi);
+        G4double CellThickness = 0.5 * mm;
+        G4VSolid *solidCell = new G4Tubs("Solid Target Cell", fTargetR, fTargetR + CellThickness, fTargetHalfL, 0, twopi);
         G4LogicalVolume *logicCell = new G4LogicalVolume(solidCell, TarCelMaterial, "Logical Target Cell");
         new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicCell, "Target Cell", logicTargetCon, false, 0);
 
         // Windows
         G4double CellApertureR = 2.0 * mm;
         G4double CellWinThickness = 7.5 * um;
-        G4VSolid *solidCellWin = new G4Tubs("Solid Cell Window", CellApertureR, TargetR + CellThickness, CellWinThickness / 2.0, 0, twopi);
+        G4VSolid *solidCellWin = new G4Tubs("Solid Cell Window", CellApertureR, fTargetR + CellThickness, CellWinThickness / 2.0, 0, twopi);
         G4LogicalVolume *logicCellWin = new G4LogicalVolume(solidCellWin, WindowsMaterial, "Logical Target Window");
-        new G4PVPlacement(0, G4ThreeVector(0, 0, -TargetHalfL - CellWinThickness / 2.0), logicCellWin, "Upstream Target Window", logicTargetCon, false, 0);
-        new G4PVPlacement(0, G4ThreeVector(0, 0, +TargetHalfL + CellWinThickness / 2.0), logicCellWin, "Downstream Target Window", logicTargetCon, false, 0);
-    }
+        new G4PVPlacement(0, G4ThreeVector(0, 0, -fTargetHalfL - CellWinThickness / 2.0), logicCellWin, "Upstream Target Window", logicTargetCon, false, 0);
+        new G4PVPlacement(0, G4ThreeVector(0, 0, +fTargetHalfL + CellWinThickness / 2.0), logicCellWin, "Downstream Target Window", logicTargetCon, false, 0);
 
-    if (fConfig == "drad") {
-        // cylindrical detector
+        // Recoil detector
         G4double RecoilDetAng = twopi / fRecoilDetNSeg;
-        G4double RecoilDetOR = fRecoilDetIR / cos(RecoilDetAng / 2.0);
-        G4VSolid *solidRecoilDetCon = new G4Tubs("Solid Recoil Detector Container", fRecoilDetIR - 1.0 * mm, RecoilDetOR + 2.0 * fRecoilDetThickness + 1.0 * mm, fRecoilDetHalfL + 1.0 * mm, 0, twopi);
-        G4LogicalVolume *logicRecoilDetCon = new G4LogicalVolume(solidRecoilDetCon, defaultMaterial, "Logical Recoil Detector Container");
-        new G4PVPlacement(0, G4ThreeVector(0, 0, fRecoilDetCenter), logicRecoilDetCon, "Recoil Detector Container", logicWorld, false, 0);
-
-        G4double RecoilDetHalfX = sqrt(RecoilDetOR * RecoilDetOR - fRecoilDetIR * fRecoilDetIR);
-        G4double RecoilDetHalfY = fRecoilDetThickness / 2.0;
-        G4VSolid *solidRecoilDet = new G4Box("Solid Recoil Detector", RecoilDetHalfX, RecoilDetHalfY, fRecoilDetHalfL);
+        G4double RecoilDetOR = fTargetR * cos(RecoilDetAng / 2.0) - 0.1 * mm;
+        G4double RecoilDetIR = RecoilDetOR - fRecoilDetThickness;
+        G4double rInnerRD[] = {RecoilDetIR, RecoilDetIR};
+        G4double rOuterRD[] = {RecoilDetOR, RecoilDetOR};
+        G4double zPlaneRD[] = {-fRecoilDetHalfL, fRecoilDetHalfL};
+        G4VSolid *solidRecoilDet = new G4Polyhedra("Solid Recoil Detector", 0, twopi, fRecoilDetNSeg, 2, zPlaneRD, rInnerRD, rOuterRD);
         G4LogicalVolume *logicRecoilDet = new G4LogicalVolume(solidRecoilDet, RecoilDetMaterial, "Logical Recoil Detector");
-
-        for (int i = 0; i < fRecoilDetNSeg; i++) {
-            G4Translate3D translation(0, fRecoilDetIR + RecoilDetHalfY, 0);
-            G4RotateZ3D rotation(RecoilDetAng * i);
-            G4Transform3D transform = rotation * translation;
-            new G4PVPlacement(transform, logicRecoilDet, "Recoil Detector", logicRecoilDetCon, false, i);
-        }
-
+        new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicRecoilDet, "Recoil Detector", logicTarget, false, 0);
         StandardDetectorSD *RecoilDetSD = new StandardDetectorSD("pradsim/RecoilDetector", "RD");
         SDman->AddNewDetector(RecoilDetSD);
         logicRecoilDet->SetSensitiveDetector(RecoilDetSD);
@@ -461,7 +462,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
 
     if (fConfig == "drad") {
         // Scintillator Plane
-        G4double SciPlaneThickness = 5.0 * mm;
+        G4double SciPlaneThickness = 2.0 * mm;
         G4double SciPlaneHalfX = 75.0 * cm;
         G4double SciPlaneHalfY = 75.0 * cm;
 
