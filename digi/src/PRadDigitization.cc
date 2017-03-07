@@ -38,9 +38,8 @@ PRadDigitization::PRadDigitization(TChain *t, const char *filename) : fPreStart(
 
 PRadDigitization::~PRadDigitization()
 {
-    for (auto &digi : fDigitizer) {
-            delete digi;
-    }
+    for (auto &digi : fDigitizer)
+        delete digi;
 
     uint32_t now = time(NULL);
     uint32_t end[5] = {0x00000004, 0x002001cc, now, fEventNumber, 0x00000000};
@@ -69,9 +68,8 @@ void PRadDigitization::PreStart()
     fEventNumberIndex = index + 2;
     index += AddEventInfoBank(&fPRadBuffer[index]);
 
-    for (auto &digi : fDigitizer) {
+    for (auto &digi : fDigitizer)
         index += digi->PreStart(fPRadBuffer, index);
-    }
 
     fPRadBuffer[0] = index - 1;
 
@@ -87,9 +85,8 @@ void PRadDigitization::ProcessEvent()
 
     bool trigger = true;
 
-    for (auto &digi : fDigitizer) {
+    for (auto &digi : fDigitizer)
         trigger = trigger && digi->ProcessEvent(fPRadBuffer);
-    }
 
     fPRadBuffer[fEventNumberIndex] = ++fEventNumber;
 
@@ -101,9 +98,8 @@ void PRadDigitization::ProcessEvent()
 
 void PRadDigitization::Print()
 {
-    for (auto &digi : fDigitizer) {
+    for (auto &digi : fDigitizer)
         digi->Print();
-    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
