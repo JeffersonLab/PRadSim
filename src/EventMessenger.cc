@@ -46,7 +46,7 @@ EventMessenger::EventMessenger(EventAction *EvAct) : eventAction(EvAct)
     eventDir = new G4UIdirectory("/pradsim/event/");
     eventDir->SetGuidance("event control");
 
-    PrintCmd = new G4UIcmdWithAnInteger("/pradsim/event/printModulo", this);
+    PrintCmd = new G4UIcmdWithAnInteger("/pradsim/event/printmodulo", this);
     PrintCmd->SetGuidance("Print events modulo n");
     PrintCmd->SetParameterName("EventNb", false);
     PrintCmd->SetRange("EventNb>0");

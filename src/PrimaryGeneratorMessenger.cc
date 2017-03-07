@@ -64,7 +64,7 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *Gun
     GunTypeCmd->SetCandidates("ring elastic moller");
     GunTypeCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
-    StartEventCmd = new G4UIcmdWithAnInteger("/pradsim/gun/startEvent", this);
+    StartEventCmd = new G4UIcmdWithAnInteger("/pradsim/gun/startn", this);
     StartEventCmd->SetGuidance("Set start point for event gun file.");
     StartEventCmd->SetParameterName("nstart", true);
     StartEventCmd->SetDefaultValue(0);

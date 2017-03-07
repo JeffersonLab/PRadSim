@@ -1,7 +1,7 @@
-# run1.mac
+# run.mac
 #
 # can be run in batch, without graphic
-# or interactively: Idle> /control/execute run1.mac
+# or interactively: Idle> /control/execute run.mac
 #
 #/control/verbose 2
 #/control/saveHistory
@@ -13,6 +13,6 @@
 
 /pradsim/gun/type ring
 
-/pradsim/event/printModulo 1000
+/pradsim/event/printmodulo 1000
 
 /run/beamOn 10000

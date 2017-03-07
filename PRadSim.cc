@@ -28,29 +28,32 @@
 // History:
 //   Aug 2012, C. Peng, Original version.
 //   Jan 2017, C. Gu, Rewrite with ROOT support.
+//   Mar 2017, C. Gu, Add DRad configuration.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "DetectorConstruction.hh"
+#include "EventAction.hh"
 #include "PhysicsList.hh"
 #include "PrimaryGeneratorAction.hh"
+#include "RootTree.hh"
 #include "RunAction.hh"
-#include "EventAction.hh"
 #include "SteppingAction.hh"
 #include "SteppingVerbose.hh"
-#include "RootTree.hh"
 
-#include "G4RunManager.hh"
-#include "G4UImanager.hh"
 #include "G4ios.hh"
+#include "G4RunManager.hh"
+#include "G4String.hh"
+#include "G4UImanager.hh"
 #include "Randomize.hh"
 
 #include <ctime>
 #include <fstream>
+#include <getopt.h>
 #include <iostream>
-#include <cstring>
+#include <string>
 
 #ifdef G4VIS_USE
     #include "G4VisExecutive.hh"
@@ -66,8 +69,57 @@ RootTree *gRootTree = 0;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+void usage(int, char **argv)
+{
+    printf("usage: %s [options] [MACRO_NAME]\n", argv[0]);
+    printf("  -c, --conf=prad          Set configuration\n");
+    printf("  -h, --help                 Print usage\n");
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
+
 int main(int argc, char **argv)
 {
+    std::string conf = "prad";
+    std::string macro;
+    macro.clear();
+
+    while (1) {
+        static struct option long_options[] = {
+            {"help",  no_argument, 0, 'h'},
+            {"conf", required_argument, 0, 'c'},
+            {0, 0, 0, 0}
+        };
+
+        int option_index = 0;
+        int c = getopt_long(argc, argv, "c:h", long_options, &option_index);
+
+        if (c == -1)
+            break;
+
+        switch (c) {
+        case 'c':
+            conf = optarg;
+            break;
+
+        case 'h':
+            usage(argc, argv);
+            exit(0);
+            break;
+
+        case '?':
+            // getopt_long already printed an error message
+            break;
+
+        default:
+            usage(argc, argv);
+            break;
+        }
+    }
+
+    if (optind + 1 == argc)
+        macro = argv[optind++];
+
     // Choose the Random engine
     //
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
@@ -125,7 +177,8 @@ int main(int argc, char **argv)
 
     // Set mandatory initialization classes
     //
-    DetectorConstruction *detector = new DetectorConstruction;
+    G4String confstr = conf;
+    DetectorConstruction *detector = new DetectorConstruction(confstr);
     runManager->SetUserInitialization(detector);
     //
     PhysicsList *physics = new PhysicsList;
@@ -160,10 +213,9 @@ int main(int argc, char **argv)
     // Get the pointer to the User Interface manager
     G4UImanager *UImanager = G4UImanager::GetUIpointer();
 
-    if (argc != 1) { // batch mode
+    if (!macro.empty()) { // batch mode
         G4String command = "/control/execute ";
-        G4String fileName = argv[1];
-        UImanager->ApplyCommand(command + fileName);
+        UImanager->ApplyCommand(command + macro);
     } else {
         // interactive mode : define UI session
 #ifdef G4UI_USE
@@ -188,7 +240,7 @@ int main(int argc, char **argv)
     delete visManager;
 #endif
     delete runManager;
-    
+
     delete gRootTree;
 
     return 0;

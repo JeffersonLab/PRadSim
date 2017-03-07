@@ -24,9 +24,10 @@
 // ********************************************************************
 //
 // DetectorMessenger.hh
-// Developer : Chao Peng
+// Developer : Chao Peng, Chao Gu
 // History:
 //   Aug 2012, C. Peng, Original version.
+//   Mar 2017, C. Gu, Add DRad configuration.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -40,7 +41,8 @@
 
 class DetectorConstruction;
 class G4UIdirectory;
-class G4UIcmdWithAString;
+class G4UIcmdWithAnInteger;
+class G4UIcmdWithADoubleAndUnit;
 class G4UIcmdWithoutParameter;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -55,9 +57,20 @@ public:
 
 private:
     DetectorConstruction *Detector;
-    G4UIdirectory             *pradsimDir;
-    G4UIdirectory             *detDir;
-    G4UIcmdWithAString        *TargetMaterCmd;
+    G4UIdirectory             *PRadSimDir;
+    G4UIdirectory             *DetDir;
+    G4UIdirectory             *ZDir;
+    G4UIcmdWithADoubleAndUnit *TargetZCmd;
+    G4UIcmdWithADoubleAndUnit *RecoilDetZCmd;
+    G4UIcmdWithADoubleAndUnit *GEM1ZCmd;
+    G4UIcmdWithADoubleAndUnit *GEM2ZCmd;
+    G4UIcmdWithADoubleAndUnit *SciPlaneZCmd;
+    G4UIcmdWithADoubleAndUnit *HyCalZCmd;
+    G4UIdirectory             *RecoilDetDir;
+    G4UIcmdWithAnInteger      *RecoilDetNSegCmd;
+    G4UIcmdWithADoubleAndUnit *RecoilDetIRCmd;
+    G4UIcmdWithADoubleAndUnit *RecoilDetHalfLCmd;
+    G4UIcmdWithADoubleAndUnit *RecoilDetThicknessCmd;
     G4UIcmdWithoutParameter   *UpdateCmd;
 };
 

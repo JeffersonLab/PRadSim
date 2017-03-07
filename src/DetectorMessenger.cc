@@ -24,9 +24,10 @@
 // ********************************************************************
 //
 // DetectorMessenger.cc
-// Developer : Chao Peng
+// Developer : Chao Peng, Chao Gu
 // History:
 //   Aug 2012, C. Peng, Original version.
+//   Mar 2017, C. Gu, Add DRad configuration.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -37,23 +38,75 @@
 #include "DetectorConstruction.hh"
 
 #include "G4UIdirectory.hh"
-#include "G4UIcmdWithAString.hh"
+#include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithoutParameter.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorMessenger::DetectorMessenger(DetectorConstruction *Det) : Detector(Det)
 {
-    pradsimDir = new G4UIdirectory("/pradsim/");
-    pradsimDir->SetGuidance("UI commands of this example");
+    PRadSimDir = new G4UIdirectory("/pradsim/");
+    PRadSimDir->SetGuidance("UI commands of this example");
 
-    detDir = new G4UIdirectory("/pradsim/det/");
-    detDir->SetGuidance("detector control");
+    DetDir = new G4UIdirectory("/pradsim/det/");
+    DetDir->SetGuidance("Detector control");
 
-    TargetMaterCmd = new G4UIcmdWithAString("/pradsim/det/setTargetMat", this);
-    TargetMaterCmd->SetGuidance("Select Material of the Target.");
-    TargetMaterCmd->SetParameterName("choice", false);
-    TargetMaterCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+    ZDir = new G4UIdirectory("/pradsim/det/z");
+    ZDir->SetGuidance("Detector z coords control");
+
+    TargetZCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/z/target", this);
+    TargetZCmd->SetGuidance("Set fTargetCenter");
+    TargetZCmd->SetParameterName("targetz", false);
+    TargetZCmd->SetDefaultUnit("cm");
+
+    RecoilDetZCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/z/recoil", this);
+    RecoilDetZCmd->SetGuidance("Set fRecoilDetCenter");
+    RecoilDetZCmd->SetParameterName("recoilz", false);
+    RecoilDetZCmd->SetDefaultUnit("cm");
+
+    GEM1ZCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/z/gem1", this);
+    GEM1ZCmd->SetGuidance("Set fGEM1Center");
+    GEM1ZCmd->SetParameterName("gem1z", false);
+    GEM1ZCmd->SetDefaultUnit("cm");
+
+    GEM2ZCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/z/gem2", this);
+    GEM2ZCmd->SetGuidance("Set fGEM2Center");
+    GEM2ZCmd->SetParameterName("gem2z", false);
+    GEM2ZCmd->SetDefaultUnit("cm");
+
+    SciPlaneZCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/z/sci", this);
+    SciPlaneZCmd->SetGuidance("Set fSciPlaneCenter");
+    SciPlaneZCmd->SetParameterName("sciz", false);
+    SciPlaneZCmd->SetDefaultUnit("cm");
+
+    HyCalZCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/z/hycal", this);
+    HyCalZCmd->SetGuidance("Set fCrystalSurf");
+    HyCalZCmd->SetParameterName("hycalz", false);
+    HyCalZCmd->SetDefaultUnit("cm");
+
+    RecoilDetDir = new G4UIdirectory("/pradsim/det/recoil");
+    RecoilDetDir->SetGuidance("Recoil detector control");
+
+    RecoilDetNSegCmd = new G4UIcmdWithAnInteger("/pradsim/det/recoil/nseg", this);
+    RecoilDetNSegCmd->SetGuidance("Set fRecoilDetNSeg");
+    RecoilDetNSegCmd->SetParameterName("nseg", true);
+    RecoilDetNSegCmd->SetDefaultValue(8);
+
+    RecoilDetIRCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/recoil/radius", this);
+    RecoilDetIRCmd->SetGuidance("Set fRecoilDetIR");
+    RecoilDetIRCmd->SetParameterName("radius", false);
+    RecoilDetIRCmd->SetDefaultUnit("mm");
+
+    RecoilDetHalfLCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/recoil/halfl", this);
+    RecoilDetHalfLCmd->SetGuidance("Set fRecoilDetHalfL");
+    RecoilDetHalfLCmd->SetParameterName("halfl", false);
+    RecoilDetHalfLCmd->SetDefaultUnit("mm");
+
+    RecoilDetThicknessCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/recoil/thick", this);
+    RecoilDetThicknessCmd->SetGuidance("Set fRecoilDetThickness");
+    RecoilDetThicknessCmd->SetParameterName("thick", false);
+    RecoilDetThicknessCmd->SetDefaultUnit("mm");
 
     UpdateCmd = new G4UIcmdWithoutParameter("/pradsim/det/update", this);
     UpdateCmd->SetGuidance("Update calorimeter geometry.");
@@ -66,18 +119,55 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *Det) : Detector(Det)
 
 DetectorMessenger::~DetectorMessenger()
 {
-    delete TargetMaterCmd;
     delete UpdateCmd;
-    delete detDir;
-    delete pradsimDir;
+    delete RecoilDetNSegCmd;
+    delete RecoilDetIRCmd;
+    delete RecoilDetHalfLCmd;
+    delete RecoilDetThicknessCmd;
+    delete RecoilDetDir;
+    delete TargetZCmd;
+    delete RecoilDetZCmd;
+    delete GEM1ZCmd;
+    delete GEM2ZCmd;
+    delete SciPlaneZCmd;
+    delete HyCalZCmd;
+    delete DetDir;
+    delete PRadSimDir;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 {
-    if (command == TargetMaterCmd)
-        Detector->SetTargetMaterial(newValue);
+    if (command == TargetZCmd)
+        Detector->SetTargetPos(TargetZCmd->GetNewDoubleValue(newValue));
+
+    if (command == RecoilDetZCmd)
+        Detector->SetRecoilDetectorPos(RecoilDetZCmd->GetNewDoubleValue(newValue));
+
+    if (command == GEM1ZCmd)
+        Detector->SetGEMPos(GEM1ZCmd->GetNewDoubleValue(newValue), -10000);
+
+    if (command == GEM2ZCmd)
+        Detector->SetGEMPos(-10000, GEM2ZCmd->GetNewDoubleValue(newValue));
+
+    if (command == SciPlaneZCmd)
+        Detector->SetScitillatorPlanePos(SciPlaneZCmd->GetNewDoubleValue(newValue));
+
+    if (command == HyCalZCmd)
+        Detector->SetHyCalPos(HyCalZCmd->GetNewDoubleValue(newValue));
+
+    if (command == RecoilDetNSegCmd)
+        Detector->SetRecoilDetector(RecoilDetNSegCmd->GetNewIntValue(newValue), -10000, -10000, -10000);
+
+    if (command == RecoilDetIRCmd)
+        Detector->SetRecoilDetector(-10000, RecoilDetIRCmd->GetNewDoubleValue(newValue), -10000, -10000);
+
+    if (command == RecoilDetHalfLCmd)
+        Detector->SetRecoilDetector(-10000, -10000, RecoilDetHalfLCmd->GetNewDoubleValue(newValue), -10000);
+
+    if (command == RecoilDetThicknessCmd)
+        Detector->SetRecoilDetector(-10000, -10000, -10000, RecoilDetThicknessCmd->GetNewDoubleValue(newValue));
 
     if (command == UpdateCmd)
         Detector->UpdateGeometry();

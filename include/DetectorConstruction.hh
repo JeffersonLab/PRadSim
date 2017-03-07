@@ -28,6 +28,7 @@
 // History:
 //   Aug 2012, C. Peng, Original version.
 //   Jan 2017, C. Gu, Rewrite with ROOT support.
+//   Mar 2017, C. Gu, Add DRad configuration.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -39,7 +40,7 @@
 #include "G4VUserDetectorConstruction.hh"
 
 class DetectorMessenger;
-class G4Material;
+class G4String;
 class G4VPhysicalVolume;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -47,25 +48,85 @@ class G4VPhysicalVolume;
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
 public:
-    DetectorConstruction();
+    DetectorConstruction(G4String conf);
     virtual ~DetectorConstruction();
 
 public:
     G4VPhysicalVolume *Construct();
 
-    void SetTargetMaterial(G4String);
+    inline void SetTargetPos(G4double z);
+    inline void SetRecoilDetectorPos(G4double z);
+    inline void SetGEMPos(G4double z1, G4double z2);
+    inline void SetScitillatorPlanePos(G4double z);
+    inline void SetHyCalPos(G4double z);
+
+    inline void SetRecoilDetector(G4int n, G4double ir, G4double l, G4double t);
+
     void UpdateGeometry();
 
     inline const G4VPhysicalVolume *GetPhysiWorld();
 
 private:
-    G4VPhysicalVolume *physiWorld;
+    G4String fConfig;
 
-    G4Material *TargetMaterial;
+    G4double fTargetCenter;
+
+    G4double fRecoilDetCenter;
+    G4int fRecoilDetNSeg;
+    G4double fRecoilDetIR;
+    G4double fRecoilDetHalfL;
+    G4double fRecoilDetThickness;
+
+    G4double fGEM1Center;
+    G4double fGEM2Center;
+
+    G4double fSciPlaneCenter;
+
+    G4double fCrystalSurf;
+
+    G4VPhysicalVolume *physiWorld;
 
 private:
     DetectorMessenger *detectorMessenger; //pointer to the Messenger
 };
+
+inline void DetectorConstruction::SetTargetPos(G4double z)
+{
+    fTargetCenter = z;
+}
+
+inline void DetectorConstruction::SetRecoilDetectorPos(G4double z)
+{
+    fRecoilDetCenter = z;
+}
+
+inline void DetectorConstruction::SetGEMPos(G4double z1, G4double z2)
+{
+    if (z1 > -9999) fGEM1Center = z1;
+
+    if (z2 > -9999) fGEM2Center = z2;
+}
+
+inline void DetectorConstruction::SetScitillatorPlanePos(G4double z)
+{
+    fSciPlaneCenter = z;
+}
+
+inline void DetectorConstruction::SetHyCalPos(G4double z)
+{
+    fCrystalSurf = z;
+}
+
+inline void DetectorConstruction::SetRecoilDetector(G4int n, G4double ir, G4double l, G4double t)
+{
+    if (n > -9999) fRecoilDetNSeg = n;
+
+    if (ir > -9999) fRecoilDetIR = ir;
+
+    if (l > -9999) fRecoilDetHalfL = l;
+
+    if (t > -9999) fRecoilDetThickness = t;
+}
 
 inline const G4VPhysicalVolume *DetectorConstruction::GetPhysiWorld()
 {

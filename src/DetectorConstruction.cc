@@ -28,6 +28,7 @@
 // History:
 //   Aug 2012, C. Peng, Original version.
 //   Jan 2017, C. Gu, Rewrite with ROOT support.
+//   Mar 2017, C. Gu, Add DRad configuration.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -48,7 +49,6 @@
 #include "G4Polycone.hh"
 #include "G4PVParameterised.hh"
 #include "G4PVPlacement.hh"
-#include "G4PVReplica.hh"
 #include "G4Sphere.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4Tubs.hh"
@@ -71,8 +71,26 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-DetectorConstruction::DetectorConstruction()
+DetectorConstruction::DetectorConstruction(G4String conf) : fConfig(conf)
 {
+    if (fConfig != "prad" && fConfig != "drad")
+        fConfig = "prad";
+
+    fTargetCenter = -300.0 * cm;
+
+    fRecoilDetCenter = -300.0 * cm;
+    fRecoilDetNSeg = 8;
+    fRecoilDetIR = 10.0 * cm / 2.0;
+    fRecoilDetHalfL = 4.0 * cm;
+    fRecoilDetThickness = 2.0 * mm;
+
+    fGEM1Center = 200.0 * cm;
+    fGEM2Center = 250.0 * cm;
+
+    fSciPlaneCenter = 265.0 * cm;
+
+    fCrystalSurf = 300.0 * cm;
+
     detectorMessenger = new DetectorMessenger(this);
 }
 
@@ -137,6 +155,10 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     Kapton->AddElement(N, fractionmass = 0.0765);
     Kapton->AddElement(O, fractionmass = 0.1749);
 
+    // Si
+    G4Material *Silicon = new G4Material("Silicon", density = 2.329 * g / cm3, ncomponents = 1);
+    Silicon->AddElement(Si, natoms = 1);
+
     // Aluminum
     G4Material *Aluminum = new G4Material("Aluminum", density = 2.700 * g / cm3, ncomponents = 1);
     Aluminum->AddElement(Al, natoms = 1);
@@ -191,6 +213,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     mVisAtt[H2Gas->GetName()] = new G4VisAttributes(G4Colour::Cyan());
     mVisAtt[Copper->GetName()] = new G4VisAttributes(G4Colour::Brown());
     mVisAtt[Kapton->GetName()] = new G4VisAttributes(G4Colour::Brown());
+    mVisAtt[Silicon->GetName()] = new G4VisAttributes(G4Colour::Green());
     mVisAtt[Aluminum->GetName()] = new G4VisAttributes(G4Colour::Grey());
     mVisAtt[NemaG10->GetName()] = new G4VisAttributes(G4Colour::Magenta());
     mVisAtt[ArCO2->GetName()] = new G4VisAttributes(G4Colour::Yellow());
@@ -201,19 +224,26 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     mVisAtt[Galaxy->GetName()] = new G4VisAttributes(G4VisAttributes::Invisible);
 
     G4Material *VacuumMaterial = Vacuum;
+    G4Material *TargetMaterial = H2Gas;
     G4Material *TarCelMaterial = Copper;
     G4Material *WindowsMaterial = Kapton;
+    G4Material *RecoilDetMaterial = Silicon;
     G4Material *ChamberMaterial = Aluminum;
     G4Material *GEMFrameMaterial = NemaG10;
     G4Material *GEMFoilMaterial = Kapton;
     G4Material *GEMGasMaterial = ArCO2;
+    G4Material *SciPlaneMaterial = Silicon;
     G4Material *HyCalBoxMaterial = Torlon;
     G4Material *CollimatorMaterial = Tungsten;
     G4Material *CenterHyCalMaterial = PbWO4;
     //G4Material *OuterHyCalMaterial = PbGlass;
     G4Material *defaultMaterial = Galaxy;
 
-    TargetMaterial = H2Gas;
+    if (fConfig == "drad")
+        TarCelMaterial = Kapton;
+
+    // Sensitive detector manager
+    G4SDManager *SDman = G4SDManager::GetSDMpointer();
 
     // World
     G4double WorldSizeXY = 150.0 * cm;
@@ -222,91 +252,156 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     G4LogicalVolume *logicWorld = new G4LogicalVolume(solidWorld, defaultMaterial, "Logical World");
     physiWorld = new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicWorld, "World", 0, false, 0);
 
-    // Target
-    G4double TargetCenter = -300.0 * cm + 88.9 * mm;
-    G4VSolid *solidTargetCon = new G4Box("Solid Target Container", 3.5 * cm, 3.5 * cm, 2.1 * cm);
-    G4LogicalVolume *logicTargetCon = new G4LogicalVolume(solidTargetCon, defaultMaterial, "Logical Target Container");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, TargetCenter), logicTargetCon, "Target Container", logicWorld, false, 0);
+    if (fConfig == "prad") {
+        // Target
+        G4double TargetCenter = -300.0 * cm + 88.9 * mm;
+        G4VSolid *solidTargetCon = new G4Box("Solid Target Container", 3.5 * cm, 3.5 * cm, 2.1 * cm);
+        G4LogicalVolume *logicTargetCon = new G4LogicalVolume(solidTargetCon, defaultMaterial, "Logical Target Container");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, TargetCenter), logicTargetCon, "Target Container", logicWorld, false, 0);
 
-    // Target material
-    G4double TargetR = 25.0 * mm;
-    G4double TargetHalfL = 20.0 * mm;
-    G4VSolid *solidTarget = new G4Tubs("Solid Target Material", 0, TargetR, TargetHalfL, 0, twopi);
-    G4LogicalVolume *logicTarget = new G4LogicalVolume(solidTarget, TargetMaterial, "Logical Target Material");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicTarget, "Target Material", logicTargetCon, false, 0);
+        // Target material
+        G4double TargetR = 25.0 * mm;
+        G4double TargetHalfL = 20.0 * mm;
+        G4VSolid *solidTarget = new G4Tubs("Solid Target Material", 0, TargetR, TargetHalfL, 0, twopi);
+        G4LogicalVolume *logicTarget = new G4LogicalVolume(solidTarget, TargetMaterial, "Logical Target Material");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicTarget, "Target Material", logicTargetCon, false, 0);
 
-    // Target cell
-    G4double CellXY = 3.5 * cm;
-    G4Box *CellBox = new G4Box("Cell Box", CellXY, CellXY, TargetHalfL);
-    G4Tubs *CellTube = new G4Tubs("Cell Tube", 0, TargetR, TargetHalfL + 1.0 * mm, 0, twopi);
-    G4SubtractionSolid *solidCell = new G4SubtractionSolid("Solid Target Cell", CellBox, CellTube);
-    G4LogicalVolume *logicCell = new G4LogicalVolume(solidCell, TarCelMaterial, "Logical Target Cell");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicCell, "Target Cell", logicTargetCon, false, 0);
+        // Target cell
+        G4double CellXY = 3.5 * cm;
+        G4Box *CellBox = new G4Box("Cell Box", CellXY, CellXY, TargetHalfL);
+        G4Tubs *CellTube = new G4Tubs("Cell Tube", 0, TargetR, TargetHalfL + 1.0 * mm, 0, twopi);
+        G4SubtractionSolid *solidCell = new G4SubtractionSolid("Solid Target Cell", CellBox, CellTube);
+        G4LogicalVolume *logicCell = new G4LogicalVolume(solidCell, TarCelMaterial, "Logical Target Cell");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicCell, "Target Cell", logicTargetCon, false, 0);
 
-    // Windows
-    G4double CellApertureR = 2.0 * mm;
-    G4double CellWinThickness = 7.5 * um;
-    G4Box *CellWinBox = new G4Box("Cell Window Box", CellXY, CellXY, CellWinThickness / 2.0);
-    G4Tubs *CellWinTube = new G4Tubs("Cell Window Tube", 0, CellApertureR, CellWinThickness + 1.0 * mm, 0, twopi);
-    G4SubtractionSolid *solidCellWin = new G4SubtractionSolid("Solid Target Cell", CellWinBox, CellWinTube);
-    G4LogicalVolume *logicCellWin = new G4LogicalVolume(solidCellWin, WindowsMaterial, "Logical Target Window");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, -TargetHalfL - CellWinThickness / 2.0), logicCellWin, "Upstream Target Window", logicTargetCon, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, +TargetHalfL + CellWinThickness / 2.0), logicCellWin, "Downstream Target Window", logicTargetCon, false, 0);
+        // Windows
+        G4double CellApertureR = 2.0 * mm;
+        G4double CellWinThickness = 7.5 * um;
+        G4Box *CellWinBox = new G4Box("Cell Window Box", CellXY, CellXY, CellWinThickness / 2.0);
+        G4Tubs *CellWinTube = new G4Tubs("Cell Window Tube", 0, CellApertureR, CellWinThickness + 1.0 * mm, 0, twopi);
+        G4SubtractionSolid *solidCellWin = new G4SubtractionSolid("Solid Target Cell", CellWinBox, CellWinTube);
+        G4LogicalVolume *logicCellWin = new G4LogicalVolume(solidCellWin, WindowsMaterial, "Logical Target Window");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, -TargetHalfL - CellWinThickness / 2.0), logicCellWin, "Upstream Target Window", logicTargetCon, false, 0);
+        new G4PVPlacement(0, G4ThreeVector(0, 0, +TargetHalfL + CellWinThickness / 2.0), logicCellWin, "Downstream Target Window", logicTargetCon, false, 0);
+    } else if (fConfig == "drad") {
+        // Target
+        G4VSolid *solidTargetCon = new G4Tubs("Solid Target Container", 0, 2.1 * cm, 2.1 * cm, 0, twopi);
+        G4LogicalVolume *logicTargetCon = new G4LogicalVolume(solidTargetCon, defaultMaterial, "Logical Target Container");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter), logicTargetCon, "Target Container", logicWorld, false, 0);
 
-    // Target chamber
-    // For now, only built the downstream chamber with window
-    // The downstream chamber window should locate at -3000.0 + 88.9 + 74.0  = -2837.1 mm
-    // The length of the downstream chamber is 381.7 mm
-    // The total length of the downstream chamber and the tube in total is 710.0 mm
-    // Here the downstream chamber and the tube are built together to be the now down stream chamber.
-    // So the center of this geometry should be at -2837.1 + 710.0 / 2 = -2482.1 mm
-    G4double DownChamberCenter = -248.21 * cm;
-    G4double DownChamberHalfL = 71.0 / 2.0 * cm;
-    G4double DownChamberUR = 8.00 * cm;
+        // Target material
+        G4double TargetR = 20.0 * mm;
+        G4double TargetHalfL = 20.0 * mm;
+        G4VSolid *solidTarget = new G4Tubs("Solid Target Material", 0, TargetR, TargetHalfL, 0, twopi);
+        G4LogicalVolume *logicTarget = new G4LogicalVolume(solidTarget, TargetMaterial, "Logical Target Material");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicTarget, "Target Material", logicTargetCon, false, 0);
 
-    // Downstream chamber
-    G4double rInnerDC[] = {7.56 * cm, 7.56 * cm, 7.56 * cm, 7.56 * cm, 17.30 * cm, 17.30 * cm};
-    G4double rOuterDC[] = {8.00 * cm, 8.00 * cm, 17.78 * cm, 17.78 * cm, 17.78 * cm, 17.78 * cm};
-    G4double zPlaneDC[] = {0, 32.83 * cm, 32.83 * cm, 35.37 * cm, 35.37 * cm, 71.00 * cm};
-    G4VSolid *solidDownChamber = new G4Polycone("Solid Downstream Chamber", 0, twopi, 6, zPlaneDC, rInnerDC, rOuterDC);
-    G4LogicalVolume *logicDownChamber = new G4LogicalVolume(solidDownChamber, ChamberMaterial, "Logical Downstream Chamber");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, DownChamberCenter - DownChamberHalfL), logicDownChamber, "Downstream Chamber", logicWorld, false, 0);
+        // Target cell
+        G4double CellThickness = 0.03 * mm;
+        G4VSolid *solidCell = new G4Tubs("Solid Target Cell", TargetR, TargetR + CellThickness, TargetHalfL, 0, twopi);
+        G4LogicalVolume *logicCell = new G4LogicalVolume(solidCell, TarCelMaterial, "Logical Target Cell");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicCell, "Target Cell", logicTargetCon, false, 0);
 
-    // Windows
-    G4double DownChamberApertureR = 22.8 * mm;
-    G4double DownChamberWinThickness = 7.5 * um;
-    G4Tubs *solidDownChamberWin = new G4Tubs("Solid Downstream Chamber Window", DownChamberApertureR, DownChamberUR, DownChamberWinThickness / 2.0, 0, twopi);
-    G4LogicalVolume *logicDownChamberWin = new G4LogicalVolume(solidDownChamberWin, WindowsMaterial, "Logical Downstream Chamber Window");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, DownChamberCenter - DownChamberHalfL - DownChamberWinThickness / 2.0), logicDownChamberWin, "Downstream Chamber Window", logicWorld, false, 0);
+        // Windows
+        G4double CellApertureR = 2.0 * mm;
+        G4double CellWinThickness = 7.5 * um;
+        G4VSolid *solidCellWin = new G4Tubs("Solid Cell Window", CellApertureR, TargetR + CellThickness, CellWinThickness / 2.0, 0, twopi);
+        G4LogicalVolume *logicCellWin = new G4LogicalVolume(solidCellWin, WindowsMaterial, "Logical Target Window");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, -TargetHalfL - CellWinThickness / 2.0), logicCellWin, "Upstream Target Window", logicTargetCon, false, 0);
+        new G4PVPlacement(0, G4ThreeVector(0, 0, +TargetHalfL + CellWinThickness / 2.0), logicCellWin, "Downstream Target Window", logicTargetCon, false, 0);
+    }
 
-    // Vacuum box
-    // The length of the vacuum box is 4250.0 mm
-    // So the center of this geometry should be at -3000.0 + 88.9 + 74.0 + 710.0 + 2125.0 = -2.1 mm
-    G4double VacBoxCenter = -0.21 * cm;
-    G4double VacBoxHalfL = 212.5 * cm;
-    G4double VacBoxMaxR = 78.11 * cm;
-    G4double rInner2[] = {17.30 * cm, 17.30 * cm, 50.17 * cm, 50.17 * cm, 78.11 * cm, 78.11 * cm};
-    G4double rOuter2[] = {17.78 * cm, 17.78 * cm, 50.80 * cm, 50.80 * cm, 78.74 * cm, 78.74 * cm};
-    G4double zPlane2[] = {0, 6.8 * cm, 17.6 * cm, 215.3 * cm, 229.5 * cm, 425.00 * cm};
-    G4VSolid *solidVacBox = new G4Polycone("Solid Vacuum Box", 0, twopi, 6, zPlane2, rInner2, rOuter2);
-    G4LogicalVolume *logicVacBox = new G4LogicalVolume(solidVacBox, ChamberMaterial, "Logical Vacuum Box");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter - VacBoxHalfL), logicVacBox, "Vacuum Box", logicWorld, false, 0);
+    if (fConfig == "drad") {
+        // cylindrical detector
+        G4double RecoilDetAng = twopi / fRecoilDetNSeg;
+        G4double RecoilDetOR = fRecoilDetIR / cos(RecoilDetAng / 2.0);
+        G4VSolid *solidRecoilDetCon = new G4Tubs("Solid Recoil Detector Container", fRecoilDetIR - 1.0 * mm, RecoilDetOR + 2.0 * fRecoilDetThickness + 1.0 * mm, fRecoilDetHalfL + 1.0 * mm, 0, twopi);
+        G4LogicalVolume *logicRecoilDetCon = new G4LogicalVolume(solidRecoilDetCon, defaultMaterial, "Logical Recoil Detector Container");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, fRecoilDetCenter), logicRecoilDetCon, "Recoil Detector Container", logicWorld, false, 0);
 
-    // Window and flange
-    G4double ArcDistance = 5.59 * cm;
-    G4double ArcEndR = (ArcDistance * ArcDistance + VacBoxMaxR * VacBoxMaxR) / (2 * ArcDistance);
-    G4double ArcEndThickness = 1.6 * mm;
-    G4double FlangeIR = 1.9 * cm;
-    G4double FlangeOR = 3.0 * cm;
-    G4double FlangeHalfL = 0.5 * cm;
-    G4Sphere *VacSphere = new G4Sphere("Vac Sphere", ArcEndR - ArcEndThickness, ArcEndR, 0, twopi, pi - asin(VacBoxMaxR / ArcEndR), pi);
-    G4Tubs *VacHole = new G4Tubs("Vac Hole", 0, FlangeOR, ArcEndR + 1.0 * mm, 0, twopi);
-    G4SubtractionSolid *solidVacBoxWin = new G4SubtractionSolid("Solid Vacuum Box Window", VacSphere, VacHole);
-    G4LogicalVolume *logicVacBoxWin = new G4LogicalVolume(solidVacBoxWin, ChamberMaterial, "Logical Vacuum Box Window");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter + VacBoxHalfL + ArcEndR - ArcDistance), logicVacBoxWin, "Vacuum Box Window", logicWorld, false, 0);
-    G4VSolid *solidFlange = new G4Tubs("Solid Vacuum Flange", FlangeIR, FlangeOR, FlangeHalfL, 0, twopi);
-    G4LogicalVolume *logicFlange = new G4LogicalVolume(solidFlange, ChamberMaterial, "Logical Vacuum Flange");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter + VacBoxHalfL - ArcDistance + FlangeHalfL), logicFlange, "Vacuum Flange", logicWorld, false, 0);
+        G4double RecoilDetHalfX = sqrt(RecoilDetOR * RecoilDetOR - fRecoilDetIR * fRecoilDetIR);
+        G4double RecoilDetHalfY = fRecoilDetThickness / 2.0;
+        G4VSolid *solidRecoilDet = new G4Box("Solid Recoil Detector", RecoilDetHalfX, RecoilDetHalfY, fRecoilDetHalfL);
+        G4LogicalVolume *logicRecoilDet = new G4LogicalVolume(solidRecoilDet, RecoilDetMaterial, "Logical Recoil Detector");
+
+        for (int i = 0; i < fRecoilDetNSeg; i++) {
+            G4Translate3D translation(0, fRecoilDetIR + RecoilDetHalfY, 0);
+            G4RotateZ3D rotation(RecoilDetAng * i);
+            G4Transform3D transform = rotation * translation;
+            new G4PVPlacement(transform, logicRecoilDet, "Recoil Detector", logicRecoilDetCon, false, i);
+        }
+
+        StandardDetectorSD *RecoilDetSD = new StandardDetectorSD("pradsim/RecoilDetector", "RD");
+        SDman->AddNewDetector(RecoilDetSD);
+        logicRecoilDet->SetSensitiveDetector(RecoilDetSD);
+    }
+
+    if (fConfig == "prad") {
+        // Target chamber
+        // For now, only built the downstream chamber with window
+        // The downstream chamber window should locate at -3000.0 + 88.9 + 74.0  = -2837.1 mm
+        // The length of the downstream chamber is 381.7 mm
+        // The total length of the downstream chamber and the tube in total is 710.0 mm
+        // Here the downstream chamber and the tube are built together to be the now down stream chamber.
+        // So the center of this geometry should be at -2837.1 + 710.0 / 2 = -2482.1 mm
+        G4double DownChamberCenter = -248.21 * cm;
+        G4double DownChamberHalfL = 71.0 / 2.0 * cm;
+        G4double DownChamberUR = 8.00 * cm;
+
+        // Downstream chamber
+        G4double rInnerDC[] = {7.56 * cm, 7.56 * cm, 7.56 * cm, 7.56 * cm, 17.30 * cm, 17.30 * cm};
+        G4double rOuterDC[] = {8.00 * cm, 8.00 * cm, 17.78 * cm, 17.78 * cm, 17.78 * cm, 17.78 * cm};
+        G4double zPlaneDC[] = {0, 32.83 * cm, 32.83 * cm, 35.37 * cm, 35.37 * cm, 71.00 * cm};
+        G4VSolid *solidDownChamber = new G4Polycone("Solid Downstream Chamber", 0, twopi, 6, zPlaneDC, rInnerDC, rOuterDC);
+        G4LogicalVolume *logicDownChamber = new G4LogicalVolume(solidDownChamber, ChamberMaterial, "Logical Downstream Chamber");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, DownChamberCenter - DownChamberHalfL), logicDownChamber, "Downstream Chamber", logicWorld, false, 0);
+
+        // Windows
+        G4double DownChamberApertureR = 22.8 * mm;
+        G4double DownChamberWinThickness = 7.5 * um;
+        G4Tubs *solidDownChamberWin = new G4Tubs("Solid Downstream Chamber Window", DownChamberApertureR, DownChamberUR, DownChamberWinThickness / 2.0, 0, twopi);
+        G4LogicalVolume *logicDownChamberWin = new G4LogicalVolume(solidDownChamberWin, WindowsMaterial, "Logical Downstream Chamber Window");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, DownChamberCenter - DownChamberHalfL - DownChamberWinThickness / 2.0), logicDownChamberWin, "Downstream Chamber Window", logicWorld, false, 0);
+
+        // Vacuum box
+        // The length of the vacuum box is 4250.0 mm
+        // So the center of this geometry should be at -3000.0 + 88.9 + 74.0 + 710.0 + 2125.0 = -2.1 mm
+        G4double VacBoxCenter = -0.21 * cm; // !!! defined twice below for vacuum tube
+        G4double VacBoxHalfL = 212.5 * cm; // !!! defined twice below for vacuum tube
+        G4double VacBoxMaxR = 78.11 * cm;
+        G4double rInner2[] = {17.30 * cm, 17.30 * cm, 50.17 * cm, 50.17 * cm, 78.11 * cm, 78.11 * cm};
+        G4double rOuter2[] = {17.78 * cm, 17.78 * cm, 50.80 * cm, 50.80 * cm, 78.74 * cm, 78.74 * cm};
+        G4double zPlane2[] = {0, 6.8 * cm, 17.6 * cm, 215.3 * cm, 229.5 * cm, 425.00 * cm};
+        G4VSolid *solidVacBox = new G4Polycone("Solid Vacuum Box", 0, twopi, 6, zPlane2, rInner2, rOuter2);
+        G4LogicalVolume *logicVacBox = new G4LogicalVolume(solidVacBox, ChamberMaterial, "Logical Vacuum Box");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter - VacBoxHalfL), logicVacBox, "Vacuum Box", logicWorld, false, 0);
+
+        // Window and flange
+        G4double ArcDistance = 5.59 * cm; // !!! defined twice below for vacuum tube
+        G4double ArcEndR = (ArcDistance * ArcDistance + VacBoxMaxR * VacBoxMaxR) / (2 * ArcDistance);
+        G4double ArcEndThickness = 1.6 * mm;
+        G4double FlangeIR = 1.9 * cm;
+        G4double FlangeOR = 3.0 * cm;
+        G4double FlangeHalfL = 0.5 * cm;
+        G4Sphere *VacSphere = new G4Sphere("Vac Sphere", ArcEndR - ArcEndThickness, ArcEndR, 0, twopi, pi - asin(VacBoxMaxR / ArcEndR), pi);
+        G4Tubs *VacHole = new G4Tubs("Vac Hole", 0, FlangeOR, ArcEndR + 1.0 * mm, 0, twopi);
+        G4SubtractionSolid *solidVacBoxWin = new G4SubtractionSolid("Solid Vacuum Box Window", VacSphere, VacHole);
+        G4LogicalVolume *logicVacBoxWin = new G4LogicalVolume(solidVacBoxWin, ChamberMaterial, "Logical Vacuum Box Window");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter + VacBoxHalfL + ArcEndR - ArcDistance), logicVacBoxWin, "Vacuum Box Window", logicWorld, false, 0);
+        G4VSolid *solidFlange = new G4Tubs("Solid Vacuum Flange", FlangeIR, FlangeOR, FlangeHalfL, 0, twopi);
+        G4LogicalVolume *logicFlange = new G4LogicalVolume(solidFlange, ChamberMaterial, "Logical Vacuum Flange");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter + VacBoxHalfL - ArcDistance + FlangeHalfL), logicFlange, "Vacuum Flange", logicWorld, false, 0);
+
+        // Vacuum Tube
+        G4double VacTubeIR = 1.8 * cm;
+        G4double VacTubeOR = 1.9 * cm;
+        G4double VacTubeL = WorldSizeZ - 10.0 * cm - VacBoxCenter - VacBoxHalfL + ArcDistance;
+        G4VSolid *solidVacTube = new G4Tubs("Solid Vacuum Tube", VacTubeIR, VacTubeOR, VacTubeL / 2.0, 0, twopi);
+        G4LogicalVolume *logicVacTube = new G4LogicalVolume(solidVacTube, ChamberMaterial, "Logical Vacuum Tube");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, WorldSizeZ - 10.0 * cm - VacTubeL / 2.0), logicVacTube, "Vacuum Tube", logicWorld, false, 0);
+    } else if (fConfig == "drad") {
+        // no chamber for drad configuration now
+    }
 
     // GEM
     // Center of two GEM should be at -3000.0 + 88.9 + (5222.0 + 5183.0) / 2 = 2291.4 mm // (5222.0 + 5183.0) / 2 from Weizhi
@@ -318,8 +413,16 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     G4Tubs *GEMPipeHole = new G4Tubs("GEM Pipe Hole", 0, 22.0 * mm, 6.1 * mm, 0, twopi);
     G4SubtractionSolid *solidGEMCon = new G4SubtractionSolid("Solid GEM Container", GEMOuterFrame, GEMPipeHole, 0, G4ThreeVector(-253.0 * mm, 0, 0));
     G4LogicalVolume *logicGEMCon = new G4LogicalVolume(solidGEMCon, defaultMaterial, "Logical GEM Container");
-    new G4PVPlacement(0, G4ThreeVector(25.3 * cm, 0, GEMCenter - GEMGap / 2.0), logicGEMCon, "GEM Container", logicWorld, false, 0);
-    new G4PVPlacement(G4Transform3D(rmGEM2, G4ThreeVector(-25.3 * cm, 0, GEMCenter + GEMGap / 2.0)), logicGEMCon, "GEM Container", logicWorld, false, 0);
+
+    if (fConfig == "prad") {
+        new G4PVPlacement(0, G4ThreeVector(25.3 * cm, 0, GEMCenter - GEMGap / 2.0), logicGEMCon, "GEM Container", logicWorld, false, 0);
+        new G4PVPlacement(G4Transform3D(rmGEM2, G4ThreeVector(-25.3 * cm, 0, GEMCenter + GEMGap / 2.0)), logicGEMCon, "GEM Container", logicWorld, false, 0);
+    } else if (fConfig == "drad") {
+        new G4PVPlacement(0, G4ThreeVector(25.3 * cm, 0, fGEM1Center - GEMGap / 2.0), logicGEMCon, "GEM Container", logicWorld, false, 0);
+        new G4PVPlacement(G4Transform3D(rmGEM2, G4ThreeVector(-25.3 * cm, 0, fGEM1Center + GEMGap / 2.0)), logicGEMCon, "GEM Container", logicWorld, false, 0);
+        new G4PVPlacement(0, G4ThreeVector(25.3 * cm, 0, fGEM2Center - GEMGap / 2.0), logicGEMCon, "GEM Container", logicWorld, false, 1);
+        new G4PVPlacement(G4Transform3D(rmGEM2, G4ThreeVector(-25.3 * cm, 0, fGEM2Center + GEMGap / 2.0)), logicGEMCon, "GEM Container", logicWorld, false, 1);
+    }
 
     // GEM Gas
     G4Box *GEMGasPiece1 = new G4Box("GEM Gas Piece 1", 275.0 * mm, 674.4 * mm, 6.0 * mm);
@@ -348,10 +451,27 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     G4LogicalVolume *logicGEMReadout = new G4LogicalVolume(solidGEMFoil, GEMFoilMaterial, "Logical GEM Readout");
     new G4PVPlacement(0, G4ThreeVector(0, 0, -6.0 * mm + GEMCoverThickness / 2.0), logicGEMCover, "GEM Cover Foil", logicGEMGas, false, 0);
     new G4PVPlacement(0, G4ThreeVector(0, 0, -3.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicGEMFoil, "GEM Foil", logicGEMGas, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 2.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicGEMFoil, "GEM Foil", logicGEMGas, false, 1);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, 2.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 2);
     new G4PVPlacement(0, G4ThreeVector(0, 0, 4.0 * mm), logicGEMReadout, "GEM Readout Foil", logicGEMGas, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 6.0 * mm - GEMCoverThickness / 2.0), logicGEMCover, "GEM CoverFoil", logicGEMGas, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, 6.0 * mm - GEMCoverThickness / 2.0), logicGEMCover, "GEM CoverFoil", logicGEMGas, false, 1);
+    StandardDetectorSD *GEMSD = new StandardDetectorSD("pradsim/GasElectronMultiplier", "GEM");
+    SDman->AddNewDetector(GEMSD);
+    logicGEMReadout->SetSensitiveDetector(GEMSD);
+
+    if (fConfig == "drad") {
+        // Scintillator Plane
+        G4double SciPlaneThickness = 5.0 * mm;
+        G4double SciPlaneHalfX = 75.0 * cm;
+        G4double SciPlaneHalfY = 75.0 * cm;
+
+        G4VSolid *solidSciPlane = new G4Box("Solid Scintillator Plane", SciPlaneHalfX, SciPlaneHalfY, SciPlaneThickness / 2.0);
+        G4LogicalVolume *logicSciPlane = new G4LogicalVolume(solidSciPlane, SciPlaneMaterial, "Logical Scintillator Plane");
+        new G4PVPlacement(0, G4ThreeVector(0, 0, fSciPlaneCenter), logicSciPlane, "Scintillator Plane", logicWorld, false, 0);
+        StandardDetectorSD *SciPlaneSD = new StandardDetectorSD("pradsim/ScintillatorPlane", "SP");
+        SDman->AddNewDetector(SciPlaneSD);
+        logicSciPlane->SetSensitiveDetector(SciPlaneSD);
+    }
 
     // HyCal
     // The crystal surface should be at -3000.0 + 88.9 + 5640.0 = 2728.9 mm // 5640.0 from Weizhi
@@ -359,8 +479,11 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     //G4double CrystalL = 18.0 * cm;
     G4double CrystalDiffL = 10.12 * cm;
     G4double CrystalSurf = 272.89 * cm; // Surface of the PWO
-    G4double HyCalCenter = CrystalSurf - CrystalDiffL + PbGlassL / 2.0;
-    G4double HyCalBoxHalfL = 60.0 * cm;
+
+    if (fConfig == "prad")
+        fCrystalSurf = CrystalSurf;
+
+    G4double HyCalCenter = fCrystalSurf - CrystalDiffL + PbGlassL / 2.0;
 
     // HyCal box
     G4double HyCalBoxCenter = HyCalCenter - 9.0 * cm + 30.0 * cm; // Check
@@ -386,6 +509,9 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     G4LogicalVolume *logicAbsorber = new G4LogicalVolume(solidAbsorber, CenterHyCalMaterial, "Logical Crystal Block");
     HyCalParameterisation *param = new HyCalParameterisation("config/hycal.conf");
     new G4PVParameterised("HyCal Crystal", logicAbsorber, logicHyCalCon, kUndefined, param->GetNumber(), param, false);
+    StandardDetectorSD *HyCalSD = new StandardDetectorSD("pradsim/HybridCalorimeter", "HC");
+    SDman->AddNewDetector(HyCalSD);
+    logicAbsorber->SetSensitiveDetector(HyCalSD);
 
     // Collimators around the central hole
     G4VSolid *CollConBox = new G4Box("HyCal Collimator Container Box", 4.1 * cm, 4.1 * cm, 5.0 * cm);
@@ -398,15 +524,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     double pos_y[12] = { -3.075, -3.075, -3.075, -3.075, -1.025, -1.025, 1.025, 1.025, 3.075, 3.075, 3.075, 3.075};
 
     for (int i = 0; i < 12; ++i)
-        new G4PVPlacement(0, G4ThreeVector(pos_x[i] * cm, pos_y[i] * cm, 0), logicColl, "HyCal Collimator", logicCollCon, false, 0);
-
-    // Vacuum Tube
-    G4double VacTubeIR = 1.8 * cm;
-    G4double VacTubeOR = 1.9 * cm;
-    G4double VacTubeL = HyCalBoxHalfL + HyCalBoxCenter - VacBoxCenter - VacBoxHalfL + ArcDistance;
-    G4VSolid *solidVacTube = new G4Tubs("Solid Vacuum Tube", VacTubeIR, VacTubeOR, VacTubeL / 2.0, 0, twopi);
-    G4LogicalVolume *logicVacTube = new G4LogicalVolume(solidVacTube, ChamberMaterial, "Logical Vacuum Tube");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalBoxCenter + HyCalBoxHalfL - VacTubeL / 2.0), logicVacTube, "Vacuum Tube", logicWorld, false, 0);
+        new G4PVPlacement(0, G4ThreeVector(pos_x[i] * cm, pos_y[i] * cm, 0), logicColl, "HyCal Collimator", logicCollCon, false, i);
 
     // Virtual Detector
     G4RotationMatrix rmVD;
@@ -426,17 +544,8 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalCenter - PbGlassL / 2.0 - 0.5 * mm), logicVD1, "Virtual Detector", logicWorld, false, 0);
     G4LogicalVolume *logicVD2 = new G4LogicalVolume(solidVD2, VacuumMaterial, "Logical Virtual Detector 2");
     new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalCenter - PbGlassL / 2.0 + CrystalDiffL - 0.5 * mm), logicVD2, "Virtual Detector", logicWorld, false, 0);
-
-    // Sensitive detectors
-    G4SDManager *SDman = G4SDManager::GetSDMpointer();
-    StandardDetectorSD *HyCalSD = new StandardDetectorSD("pradsim/HybridCalorimeter", "HC");
-    StandardDetectorSD *GEMSD = new StandardDetectorSD("pradsim/GasElectronMultiplier", "GEM");
     StandardDetectorSD *VirtualSD = new StandardDetectorSD("pradsim/VirtualDetector", "VD");
-    SDman->AddNewDetector(HyCalSD);
-    SDman->AddNewDetector(GEMSD);
     SDman->AddNewDetector(VirtualSD);
-    logicAbsorber->SetSensitiveDetector(HyCalSD);
-    logicGEMReadout->SetSensitiveDetector(GEMSD);
     logicVD1->SetSensitiveDetector(VirtualSD);
     logicVD2->SetSensitiveDetector(VirtualSD);
 
@@ -447,15 +556,6 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
 
     // Always return the physical World
     return physiWorld;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::SetTargetMaterial(G4String materialChoice)
-{
-    G4Material *pttoMaterial = G4Material::GetMaterial(materialChoice);
-
-    if (pttoMaterial) TargetMaterial = pttoMaterial;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
