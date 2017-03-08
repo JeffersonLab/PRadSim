@@ -23,53 +23,35 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// EventMessenger.cc
-// Developer : Chao Peng
+// ActionInitialization.hh
+// Developer : Chao Gu
 // History:
-//   Aug 2012, C. Peng, Original version.
+//   Mar 2017, C. Gu, Add DRad configuration.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "EventMessenger.hh"
+#ifndef ActionInitialization_h
+#define ActionInitialization_h 1
 
-#include "EventAction.hh"
+#include "G4VUserActionInitialization.hh"
 
-#include "G4UImessenger.hh"
-#include "G4UIcommand.hh"
-#include "G4UIdirectory.hh"
-#include "G4UIcmdWithAnInteger.hh"
-
-#include "G4String.hh"
+class G4VSteppingVerbose;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EventMessenger::EventMessenger(EventAction *act) : G4UImessenger(), Action(act)
+class ActionInitialization : public G4VUserActionInitialization
 {
-    eventDir = new G4UIdirectory("/pradsim/event/");
-    eventDir->SetGuidance("event control");
+public:
+    ActionInitialization();
+    virtual ~ActionInitialization();
 
-    PrintCmd = new G4UIcmdWithAnInteger("/pradsim/event/printmodulo", this);
-    PrintCmd->SetGuidance("Print events modulo n");
-    PrintCmd->SetParameterName("EventNb", false);
-    PrintCmd->SetRange("EventNb>0");
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-EventMessenger::~EventMessenger()
-{
-    delete PrintCmd;
-    delete eventDir;
-}
+    void Build() const;
+    void BuildForMaster() const;
+    G4VSteppingVerbose *InitializeSteppingVerbose() const;
+};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void EventMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
-{
-    if (command == PrintCmd)
-        Action->SetPrintModulo(PrintCmd->GetNewIntValue(newValue));
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#endif

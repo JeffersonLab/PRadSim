@@ -24,9 +24,10 @@
 // ********************************************************************
 //
 // EventAction.hh
-// Developer : Chao Peng
+// Developer : Chao Peng, Chao Gu
 // History:
 //   Aug 2012, C. Peng, Original version.
+//   Jan 2017, C. Gu, Rewrite with ROOT support.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -35,18 +36,20 @@
 #ifndef EventAction_h
 #define EventAction_h 1
 
-#include "globals.hh"
 #include "G4UserEventAction.hh"
 
-class RunAction;
+#include "G4Types.hh"
+
 class EventMessenger;
+
+class G4Event;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class EventAction : public G4UserEventAction
 {
 public:
-    EventAction(RunAction *);
+    EventAction();
     virtual ~EventAction();
 
     void BeginOfEventAction(const G4Event *);
@@ -55,8 +58,6 @@ public:
     inline void SetPrintModulo(G4int val);
 
 private:
-    RunAction *runAct;
-
     G4int printModulo;
 
     EventMessenger *eventMessenger;

@@ -40,6 +40,8 @@
 #include "HyCalParameterisation.hh"
 #include "StandardDetectorSD.hh"
 
+#include "G4Element.hh"
+#include "G4Isotope.hh"
 #include "G4Material.hh"
 #include "G4NistManager.hh"
 
@@ -55,24 +57,23 @@
 #include "G4Tubs.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VSolid.hh"
+#include "G4VUserDetectorConstruction.hh"
 
 #include "G4RunManager.hh"
 #include "G4SDManager.hh"
-#include "G4VSensitiveDetector.hh"
 
 #include "G4Colour.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
-#include "G4VisAttributes.hh"
-
 #include "G4String.hh"
+#include "G4VisAttributes.hh"
 
 #include <cmath>
 #include <map>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-DetectorConstruction::DetectorConstruction(G4String conf) : fConfig(conf)
+DetectorConstruction::DetectorConstruction(G4String conf) : G4VUserDetectorConstruction(), fConfig(conf)
 {
     if (fConfig != "prad" && fConfig != "drad")
         fConfig = "prad";
@@ -109,7 +110,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     // Material
     std::map<G4String, G4VisAttributes *> mVisAtt;
 
-    G4int z;
+    G4int z, n;
     G4double a;
     G4double density;
     G4int ncomponents, natoms;
@@ -128,7 +129,9 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     G4Element *Cu = pNM->FindOrBuildElement(z = 29);
     G4Element *W  = pNM->FindOrBuildElement(z = 74);
     G4Element *Pb = pNM->FindOrBuildElement(z = 86);
-    G4Element *D = new G4Element("Deuterium", "D", z = 1, a = 2.0141 * g / mole);
+    G4Isotope *H2 = new G4Isotope("H2", z = 1, n = 2, a = 2.0141 * g / mole);
+    G4Element *D = new G4Element("Deuterium", "D", ncomponents = 1);
+    D->AddIsotope(H2, 1.0);
 
     // Space Vacuum
     G4Material *Galaxy = new G4Material("Galaxy", density = universe_mean_density, ncomponents = 1, kStateGas, 0.1 * kelvin, 1.0e-19 * pascal);
@@ -148,7 +151,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     H2Gas->AddElement(H, natoms = 2);
 
     // Hydrogen Gas
-    G4Material *D2Gas =  new G4Material("H2 Gas", density = 0.6 / 760.0 * 273.15 / 25.0 * 0.1796 * mg / cm3, ncomponents = 1, kStateGas, 25.0 * kelvin, 0.6 / 760.0 * atmosphere);
+    G4Material *D2Gas =  new G4Material("D2 Gas", density = 0.6 / 760.0 * 273.15 / 25.0 * 0.1796 * mg / cm3, ncomponents = 1, kStateGas, 25.0 * kelvin, 0.6 / 760.0 * atmosphere);
     D2Gas->AddElement(D, natoms = 2);
 
     // Copper
@@ -324,7 +327,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
 
         // Recoil detector
         G4double RecoilDetAng = twopi / fRecoilDetNSeg;
-        G4double RecoilDetOR = fTargetR * cos(RecoilDetAng / 2.0) - 0.1 * mm;
+        G4double RecoilDetOR = fTargetR * cos(RecoilDetAng / 2.0) - 0.5 * mm;
         G4double RecoilDetIR = RecoilDetOR - fRecoilDetThickness;
         G4double rInnerRD[] = {RecoilDetIR, RecoilDetIR};
         G4double rOuterRD[] = {RecoilDetOR, RecoilDetOR};
@@ -557,13 +560,6 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
 
     // Always return the physical World
     return physiWorld;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void DetectorConstruction::UpdateGeometry()
-{
-    G4RunManager::GetRunManager()->DefineWorldVolume(Construct());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

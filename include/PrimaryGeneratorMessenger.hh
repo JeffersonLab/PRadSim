@@ -36,10 +36,13 @@
 #ifndef PrimaryGeneratorMessenger_h
 #define PrimaryGeneratorMessenger_h 1
 
-#include "globals.hh"
 #include "G4UImessenger.hh"
 
+#include "G4String.hh"
+
 class PrimaryGeneratorAction;
+
+class G4UIcommand;
 class G4UIdirectory;
 class G4UIcmdWithAString;
 class G4UIcmdWithAnInteger;
@@ -56,10 +59,11 @@ public:
 
 private:
     PrimaryGeneratorAction *Action;
-    G4UIdirectory      *gunDir;
-    G4UIcmdWithAString *RandCmd;
-    G4UIcmdWithAString *GunTypeCmd;
-    G4UIcmdWithAnInteger *StartEventCmd;
+
+    G4UIdirectory          *gunDir;
+    G4UIcmdWithAString     *RandCmd;
+    G4UIcmdWithAString     *GunTypeCmd;
+    G4UIcmdWithAnInteger   *StartEventCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

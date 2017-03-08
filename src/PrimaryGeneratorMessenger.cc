@@ -37,13 +37,17 @@
 
 #include "PrimaryGeneratorAction.hh"
 
+#include "G4UImessenger.hh"
+#include "G4UIcommand.hh"
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithAnInteger.hh"
 
+#include "G4String.hh"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *Gun) : Action(Gun)
+PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act) : G4UImessenger(), Action(act)
 {
     gunDir = new G4UIdirectory("/pradsim/gun/");
     gunDir->SetGuidance("PrimaryGenerator control");
@@ -84,8 +88,7 @@ PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void PrimaryGeneratorMessenger::SetNewValue(
-    G4UIcommand *command, G4String newValue)
+void PrimaryGeneratorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 {
     if (command == RandCmd)
         Action->SetRandFlag(newValue);

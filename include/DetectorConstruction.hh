@@ -39,8 +39,10 @@
 
 #include "G4VUserDetectorConstruction.hh"
 
+#include "G4String.hh"
+
 class DetectorMessenger;
-class G4String;
+
 class G4VPhysicalVolume;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -61,8 +63,6 @@ public:
 
     inline void SetTarget(G4double ir, G4double l);
     inline void SetRecoilDetector(G4int n, G4double l, G4double t);
-
-    void UpdateGeometry();
 
     inline const G4VPhysicalVolume *GetPhysiWorld();
 

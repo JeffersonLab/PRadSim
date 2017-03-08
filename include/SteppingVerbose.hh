@@ -32,8 +32,6 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class SteppingVerbose;
-
 #ifndef SteppingVerbose_h
 #define SteppingVerbose_h 1
 
@@ -44,13 +42,11 @@ class SteppingVerbose;
 class SteppingVerbose : public G4SteppingVerbose
 {
 public:
-
     SteppingVerbose();
-    ~SteppingVerbose();
+    virtual ~SteppingVerbose();
 
     void StepInfo();
     void TrackingStarted();
-
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -23,53 +23,61 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// EventMessenger.cc
-// Developer : Chao Peng
+// ActionInitialization.cc
+// Developer : Chao Gu
 // History:
-//   Aug 2012, C. Peng, Original version.
+//   Mar 2017, C. Gu, Add DRad configuration.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "EventMessenger.hh"
+#include "ActionInitialization.hh"
 
 #include "EventAction.hh"
+#include "PrimaryGeneratorAction.hh"
+#include "RunAction.hh"
+#include "SteppingAction.hh"
+#include "SteppingVerbose.hh"
 
-#include "G4UImessenger.hh"
-#include "G4UIcommand.hh"
-#include "G4UIdirectory.hh"
-#include "G4UIcmdWithAnInteger.hh"
-
-#include "G4String.hh"
+#include "G4VUserActionInitialization.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EventMessenger::EventMessenger(EventAction *act) : G4UImessenger(), Action(act)
+ActionInitialization::ActionInitialization() : G4VUserActionInitialization()
 {
-    eventDir = new G4UIdirectory("/pradsim/event/");
-    eventDir->SetGuidance("event control");
-
-    PrintCmd = new G4UIcmdWithAnInteger("/pradsim/event/printmodulo", this);
-    PrintCmd->SetGuidance("Print events modulo n");
-    PrintCmd->SetParameterName("EventNb", false);
-    PrintCmd->SetRange("EventNb>0");
+    //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EventMessenger::~EventMessenger()
+ActionInitialization::~ActionInitialization()
 {
-    delete PrintCmd;
-    delete eventDir;
+    //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void EventMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
+void ActionInitialization::Build() const
 {
-    if (command == PrintCmd)
-        Action->SetPrintModulo(PrintCmd->GetNewIntValue(newValue));
+    SetUserAction(new PrimaryGeneratorAction);
+    SetUserAction(new RunAction);
+    SetUserAction(new EventAction);
+    SetUserAction(new SteppingAction);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void ActionInitialization::BuildForMaster() const
+{
+    SetUserAction(new RunAction);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4VSteppingVerbose *ActionInitialization::InitializeSteppingVerbose() const
+{
+    return new SteppingVerbose;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

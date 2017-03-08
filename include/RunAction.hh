@@ -48,7 +48,7 @@ public:
     virtual ~RunAction();
 
     void BeginOfRunAction(const G4Run *);
-    //void EndOfRunAction(const G4Run *);
+    void EndOfRunAction(const G4Run *);
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

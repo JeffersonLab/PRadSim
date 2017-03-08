@@ -39,6 +39,12 @@
 
 #include "StandardHit.hh"
 
+#include "G4String.hh"
+
+class G4HCofThisEvent;
+class G4Step;
+class G4TouchableHistory;
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class StandardDetectorSD : public G4VSensitiveDetector

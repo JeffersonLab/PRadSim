@@ -34,27 +34,28 @@
 
 #include "SteppingAction.hh"
 
-#include "DetectorConstruction.hh"
-#include "EventAction.hh"
-
 #include "G4Step.hh"
+#include "G4UserSteppingAction.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SteppingAction::SteppingAction(DetectorConstruction *det, EventAction *evt) : detector(det), eventaction(evt)
+SteppingAction::SteppingAction() : G4UserSteppingAction()
 {
+    //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 SteppingAction::~SteppingAction()
 {
+    //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void SteppingAction::UserSteppingAction(const G4Step * /*aStep*/)
 {
+    //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

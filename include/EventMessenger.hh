@@ -37,7 +37,11 @@
 
 #include "G4UImessenger.hh"
 
+#include "G4String.hh"
+
 class EventAction;
+
+class G4UIcommand;
 class G4UIdirectory;
 class G4UIcmdWithAnInteger;
 
@@ -52,7 +56,8 @@ public:
     void SetNewValue(G4UIcommand *, G4String);
 
 private:
-    EventAction          *eventAction;
+    EventAction          *Action;
+
     G4UIdirectory        *eventDir;
     G4UIcmdWithAnInteger *PrintCmd;
 };

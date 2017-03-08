@@ -50,7 +50,7 @@ add_subdirectory(digi)
 # Copy all scripts to the build directory
 # This is so that we can run the executable directly because it relies on these scripts being in the current working directory
 #
-set(PRADSIM_RESOURCE_FILES vis.mac gui.mac run.mac)
+set(PRADSIM_RESOURCE_FILES init_vis.mac vis.mac gui.mac run.mac)
 set(PRADSIM_RESOURCE_DIRS evgen)
 
 add_custom_target(copy_resources ALL COMMENT "Copy resources")

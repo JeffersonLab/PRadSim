@@ -40,17 +40,19 @@
 
 #include "G4Box.hh"
 #include "G4Material.hh"
+#include "G4VPhysicalVolume.hh"
+#include "G4VPVParameterisation.hh"
+
 #include "G4ios.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
-#include "G4VPhysicalVolume.hh"
 
 #include <string>
 #include <unordered_map>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-HyCalParameterisation::HyCalParameterisation(const std::string &path)
+HyCalParameterisation::HyCalParameterisation(const std::string &path) : G4VPVParameterisation(), ConfigObject()
 {
     if (!path.empty())
         Configure(path);
@@ -60,6 +62,7 @@ HyCalParameterisation::HyCalParameterisation(const std::string &path)
 
 HyCalParameterisation::~HyCalParameterisation()
 {
+    //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

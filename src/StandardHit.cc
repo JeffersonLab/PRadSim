@@ -34,16 +34,21 @@
 
 #include "StandardHit.hh"
 
+#include "G4Allocator.hh"
+#include "G4VHit.hh"
+
+#include "G4ios.hh"
 #include "G4UnitsTable.hh"
 
 #include <iomanip>
-#include <iostream>
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 G4Allocator<StandardHit> StandardHitAllocator;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-StandardHit::StandardHit()
+StandardHit::StandardHit() : G4VHit()
 {
     Clear();
 }
@@ -52,6 +57,7 @@ StandardHit::StandardHit()
 
 StandardHit::~StandardHit()
 {
+    //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -92,7 +98,7 @@ const StandardHit &StandardHit::operator=(const StandardHit &right)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-int StandardHit::operator==(const StandardHit &right) const
+G4bool StandardHit::operator==(const StandardHit &right) const
 {
     return ((fPID == right.fPID) && (fTrackID == right.fTrackID) && (fTime == right.fTime) && (fPhysV == right.fPhysV) && (fCopyNo == right.fCopyNo));
 }

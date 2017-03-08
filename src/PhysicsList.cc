@@ -35,13 +35,13 @@
 #include "PhysicsList.hh"
 
 #include "G4ProcessManager.hh"
+#include "G4VUserPhysicsList.hh"
 
-#include "G4BosonConstructor.hh"
-#include "G4LeptonConstructor.hh"
-#include "G4MesonConstructor.hh"
-#include "G4BaryonConstructor.hh"
-#include "G4IonConstructor.hh"
+#include "G4ios.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4String.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4UnitsTable.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -55,9 +55,16 @@ PhysicsList::PhysicsList() : G4VUserPhysicsList()
 
 PhysicsList::~PhysicsList()
 {
+    //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+#include "G4BosonConstructor.hh"
+#include "G4LeptonConstructor.hh"
+#include "G4MesonConstructor.hh"
+#include "G4BaryonConstructor.hh"
+#include "G4IonConstructor.hh"
 
 void PhysicsList::ConstructParticle()
 {

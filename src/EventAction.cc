@@ -24,9 +24,10 @@
 // ********************************************************************
 //
 // EventAction.cc
-// Developer : Chao Peng
+// Developer : Chao Peng, Chao Gu
 // History:
 //   Aug 2012, C. Peng, Original version.
+//   Jan 2017, C. Gu, Rewrite with ROOT support.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -34,19 +35,19 @@
 
 #include "EventAction.hh"
 
-#include "Globals.hh"
-#include "RunAction.hh"
 #include "EventMessenger.hh"
-
-#include "G4Event.hh"
-#include "Randomize.hh"
+#include "Globals.hh"
 #include "RootTree.hh"
 
-#include <iomanip>
+#include "G4Event.hh"
+#include "G4UserEventAction.hh"
+
+#include "G4ios.hh"
+#include "Randomize.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EventAction::EventAction(RunAction *run) : runAct(run), printModulo(100000)
+EventAction::EventAction() : G4UserEventAction(), printModulo(1000)
 {
     eventMessenger = new EventMessenger(this);
 }

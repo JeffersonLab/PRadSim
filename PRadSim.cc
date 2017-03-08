@@ -35,18 +35,16 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #include "DetectorConstruction.hh"
-#include "EventAction.hh"
+#include "ActionInitialization.hh"
 #include "PhysicsList.hh"
-#include "PrimaryGeneratorAction.hh"
 #include "RootTree.hh"
-#include "RunAction.hh"
-#include "SteppingAction.hh"
 #include "SteppingVerbose.hh"
 
-#include "G4ios.hh"
 #include "G4RunManager.hh"
-#include "G4String.hh"
 #include "G4UImanager.hh"
+
+#include "G4ios.hh"
+#include "G4String.hh"
 #include "Randomize.hh"
 
 #include <ctime>
@@ -120,11 +118,8 @@ int main(int argc, char **argv)
     if (optind + 1 == argc)
         macro = argv[optind++];
 
-    // Choose the Random engine
-    //
+    // Initialize the random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
-    // Set the Random seeds
-    //
     long seeds[2];
     int index;
     time_t systime = time(NULL);
@@ -133,12 +128,7 @@ int main(int argc, char **argv)
     seeds[1] = (long)(systime * G4UniformRand());
     CLHEP::HepRandom::setTheSeeds(seeds, index);
 
-    // User Verbose output class
-    //
-    G4VSteppingVerbose::SetInstance(new SteppingVerbose);
-
     // Initialize output root tree
-    //
     std::ifstream data_file("output/file.output");
     std::string file_name;
     int run_number = 1;
@@ -166,41 +156,25 @@ int main(int argc, char **argv)
 
     std::string path = "output/" + file_name + "_" + std::to_string(run_number) + ".root";
     char outf[256];
-
     strcpy(outf, path.c_str());
 
     gRootTree = new RootTree(outf);
 
     // Construct the default run manager
-    //
+    G4VSteppingVerbose *verbosity = new SteppingVerbose;
+    G4VSteppingVerbose::SetInstance(verbosity);
     G4RunManager *runManager = new G4RunManager;
 
     // Set mandatory initialization classes
-    //
     G4String confstr = conf;
     DetectorConstruction *detector = new DetectorConstruction(confstr);
     runManager->SetUserInitialization(detector);
-    //
+
     PhysicsList *physics = new PhysicsList;
     runManager->SetUserInitialization(physics);
 
-    // Set user action classes
-    //
-    PrimaryGeneratorAction *gen_action = new PrimaryGeneratorAction(detector);
-    runManager->SetUserAction(gen_action);
-    //
-    RunAction *run_action = new RunAction;
-    runManager->SetUserAction(run_action);
-    //
-    EventAction *event_action = new EventAction(run_action);
-    runManager->SetUserAction(event_action);
-    //
-    SteppingAction *stepping_action = new SteppingAction(detector, event_action);
-    runManager->SetUserAction(stepping_action);
-
-    // Initialize G4 kernel
-    //
-    runManager->Initialize();
+    ActionInitialization *action = new ActionInitialization();
+    runManager->SetUserInitialization(action);
 
 #ifdef G4VIS_USE
     // Initialize visualization
@@ -221,7 +195,7 @@ int main(int argc, char **argv)
 #ifdef G4UI_USE
         G4UIExecutive *ui = new G4UIExecutive(argc, argv);
 #ifdef G4VIS_USE
-        UImanager->ApplyCommand("/control/execute vis.mac");
+        UImanager->ApplyCommand("/control/execute init_vis.mac");
 #endif
 
         if (ui->IsGUI())
@@ -233,9 +207,6 @@ int main(int argc, char **argv)
     }
 
     // Job termination
-    // Free the store: user actions, physics_list and detector_description are
-    //                 owned and deleted by the run manager, so they should not
-    //                 be deleted in the main() program !
 #ifdef G4VIS_USE
     delete visManager;
 #endif

@@ -14,7 +14,7 @@
 #include "evio.h"
 
 //maximum number of hits in a SD
-#define MaxSDHits 10240
+#define MaxSDHits 5000
 
 class TChain;
 

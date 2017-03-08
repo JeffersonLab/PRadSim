@@ -36,18 +36,22 @@
 
 #include "G4Run.hh"
 #include "G4RunManager.hh"
-#include "G4UnitsTable.hh"
+#include "G4UserRunAction.hh"
+
+#include "G4ios.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RunAction::RunAction()
+RunAction::RunAction() : G4UserRunAction()
 {
+    //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 RunAction::~RunAction()
 {
+    //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -58,6 +62,13 @@ void RunAction::BeginOfRunAction(const G4Run *aRun)
 
     // inform the runManager to save random number seed
     G4RunManager::GetRunManager()->SetRandomNumberStore(true);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void RunAction::EndOfRunAction(const G4Run * /*aRun*/)
+{
+    //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

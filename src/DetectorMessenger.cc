@@ -37,14 +37,18 @@
 
 #include "DetectorConstruction.hh"
 
+#include "G4UImessenger.hh"
+#include "G4UIcommand.hh"
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithAnInteger.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithoutParameter.hh"
 
+#include "G4String.hh"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-DetectorMessenger::DetectorMessenger(DetectorConstruction *Det) : Detector(Det)
+DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(), Detector(det)
 {
     PRadSimDir = new G4UIdirectory("/pradsim/");
     PRadSimDir->SetGuidance("UI commands of this example");
@@ -52,7 +56,7 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *Det) : Detector(Det)
     DetDir = new G4UIdirectory("/pradsim/det/");
     DetDir->SetGuidance("Detector control");
 
-    ZDir = new G4UIdirectory("/pradsim/det/z");
+    ZDir = new G4UIdirectory("/pradsim/det/z/");
     ZDir->SetGuidance("Detector z coords control");
 
     TargetZCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/z/target", this);
@@ -80,7 +84,7 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *Det) : Detector(Det)
     HyCalZCmd->SetParameterName("hycalz", false);
     HyCalZCmd->SetDefaultUnit("cm");
 
-    TargetDir = new G4UIdirectory("/pradsim/det/target");
+    TargetDir = new G4UIdirectory("/pradsim/det/target/");
     TargetDir->SetGuidance("Target control");
 
     TargetRCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/target/radius", this);
@@ -93,7 +97,7 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *Det) : Detector(Det)
     TargetHalfLCmd->SetParameterName("targetl", false);
     TargetHalfLCmd->SetDefaultUnit("mm");
 
-    RecoilDetDir = new G4UIdirectory("/pradsim/det/recoil");
+    RecoilDetDir = new G4UIdirectory("/pradsim/det/recoil/");
     RecoilDetDir->SetGuidance("Recoil detector control");
 
     RecoilDetNSegCmd = new G4UIcmdWithAnInteger("/pradsim/det/recoil/nseg", this);
@@ -110,31 +114,25 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *Det) : Detector(Det)
     RecoilDetThicknessCmd->SetGuidance("Set fRecoilDetThickness");
     RecoilDetThicknessCmd->SetParameterName("recoilt", false);
     RecoilDetThicknessCmd->SetDefaultUnit("mm");
-
-    UpdateCmd = new G4UIcmdWithoutParameter("/pradsim/det/update", this);
-    UpdateCmd->SetGuidance("Update calorimeter geometry.");
-    UpdateCmd->SetGuidance("This command MUST be applied before \"beamOn\" ");
-    UpdateCmd->SetGuidance("if you changed geometrical value(s).");
-    UpdateCmd->AvailableForStates(G4State_Idle);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorMessenger::~DetectorMessenger()
 {
-    delete UpdateCmd;
     delete RecoilDetNSegCmd;
     delete RecoilDetHalfLCmd;
     delete RecoilDetThicknessCmd;
     delete RecoilDetDir;
-    delete TargetDir;
     delete TargetRCmd;
     delete TargetHalfLCmd;
+    delete TargetDir;
     delete TargetZCmd;
     delete GEM1ZCmd;
     delete GEM2ZCmd;
     delete SciPlaneZCmd;
     delete HyCalZCmd;
+    delete ZDir;
     delete DetDir;
     delete PRadSimDir;
 }
@@ -172,9 +170,6 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 
     if (command == RecoilDetThicknessCmd)
         Detector->SetRecoilDetector(-10000, -10000, RecoilDetThicknessCmd->GetNewDoubleValue(newValue));
-
-    if (command == UpdateCmd)
-        Detector->UpdateGeometry();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -36,22 +36,23 @@
 #ifndef PrimaryGeneratorAction_h
 #define PrimaryGeneratorAction_h 1
 
-#include "G4String.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
+
+#include "G4String.hh"
 
 #include <fstream>
 
+class PrimaryGeneratorMessenger;
+
 class G4Event;
 class G4ParticleGun;
-class DetectorConstruction;
-class PrimaryGeneratorMessenger;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
 public:
-    PrimaryGeneratorAction(DetectorConstruction *);
+    PrimaryGeneratorAction();
     virtual ~PrimaryGeneratorAction();
 
     void GeneratePrimaries(G4Event *);
@@ -67,9 +68,7 @@ private:
 
     std::ifstream fEvGunFile;
 
-private:
     G4ParticleGun *particleGun;
-    DetectorConstruction *pradDetector;
 
     PrimaryGeneratorMessenger *gunMessenger; //messenger of this class
 };

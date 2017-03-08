@@ -21,12 +21,6 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RootTree::RootTree()
-{
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 RootTree::RootTree(const char *filename)
 {
     Initialize(filename);

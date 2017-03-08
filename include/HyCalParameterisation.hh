@@ -37,14 +37,15 @@
 #define HyCalParameterisation_h 1
 
 #include "ConfigObject.h"
+
 #include "G4VPVParameterisation.hh"
 
 #include <string>
 #include <vector>
 
-class G4VPhysicalVolume;
 class G4Box;
 class G4Material;
+class G4VPhysicalVolume;
 
 // Dummy declarations to get rid of warnings ...
 class G4Trd;

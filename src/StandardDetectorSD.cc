@@ -41,12 +41,13 @@
 #include "G4SDManager.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4ThreeVector.hh"
 #include "G4TouchableHistory.hh"
 #include "G4Track.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VSensitiveDetector.hh"
+
+#include "G4SystemOfUnits.hh"
+#include "G4ThreeVector.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -66,6 +67,7 @@ StandardDetectorSD::StandardDetectorSD(G4String name, G4String abbrev) : G4VSens
 
 StandardDetectorSD::~StandardDetectorSD()
 {
+    //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

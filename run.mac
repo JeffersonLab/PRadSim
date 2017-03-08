@@ -1,18 +1,11 @@
-# run.mac
+# Macro file for PRadSim
 #
-# can be run in batch, without graphic
-# or interactively: Idle> /control/execute run.mac
+# To be run preferably in batch, without graphics:
+# % PRadSim run.mac
 #
-#/control/verbose 2
-#/control/saveHistory
+# Change the default number of threads (in multi-threaded mode)
+#/run/numberOfWorkers 4
 #
-#/run/verbose 2
-#/event/verbose 1
-#/tracking/verbose 1
-# 
 
-/pradsim/gun/type ring
-
-/pradsim/event/printmodulo 1000
-
-/run/beamOn 10000
+/run/initialize
+/run/beamOn 500

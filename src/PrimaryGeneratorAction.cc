@@ -35,15 +35,18 @@
 
 #include "PrimaryGeneratorAction.hh"
 
-#include "DetectorConstruction.hh"
 #include "PrimaryGeneratorMessenger.hh"
 
 #include "G4Event.hh"
 #include "G4ParticleGun.hh"
-#include "G4ParticleTable.hh"
-#include "G4ParticleDefinition.hh"
+#include "G4VUserPrimaryGeneratorAction.hh"
+
 #include "G4ios.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4ParticleTable.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4String.hh"
+#include "G4ThreeVector.hh"
 #include "Randomize.hh"
 
 #include <cmath>
@@ -52,7 +55,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction *DC) : fRandFlag("on"), fGunType("ring"), fStartEvent(0), pradDetector(DC)
+PrimaryGeneratorAction::PrimaryGeneratorAction() : G4VUserPrimaryGeneratorAction(), fRandFlag("on"), fGunType("ring"), fStartEvent(0)
 {
     G4double n_particle = 1;
     particleGun  = new G4ParticleGun(n_particle);

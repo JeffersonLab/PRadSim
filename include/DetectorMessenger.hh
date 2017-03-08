@@ -36,13 +36,16 @@
 #ifndef DetectorMessenger_h
 #define DetectorMessenger_h 1
 
-#include "globals.hh"
 #include "G4UImessenger.hh"
 
+#include "G4String.hh"
+
 class DetectorConstruction;
+
+class G4UIcommand;
 class G4UIdirectory;
-class G4UIcmdWithAnInteger;
 class G4UIcmdWithADoubleAndUnit;
+class G4UIcmdWithAnInteger;
 class G4UIcmdWithoutParameter;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -56,7 +59,8 @@ public:
     void SetNewValue(G4UIcommand *, G4String);
 
 private:
-    DetectorConstruction *Detector;
+    DetectorConstruction      *Detector;
+
     G4UIdirectory             *PRadSimDir;
     G4UIdirectory             *DetDir;
     G4UIdirectory             *ZDir;
@@ -72,7 +76,6 @@ private:
     G4UIcmdWithAnInteger      *RecoilDetNSegCmd;
     G4UIcmdWithADoubleAndUnit *RecoilDetHalfLCmd;
     G4UIcmdWithADoubleAndUnit *RecoilDetThicknessCmd;
-    G4UIcmdWithoutParameter   *UpdateCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
