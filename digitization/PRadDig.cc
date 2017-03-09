@@ -1,5 +1,5 @@
 //
-// PRadDigi.cc
+// PRadDig.cc
 // Developer : Chao Gu
 // History:
 //   Jan 2017, C. Gu, Rewrite to separate the digitization.
@@ -16,7 +16,7 @@
 #include "TObject.h"
 #include "TChain.h"
 
-#include <cstring>
+#include <string>
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
@@ -121,14 +121,14 @@ int main(int argc, char **argv)
 
     std::string outf = tf + ".evio";
 
-    PRadDigitization *prad_digi = new PRadDigitization(t, outf.c_str());
+    PRadDigitization *prad_digi = new PRadDigitization(t, outf);
     prad_digi->RegisterDet(new HyCalDigitization("HC", "config/hycal.conf"));
 
     int N = t->GetEntries();
 
     for (int i = 0; i < N; i++) {
-        if (N % 1000 == 0 && N != 0)
-            std::cout << N << " events processed" << std::endl;
+        if ((i + 1) % 1000 == 0)
+            std::cout << i + 1 << " events processed" << std::endl;
 
         t->GetEntry(i);
         //prad_digi->Print();

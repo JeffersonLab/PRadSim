@@ -22,6 +22,18 @@ else()
 endif()
 set(EVIO_LIBRARIES evio)
 
+#---------------------------------------------------------------------------
+# Locate pradanalyzer library and headers
+#
+if(DEFINED ENV{PRADANADIR})
+  set(PRADANA_INCLUDE_DIR $ENV{PRADANADIR}/include CACHE PATH "Path to prad analyzer headers")
+  set(PRADANA_LIBRARY_DIR $ENV{PRADANADIR}/lib CACHE PATH "Path to prad analyzer libraries")
+else()
+  set(PRADANA_INCLUDE_DIR PRADANA_INCLUDE_DIR_NOT_FOUND CACHE PATH "Path to prad analyzer headers")
+  set(PRADANA_LIBRARY_DIR PRADANA_INCLUDE_DIR_NOT_FOUND CACHE PATH "Path to prad analyzer libraries")
+endif()
+set(PRADANA_LIBRARIES prana)
+
 #----------------------------------------------------------------------------
 # Setup include and lib directory for this project
 #
@@ -32,26 +44,42 @@ if(NOT ${EVIO_INCLUDE_DIR} STREQUAL "EVIO_INCLUDE_DIR_NOT_FOUND" OR ${EVIO_LIBRA
 else()
   message(FATAL_ERROR "Evio headers and libraries not found")
 endif()
+if(NOT ${PRADANA_INCLUDE_DIR} STREQUAL "PRADANA_INCLUDE_DIR_NOT_FOUND" OR ${PRADANA_LIBRARY_DIR} STREQUAL "PRADANA_LIBRARY_DIR_NOT_FOUND")
+  include_directories(${PRADANA_INCLUDE_DIR})
+  link_directories(${PRADANA_LIBRARY_DIR})
+else()
+  message(FATAL_ERROR "PRad Analyzer headers and libraries not found")
+endif()
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 # NB: headers are included so they will show up in IDEs
 #
-file(GLOB PRADDIG_SOURCES ${PROJECT_SOURCE_DIR}/src/*.cc ${PROJECT_SOURCE_DIR}/src/*.cpp)
-file(GLOB PRADDIG_HEADERS ${PROJECT_SOURCE_DIR}/include/*.hh ${PROJECT_SOURCE_DIR}/include/*.h)
+file(GLOB PRADDIG_SOURCES ${PROJECT_SOURCE_DIR}/src/*.cc)
+file(GLOB PRADDIG_HEADERS ${PROJECT_SOURCE_DIR}/include/*.hh)
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the libraries
 #
 add_executable(PRadDig PRadDig.cc ${PRADDIG_SOURCES} ${PRADDIG_HEADERS})
-target_link_libraries(PRadDig ${ROOT_LIBRARIES} ${EVIO_LIBRARIES})
+target_link_libraries(PRadDig ${ROOT_LIBRARIES} ${EVIO_LIBRARIES} ${PRADANA_LIBRARIES})
+add_executable(PRadRec PRadRec.cc)
+target_link_libraries(PRadRec ${ROOT_LIBRARIES} ${PRADANA_LIBRARIES})
 
 #----------------------------------------------------------------------------
 # Copy the executable to the project directory
 #
-add_custom_target(copy_exes ALL COMMENT "Copy executable")
+add_custom_target(copy_exes ALL
+  DEPENDS PRadDig PRadRec
+  COMMENT "Copy executable"
+)
 add_custom_command(TARGET copy_exes POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy PRadDig ..
-  DEPENDS PRadDig
+)
+add_custom_command(TARGET copy_exes POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy PRadRec ..
+)
+add_custom_command(TARGET copy_exes POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E create_symlink ${PRADANA_LIBRARY_DIR}/libprana.so ../libprana.so
 )

@@ -1,4 +1,4 @@
-# this file specify how the run number is grouped into periods
+# this file specifies how the run number is grouped into periods
 # format is
 # period        sub-peirod      begin       end
     5           1               1238        1287

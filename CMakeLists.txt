@@ -44,25 +44,17 @@ target_link_libraries(PRadSim ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 #----------------------------------------------------------------------------
 # Add subdirectories to build
 #
-add_subdirectory(digi)
+add_subdirectory(digitization)
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory
 # This is so that we can run the executable directly because it relies on these scripts being in the current working directory
 #
 set(PRADSIM_RESOURCE_FILES init_vis.mac vis.mac gui.mac run.mac)
-set(PRADSIM_RESOURCE_DIRS evgen)
 
-add_custom_target(copy_resources ALL COMMENT "Copy resources")
-
+add_custom_target(copy_files ALL COMMENT "Copy files")
 foreach(_file ${PRADSIM_RESOURCE_FILES})
-  add_custom_command(TARGET copy_resources POST_BUILD
+  add_custom_command(TARGET copy_files POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/${_file} ${PROJECT_BINARY_DIR}/${_file}
-  )
-endforeach()
-
-foreach(_dir ${PRADSIM_RESOURCE_DIRS})
-  add_custom_command(TARGET copy_resources POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/${_dir} ${PROJECT_BINARY_DIR}/${_dir}
   )
 endforeach()

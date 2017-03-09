@@ -105,7 +105,7 @@ G4bool StandardHit::operator==(const StandardHit &right) const
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void StandardHit::Print()
+void StandardHit::Print() const
 {
     G4int prec = G4cout.precision(3);
     G4cout << std::setw(5) << fPID << " " << std::setw(5) << fTrackID << " " << std::setw(5) << fPTrackID << "   ";

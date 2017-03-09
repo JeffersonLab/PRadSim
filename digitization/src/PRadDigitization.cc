@@ -27,7 +27,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PRadDigitization::PRadDigitization(TChain *t, const char *filename) : fPreStart(false), fEventNumber(0), fPRadOut(-1), fData(t)
+PRadDigitization::PRadDigitization(TChain *t, const std::string &filename) : fPreStart(false), fEventNumber(0), fPRadOut(-1), fData(t)
 {
     OpenFile(filename);
 
@@ -96,7 +96,7 @@ void PRadDigitization::ProcessEvent()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void PRadDigitization::Print()
+void PRadDigitization::Print() const
 {
     for (auto &digi : fDigitizer)
         digi->Print();
@@ -104,9 +104,9 @@ void PRadDigitization::Print()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void PRadDigitization::OpenFile(const char *filename)
+void PRadDigitization::OpenFile(const std::string &filename)
 {
-    std::string path = "output/" + std::string(filename);
+    std::string path = "output/" + filename;
     char mode[] = "w";
     char outf[256];
 

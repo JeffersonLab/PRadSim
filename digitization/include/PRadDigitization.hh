@@ -15,25 +15,19 @@
 
 #include "evio.h"
 
-#include "TChain.h"
-
+#include <string>
 #include <vector>
 
 #define MAX_PRAD_BUFFER 3000
+
+class TChain;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class PRadDigitization
 {
 public:
-    enum DAQ_SubSystem {
-        HyCal,
-        GEM,
-        MAX_SUBSYSTEM,
-    };
-
-public:
-    PRadDigitization(TChain *t, const char *filename);
+    PRadDigitization(TChain *t, const std::string &filename);
     virtual ~PRadDigitization();
 
     void RegisterDet(StandardDigiBase *digi);
@@ -41,10 +35,10 @@ public:
     void PreStart();
     void ProcessEvent();
 
-    void Print();
+    void Print() const;
 
 private:
-    void OpenFile(const char *filename);
+    void OpenFile(const std::string &filename);
 
     int AddEventInfoBank(uint32_t *buffer);
 

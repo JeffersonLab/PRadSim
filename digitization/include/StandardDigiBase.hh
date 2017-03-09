@@ -13,6 +13,8 @@
 
 #include "evio.h"
 
+#include <string>
+
 //maximum number of hits in a SD
 #define MaxSDHits 5000
 
@@ -41,7 +43,7 @@ struct SDData {
 class StandardDigiBase
 {
 public:
-    StandardDigiBase(const char *name);
+    StandardDigiBase(const std::string &name);
     virtual ~StandardDigiBase();
 
     virtual void RegisterData(TChain *t);
@@ -50,7 +52,7 @@ public:
     virtual bool ProcessEvent(uint32_t *buffer) = 0;
 
     virtual void Clear();
-    virtual void Print();
+    virtual void Print() const;
 
 protected:
     const char *fAbbrev;

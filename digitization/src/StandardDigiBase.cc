@@ -15,12 +15,15 @@
 #include "TObject.h"
 #include "TChain.h"
 
+#include "evio.h"
+
 #include <iomanip>
 #include <iostream>
+#include <string>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-StandardDigiBase::StandardDigiBase(const char *name) : fAbbrev(name)
+StandardDigiBase::StandardDigiBase(const std::string &name) : fAbbrev(name.c_str())
 {
     Clear();
 }
@@ -29,6 +32,7 @@ StandardDigiBase::StandardDigiBase(const char *name) : fAbbrev(name)
 
 StandardDigiBase::~StandardDigiBase()
 {
+    //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -78,7 +82,7 @@ void StandardDigiBase::Clear()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void StandardDigiBase::Print()
+void StandardDigiBase::Print() const
 {
     std::cout << fAbbrev << " : " << fData.N << std::endl;
 

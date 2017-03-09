@@ -170,8 +170,6 @@ void StandardDetectorSD::EndOfEvent(G4HCofThisEvent *HCE)
         StandardHit *aHit = (*fHitsCollection)[i];
 
         gRootTree->UpdateValue(fAbbrev, aHit->GetPID(), aHit->GetTrackID(), aHit->GetParentTrackID(), aHit->GetInPos().x(), aHit->GetInPos().y(), aHit->GetInPos().z(), aHit->GetInMom().mag(), aHit->GetOutPos().x(), aHit->GetOutPos().y(), aHit->GetOutPos().z(), aHit->GetOutMom().mag(), aHit->GetEdep(), aHit->GetTime(), aHit->GetCopyNo());
-
-        //aHit->Print();
     }
 
     return;
