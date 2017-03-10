@@ -146,16 +146,16 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     G4Material *Vacuum = new G4Material("Vacuum", density = 1.0e-6 / 760.0 * 1.292 * mg / cm3, ncomponents = 1, kStateGas, STP_Temperature, 1.0e-6 / 760.0 * atmosphere);
     Vacuum->AddMaterial(Air, fractionmass = 1.0);
 
-    // Hydrogen Gas
-    G4Material *H2Gas =  new G4Material("H2 Gas", density = 0.6 / 760.0 * 273.15 / 25.0 * 0.08988 * mg / cm3, ncomponents = 1, kStateGas, 25.0 * kelvin, 0.6 / 760.0 * atmosphere);
+    // Hydrogen Gas (T=19.5K, P=470mTorr)
+    G4Material *H2Gas =  new G4Material("H2 Gas", density = 0.47 / 760.0 * 273.15 / 19.5 * 0.08988 * mg / cm3, ncomponents = 1, kStateGas, 25.0 * kelvin, 0.6 / 760.0 * atmosphere);
     H2Gas->AddElement(H, natoms = 2);
 
-    // Hydrogen Gas
-    G4Material *D2Gas =  new G4Material("D2 Gas", density = 0.6 / 760.0 * 273.15 / 25.0 * 0.1796 * mg / cm3, ncomponents = 1, kStateGas, 25.0 * kelvin, 0.6 / 760.0 * atmosphere);
+    // Deuteron Gas 
+    G4Material *D2Gas =  new G4Material("D2 Gas", density = 0.47 / 760.0 * 273.15 / 19.5 * 0.1796 * mg / cm3, ncomponents = 1, kStateGas, 25.0 * kelvin, 0.6 / 760.0 * atmosphere);
     D2Gas->AddElement(D, natoms = 2);
 
-    // Copper
-    G4Material *Copper = new G4Material("Copper", density = 8.96 * g / cm3, ncomponents = 1);
+    // Copper C101
+    G4Material *Copper = new G4Material("Copper", density = 8.92 * g / cm3, ncomponents = 1);
     Copper->AddElement(Cu, natoms = 1);
 
     // Kapton
