@@ -220,6 +220,18 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     G4Material *PbGlass = new G4Material("Lead Glass", density = 3.85 * g / cm3, ncomponents = 2);
     PbGlass->AddElement(Pb, fractionmass = 0.5316);
     PbGlass->AddMaterial(SiO2, fractionmass = 0.4684);
+    
+    // Stainless Steel (for beam pipes)
+    G4Material* Steel = new G4Material("Steel", density= 7.9*g/cm3, ncomponents=9);
+    StainlessSteel->AddElement(C, fractionmass=0.0007);
+    StainlessSteel->AddElement(Si, fractionmass=0.01);
+    StainlessSteel->AddElement(Mn, fractionmass=0.02);
+    StainlessSteel->AddElement(Ni, fractionmass=0.09);
+    StainlessSteel->AddElement(P, fractionmass=0.00045);
+    StainlessSteel->AddElement(S, fractionmass=0.00015);
+    StainlessSteel->AddElement(Cr, fractionmass=0.18);
+    StainlessSteel->AddElement(N, fractionmass=0.0011);
+    StainlessSteel->AddElement(Fe, fractionmass=0.6976);
 
     // Print out material table
     G4cout << *(G4Material::GetMaterialTable()) << G4endl;
