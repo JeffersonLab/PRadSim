@@ -125,7 +125,13 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     G4Element *O  = pNM->FindOrBuildElement(z = 8);
     G4Element *Al = pNM->FindOrBuildElement(z = 13);
     G4Element *Si = pNM->FindOrBuildElement(z = 14);
+    G4Element *P  = pNM->FindOrBuildElement(z = 15);
+    G4Element *S  = pNM->FindOrBuildElement(z = 16);
     G4Element *Ar = pNM->FindOrBuildElement(z = 18);
+    G4Element *Cr = pNM->FindOrBuildElement(z = 24);
+    G4Element *Mn = pNM->FindOrBuildElement(z = 25);
+    G4Element *Fe = pNM->FindOrBuildElement(z = 26);
+    G4Element *Ni = pNM->FindOrBuildElement(z = 28);
     G4Element *Cu = pNM->FindOrBuildElement(z = 29);
     G4Element *W  = pNM->FindOrBuildElement(z = 74);
     G4Element *Pb = pNM->FindOrBuildElement(z = 86);
@@ -146,12 +152,12 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     G4Material *Vacuum = new G4Material("Vacuum", density = 1.0e-6 / 760.0 * 1.292 * mg / cm3, ncomponents = 1, kStateGas, STP_Temperature, 1.0e-6 / 760.0 * atmosphere);
     Vacuum->AddMaterial(Air, fractionmass = 1.0);
 
-    // Hydrogen Gas (T=19.5K, P=470mTorr)
-    G4Material *H2Gas =  new G4Material("H2 Gas", density = 0.47 / 760.0 * 273.15 / 19.5 * 0.08988 * mg / cm3, ncomponents = 1, kStateGas, 25.0 * kelvin, 0.6 / 760.0 * atmosphere);
+    // Hydrogen Gas (T = 19.5 K, P = 470 mTorr)
+    G4Material *H2Gas = new G4Material("H2 Gas", density = 0.47 / 760.0 * 273.15 / 19.5 * 0.08988 * mg / cm3, ncomponents = 1, kStateGas, 25.0 * kelvin, 0.6 / 760.0 * atmosphere);
     H2Gas->AddElement(H, natoms = 2);
 
-    // Deuteron Gas 
-    G4Material *D2Gas =  new G4Material("D2 Gas", density = 0.47 / 760.0 * 273.15 / 19.5 * 0.1796 * mg / cm3, ncomponents = 1, kStateGas, 25.0 * kelvin, 0.6 / 760.0 * atmosphere);
+    // Deuteron Gas
+    G4Material *D2Gas = new G4Material("D2 Gas", density = 0.47 / 760.0 * 273.15 / 19.5 * 0.1796 * mg / cm3, ncomponents = 1, kStateGas, 25.0 * kelvin, 0.6 / 760.0 * atmosphere);
     D2Gas->AddElement(D, natoms = 2);
 
     // Copper C101
@@ -172,6 +178,18 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     // Aluminum
     G4Material *Aluminum = new G4Material("Aluminum", density = 2.700 * g / cm3, ncomponents = 1);
     Aluminum->AddElement(Al, natoms = 1);
+
+    // Stainless Steel (Beam pipes)
+    G4Material *SSteel = new G4Material("Stainless Steel", density = 7.9 * g / cm3, ncomponents = 9);
+    SSteel->AddElement(C, fractionmass = 0.0007);
+    SSteel->AddElement(Si, fractionmass = 0.01);
+    SSteel->AddElement(Mn, fractionmass = 0.02);
+    SSteel->AddElement(Ni, fractionmass = 0.09);
+    SSteel->AddElement(P, fractionmass = 0.00045);
+    SSteel->AddElement(S, fractionmass = 0.00015);
+    SSteel->AddElement(Cr, fractionmass = 0.18);
+    SSteel->AddElement(N, fractionmass = 0.0011);
+    SSteel->AddElement(Fe, fractionmass = 0.6976);
 
     // GEM Frame G10
     G4Material *NemaG10 = new G4Material("NemaG10", density = 1.700 * g / cm3, ncomponents = 4);
@@ -220,18 +238,6 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     G4Material *PbGlass = new G4Material("Lead Glass", density = 3.85 * g / cm3, ncomponents = 2);
     PbGlass->AddElement(Pb, fractionmass = 0.5316);
     PbGlass->AddMaterial(SiO2, fractionmass = 0.4684);
-    
-    // Stainless Steel (for beam pipes)
-    G4Material* Steel = new G4Material("Steel", density= 7.9*g/cm3, ncomponents=9);
-    StainlessSteel->AddElement(C, fractionmass=0.0007);
-    StainlessSteel->AddElement(Si, fractionmass=0.01);
-    StainlessSteel->AddElement(Mn, fractionmass=0.02);
-    StainlessSteel->AddElement(Ni, fractionmass=0.09);
-    StainlessSteel->AddElement(P, fractionmass=0.00045);
-    StainlessSteel->AddElement(S, fractionmass=0.00015);
-    StainlessSteel->AddElement(Cr, fractionmass=0.18);
-    StainlessSteel->AddElement(N, fractionmass=0.0011);
-    StainlessSteel->AddElement(Fe, fractionmass=0.6976);
 
     // Print out material table
     G4cout << *(G4Material::GetMaterialTable()) << G4endl;
@@ -243,6 +249,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     mVisAtt[Kapton->GetName()] = new G4VisAttributes(G4Colour::Brown());
     mVisAtt[Silicon->GetName()] = new G4VisAttributes(G4Colour::Green());
     mVisAtt[Aluminum->GetName()] = new G4VisAttributes(G4Colour::Grey());
+    mVisAtt[SSteel->GetName()] = new G4VisAttributes(G4Colour::Grey());
     mVisAtt[NemaG10->GetName()] = new G4VisAttributes(G4Colour::Magenta());
     mVisAtt[ArCO2->GetName()] = new G4VisAttributes(G4Colour::Yellow());
     mVisAtt[EJ204->GetName()] = new G4VisAttributes(G4Colour::Green());
@@ -258,6 +265,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     G4Material *WindowsMaterial = Kapton;
     G4Material *RecoilDetMaterial = Silicon;
     G4Material *ChamberMaterial = Aluminum;
+    G4Material *TubeMaterial = SSteel;
     G4Material *GEMFrameMaterial = NemaG10;
     G4Material *GEMFoilMaterial = Kapton;
     G4Material *GEMGasMaterial = ArCO2;
@@ -382,8 +390,8 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
         // Vacuum box
         // The length of the vacuum box is 4250.0 mm
         // So the center of this geometry should be at -3000.0 + 88.9 + 74.0 + 710.0 + 2125.0 = -2.1 mm
-        G4double VacBoxCenter = -0.21 * cm; // !!! defined twice below for vacuum tube
-        G4double VacBoxHalfL = 212.5 * cm; // !!! defined twice below for vacuum tube
+        G4double VacBoxCenter = -0.21 * cm;
+        G4double VacBoxHalfL = 212.5 * cm;
         G4double VacBoxMaxR = 78.11 * cm;
         G4double rInner2[] = {17.30 * cm, 17.30 * cm, 50.17 * cm, 50.17 * cm, 78.11 * cm, 78.11 * cm};
         G4double rOuter2[] = {17.78 * cm, 17.78 * cm, 50.80 * cm, 50.80 * cm, 78.74 * cm, 78.74 * cm};
@@ -393,7 +401,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
         new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter - VacBoxHalfL), logicVacBox, "Vacuum Box", logicWorld, false, 0);
 
         // Window and flange
-        G4double ArcDistance = 5.59 * cm; // !!! defined twice below for vacuum tube
+        G4double ArcDistance = 5.59 * cm;
         G4double ArcEndR = (ArcDistance * ArcDistance + VacBoxMaxR * VacBoxMaxR) / (2 * ArcDistance);
         G4double ArcEndThickness = 1.6 * mm;
         G4double FlangeIR = 1.9 * cm;
@@ -405,7 +413,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
         G4LogicalVolume *logicVacBoxWin = new G4LogicalVolume(solidVacBoxWin, ChamberMaterial, "Logical Vacuum Box Window");
         new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter + VacBoxHalfL + ArcEndR - ArcDistance), logicVacBoxWin, "Vacuum Box Window", logicWorld, false, 0);
         G4VSolid *solidFlange = new G4Tubs("Solid Vacuum Flange", FlangeIR, FlangeOR, FlangeHalfL, 0, twopi);
-        G4LogicalVolume *logicFlange = new G4LogicalVolume(solidFlange, ChamberMaterial, "Logical Vacuum Flange");
+        G4LogicalVolume *logicFlange = new G4LogicalVolume(solidFlange, TubeMaterial, "Logical Vacuum Flange");
         new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter + VacBoxHalfL - ArcDistance + FlangeHalfL), logicFlange, "Vacuum Flange", logicWorld, false, 0);
 
         // Vacuum Tube
@@ -413,7 +421,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
         G4double VacTubeOR = 1.9 * cm;
         G4double VacTubeL = WorldSizeZ - 10.0 * cm - VacBoxCenter - VacBoxHalfL + ArcDistance;
         G4VSolid *solidVacTube = new G4Tubs("Solid Vacuum Tube", VacTubeIR, VacTubeOR, VacTubeL / 2.0, 0, twopi);
-        G4LogicalVolume *logicVacTube = new G4LogicalVolume(solidVacTube, ChamberMaterial, "Logical Vacuum Tube");
+        G4LogicalVolume *logicVacTube = new G4LogicalVolume(solidVacTube, TubeMaterial, "Logical Vacuum Tube");
         new G4PVPlacement(0, G4ThreeVector(0, 0, WorldSizeZ - 10.0 * cm - VacTubeL / 2.0), logicVacTube, "Vacuum Tube", logicWorld, false, 0);
     } else if (fConfig == "drad") {
         // no chamber for drad configuration now
