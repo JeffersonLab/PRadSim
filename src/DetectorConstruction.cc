@@ -639,8 +639,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
     G4double AlWinMaxR = 78.11 * cm;
     G4double ArcDistance = 5.59 * cm;
     G4double ArcEndR = (ArcDistance * ArcDistance + AlWinMaxR * AlWinMaxR) / (2 * ArcDistance);
-    //G4double ArcEndThickness = 1.6 * mm;
-    G4double ArcEndThickness = 1.0 * mm;
+    G4double ArcEndThickness = 1.6 * mm;
     G4double AlWinApertureR = 3.0 * cm;
     G4Sphere *AlWinSphere = new G4Sphere("AlWinSphere", ArcEndR - ArcEndThickness, ArcEndR, 0, twopi, pi - asin(AlWinMaxR / ArcEndR), pi);
     G4Tubs *AlWinHole = new G4Tubs("AlWinHole", 0, AlWinApertureR, ArcEndR + 1.0 * mm, 0, twopi);
@@ -793,6 +792,7 @@ void DetectorConstruction::DefineDRadSDs()
         CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC");
         SetSensitiveDetector("HyCalModuleLV", HyCalSD);
     }
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

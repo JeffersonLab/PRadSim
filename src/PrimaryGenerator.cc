@@ -387,6 +387,7 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
         fN++;
     }
 
+    if (e_p > 0) {
     G4PrimaryVertex *vertexP = new G4PrimaryVertex(x, y, z, 0);
     G4PrimaryParticle *particleP = new G4PrimaryParticle(particleTable->FindParticle("gamma"));
     double kx_p = sin(theta_p) * cos(phi_p);
@@ -407,6 +408,7 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
     fTheta[fN] = theta_p;
     fPhi[fN] = phi_p;
     fN++;
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
