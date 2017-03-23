@@ -69,13 +69,21 @@ const double b23_P = 5.31;
 
 //----------------------------------------------------------------------------------------------
 // You can use your own parametrization of the proton form factors:
-const double a11 = 0.; // Electric form factor
-const double b11 = 9.92;
-const double b12 = 24.6;
-const double b13 = 0.;
+const double a11 = 2.90966; // Electric form factor
+const double a12 = -1.11542229;
+const double a13 = 3.866171e-2;
+const double b11 = 14.5187212;
+const double b12 = 40.88333;
+const double b13 = 99.999998;
+const double b14 = 4.579e-5;
+const double b15 = 10.3580447;
 
-const double a21 = 0.; // Magnetic form factor
-const double b21 = 9.92;
-const double b22 = 24.6;
-const double b23 = 0.;
+const double a21 = -1.43573; // Magnetic form factor
+const double a22 = 1.19052066;
+const double a23 = 2.5455841e-1;
+const double b21 = 9.70703681;
+const double b22 = 3.7357e-4;
+const double b23 = 6.0e-8;
+const double b24 = 9.9527277;
+const double b25 = 12.7977739;
 
