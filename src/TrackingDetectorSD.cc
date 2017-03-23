@@ -23,20 +23,20 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// StandardDetectorSD.cc
+// TrackingDetectorSD.cc
 // Developer : Chao Gu
 // History:
-//   Jan 2017, C. Gu, Add for ROOT support.
 //   Mar 2017, C. Gu, Rewrite sensitive detectors.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "StandardDetectorSD.hh"
+#include "TrackingDetectorSD.hh"
 
 #include "Globals.hh"
 #include "RootTree.hh"
+#include "StandardDetectorSD.hh"
 #include "StandardHit.hh"
 #include "TrackInformation.hh"
 
@@ -52,67 +52,26 @@
 #include "G4TouchableHistory.hh"
 #include "G4Track.hh"
 #include "G4VPhysicalVolume.hh"
-#include "G4VSensitiveDetector.hh"
 
 #include "G4ThreeVector.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-StandardDetectorSD::StandardDetectorSD(G4String name, G4String abbrev) : G4VSensitiveDetector(name), fAbbrev(abbrev), fHitsCollection(NULL), fRegistered(false)
-{
-    fID = name.hash() % 100000;
-    //G4cout << name << "\t" << fAbbrev << "\t" << fID << G4endl;
-
-    G4String cname = "Coll";
-    cname = fAbbrev + cname;
-    collectionName.insert(cname);
-
-    fN = 0;
-
-    for (int i = 0; i < MaxNHits; i++) {
-        fPID[i] = -9999;
-        fTID[i] = -9999;
-        fPTID[i] = -9999;
-        fDID[i] = -9999;
-        fX[i] = 1e+38;
-        fY[i] = 1e+38;
-        fZ[i] = 1e+38;
-        fMomentum[i] = 1e+38;
-        fTheta[i] = 1e+38;
-        fPhi[i] = 1e+38;
-        fTime[i] = 1e+38;
-        fEdep[i] = 1e+38;
-        fTrackL[i] = 1e+38;
-    }
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-StandardDetectorSD::~StandardDetectorSD()
+TrackingDetectorSD::TrackingDetectorSD(G4String name, G4String abbrev) : StandardDetectorSD(name, abbrev)
 {
     //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void StandardDetectorSD::Initialize(G4HCofThisEvent *HCE)
+TrackingDetectorSD::~TrackingDetectorSD()
 {
-    if (!fRegistered) {
-        Register(gRootTree->GetTree());
-        fRegistered = true;
-    }
-
-    fHitsCollection = new StandardHitsCollection(SensitiveDetectorName, collectionName[0]);
-
-    G4int HCID = G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection);
-    HCE->AddHitsCollection(HCID, fHitsCollection);
-
-    Clear();
+    //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
+G4bool TrackingDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 {
     if (!fHitsCollection) return false;
 
@@ -133,6 +92,11 @@ G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
         G4int TrackID = theTrack->GetTrackID();
         G4int ParentTrackID = theTrack->GetParentID();
 
+        G4int DetectorID = 0;
+
+        for (G4int i = 0; i < theTouchable->GetHistoryDepth(); i++)
+            DetectorID += theTouchable->GetCopyNumber(i);
+
         G4ThreeVector InPos = preStepPoint->GetPosition();
         G4ThreeVector InMom = preStepPoint->GetMomentum();
 
@@ -148,7 +112,7 @@ G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
         StandardHit *aHit = NULL;
 
         for (G4int i = fHitsCollection->entries() - 1; i >= 0; i--) {
-            if ((*fHitsCollection)[i]->GetTrackID() == AncestorID) {
+            if ((*fHitsCollection)[i]->GetDetectorID() == DetectorID && (*fHitsCollection)[i]->GetTrackID() == AncestorID) {
                 aHit = (*fHitsCollection)[i];
                 break;
             }
@@ -172,6 +136,7 @@ G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
             aHit->SetPID(PID);
             aHit->SetTrackID(TrackID);
             aHit->SetParentTrackID(ParentTrackID);
+            aHit->SetDetectorID(DetectorID);
             aHit->SetInPos(InPos);
             aHit->SetInMom(InMom);
             aHit->SetOutPos(OutPos);
@@ -203,81 +168,13 @@ G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void StandardDetectorSD::EndOfEvent(G4HCofThisEvent *HCE)
+void TrackingDetectorSD::Register(TTree *tree)
 {
-    if (!HCE) return; //no hits collection found
+    StandardDetectorSD::Register(tree);
 
-    int NHits = fHitsCollection->GetSize();
-
-    if (NHits <= 0) return;
-
-    fN = NHits;
-
-    if (fN > MaxNHits) {
-        G4cout << "WARNING: " << fN << " hits in " << fHitsCollection->GetName() << " exceed " << MaxNHits << G4endl;
-        fN = MaxNHits;
-    }
-
-    for (int i = 0; i < fN; i++) {
-        StandardHit *aHit = (*fHitsCollection)[i];
-
-        fPID[i] = aHit->GetPID();
-        fTID[i] = aHit->GetTrackID();
-        fPTID[i] = aHit->GetParentTrackID();
-        fDID[i] = aHit->GetDetectorID();
-        fX[i] = aHit->GetInPos().x();
-        fY[i] = aHit->GetInPos().y();
-        fZ[i] = aHit->GetInPos().z();
-        fMomentum[i] = aHit->GetInMom().mag();
-        fTheta[i] = aHit->GetInMom().theta();
-        fPhi[i] = aHit->GetInMom().phi();
-        fTime[i] = aHit->GetTime();
-        fEdep[i] = aHit->GetEdep();
-        fTrackL[i] = aHit->GetTrackLength();
-    }
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void StandardDetectorSD::Register(TTree *tree)
-{
     const char *abbr = fAbbrev.data();
 
-    tree->Branch(Form("%s.N", abbr), &fN, Form("%s.N/I", abbr));
-    tree->Branch(Form("%s.PID", abbr), fPID, Form("%s.PID[%s.N]/I", abbr, abbr));
-    tree->Branch(Form("%s.TID", abbr), fTID, Form("%s.TID[%s.N]/I", abbr, abbr));
-    tree->Branch(Form("%s.PTID", abbr), fPTID, Form("%s.PTID[%s.N]/I", abbr, abbr));
-    tree->Branch(Form("%s.X", abbr), fX, Form("%s.X[%s.N]/D", abbr, abbr));
-    tree->Branch(Form("%s.Y", abbr), fY, Form("%s.Y[%s.N]/D", abbr, abbr));
-    tree->Branch(Form("%s.Z", abbr), fZ, Form("%s.Z[%s.N]/D", abbr, abbr));
-    tree->Branch(Form("%s.P", abbr), fMomentum, Form("%s.P[%s.N]/D", abbr, abbr));
-    tree->Branch(Form("%s.Theta", abbr), fTheta, Form("%s.Theta[%s.N]/D", abbr, abbr));
-    tree->Branch(Form("%s.Phi", abbr), fPhi, Form("%s.Phi[%s.N]/D", abbr, abbr));
-    tree->Branch(Form("%s.Time", abbr), fTime, Form("%s.Time[%s.N]/D", abbr, abbr));
-    tree->Branch(Form("%s.Edep", abbr), fEdep, Form("%s.Edep[%s.N]/D", abbr, abbr));
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void StandardDetectorSD::Clear()
-{
-    for (int i = 0; i < fN; i++) {
-        fPID[i] = -9999;
-        fTID[i] = -9999;
-        fPTID[i] = -9999;
-        fDID[i] = -9999;
-        fX[i] = 1e+38;
-        fY[i] = 1e+38;
-        fZ[i] = 1e+38;
-        fMomentum[i] = 1e+38;
-        fTheta[i] = 1e+38;
-        fPhi[i] = 1e+38;
-        fTime[i] = 1e+38;
-        fEdep[i] = 1e+38;
-        fTrackL[i] = 1e+38;
-    }
-
-    fN = 0;
+    tree->Branch(Form("%s.DID", abbr), fDID, Form("%s.DID[%s.N]/I", abbr, abbr));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

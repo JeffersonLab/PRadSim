@@ -51,54 +51,57 @@ public:
     StandardHit();
     virtual ~StandardHit();
 
-    StandardHit(const StandardHit &right);
-    const StandardHit &operator=(const StandardHit &right);
-
-    G4bool operator==(const StandardHit &right) const;
-
     inline void *operator new (size_t);
-    inline void operator delete (void *aHit);
+    inline void operator delete (void *);
+
+    bool operator ==(const StandardHit &) const;
 
     void Print();
     void Clear();
 
-public:
     inline G4int GetPID() const;
     inline G4int GetTrackID() const;
     inline G4int GetParentTrackID() const;
+    inline G4int GetDetectorID() const;
     inline G4ThreeVector GetInPos() const;
     inline G4ThreeVector GetOutPos() const;
     inline G4ThreeVector GetInMom() const;
     inline G4ThreeVector GetOutMom() const;
     inline G4double GetTime() const;
     inline G4double GetEdep() const;
+    inline G4double GetTrackLength() const;
     inline const G4VPhysicalVolume *GetPhysV() const;
     inline G4int GetCopyNo() const;
 
     inline void SetPID(G4int &val);
     inline void SetTrackID(G4int &val);
     inline void SetParentTrackID(G4int &val);
+    inline void SetDetectorID(G4int &val);
     inline void SetInPos(G4ThreeVector &xyz);
     inline void SetOutPos(G4ThreeVector &xyz);
     inline void SetInMom(G4ThreeVector &pxpypz);
     inline void SetOutMom(G4ThreeVector &pxpypz);
     inline void SetTime(G4double &val);
     inline void SetEdep(G4double &val);
+    inline void SetTrackLength(G4double &val);
     inline void SetPhysV(G4VPhysicalVolume *val);
     inline void SetCopyNo(G4int &val);
 
     inline void AddEdep(G4double &val);
+    inline void AddTrackLength(G4double &val);
 
 private:
     G4int         fPID;
     G4int         fTrackID;
     G4int         fPTrackID;
+    G4int         fDetID;
     G4ThreeVector fInPos;
     G4ThreeVector fOutPos;
     G4ThreeVector fInMom;
     G4ThreeVector fOutMom;
     G4double      fTime;
     G4double      fEdep;
+    G4double      fTrackLen;
     const G4VPhysicalVolume *fPhysV;
     G4int         fCopyNo;
 };
@@ -134,6 +137,11 @@ inline G4int StandardHit::GetParentTrackID() const
     return fPTrackID;
 }
 
+inline G4int StandardHit::GetDetectorID() const
+{
+    return fDetID;
+}
+
 inline G4ThreeVector StandardHit::GetInPos() const
 {
     return fInPos;
@@ -164,6 +172,11 @@ inline G4double StandardHit::GetEdep() const
     return fEdep;
 }
 
+inline G4double StandardHit::GetTrackLength() const
+{
+    return fTrackLen;
+}
+
 inline const G4VPhysicalVolume *StandardHit::GetPhysV() const
 {
     return fPhysV;
@@ -187,6 +200,11 @@ inline void StandardHit::SetTrackID(G4int &val)
 inline void StandardHit::SetParentTrackID(G4int &val)
 {
     fPTrackID = val;
+}
+
+inline void StandardHit::SetDetectorID(G4int &val)
+{
+    fDetID = val;
 }
 
 inline void StandardHit::SetInPos(G4ThreeVector &xyz)
@@ -219,6 +237,11 @@ inline void StandardHit::SetEdep(G4double &val)
     fEdep = val;
 }
 
+inline void StandardHit::SetTrackLength(G4double &val)
+{
+    fTrackLen = val;
+}
+
 inline void StandardHit::SetPhysV(G4VPhysicalVolume *val)
 {
     fPhysV = val;
@@ -232,6 +255,11 @@ inline void StandardHit::SetCopyNo(G4int &val)
 inline void StandardHit::AddEdep(G4double &val)
 {
     fEdep += val;
+}
+
+inline void StandardHit::AddTrackLength(G4double &val)
+{
+    fTrackLen += val;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

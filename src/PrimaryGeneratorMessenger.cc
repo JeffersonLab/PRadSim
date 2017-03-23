@@ -40,6 +40,8 @@
 #include "G4UImessenger.hh"
 #include "G4UIcommand.hh"
 #include "G4UIdirectory.hh"
+#include "G4UIcmdWithABool.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithAnInteger.hh"
 
@@ -49,55 +51,71 @@
 
 PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act) : G4UImessenger(), Action(act)
 {
-    gunDir = new G4UIdirectory("/pradsim/gun/");
-    gunDir->SetGuidance("PrimaryGenerator control");
-
-    RandCmd = new G4UIcmdWithAString("/pradsim/gun/random", this);
-    RandCmd->SetGuidance("Shoot randomly the incident particle.");
-    RandCmd->SetGuidance("  Choice : on(default), off");
-    RandCmd->SetParameterName("random", true);
-    RandCmd->SetDefaultValue("on");
-    RandCmd->SetCandidates("on off");
-    RandCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+    GunDir = new G4UIdirectory("/pradsim/gun/");
+    GunDir->SetGuidance("Primary generator control");
 
     GunTypeCmd = new G4UIcmdWithAString("/pradsim/gun/type", this);
     GunTypeCmd->SetGuidance("Choose a type of event generator.");
-    GunTypeCmd->SetGuidance("  Choice : ring (default), elastic, moller");
-    GunTypeCmd->SetParameterName("generator", true);
-    GunTypeCmd->SetDefaultValue("ring");
+    GunTypeCmd->SetGuidance("  Choice : ring, elastic, moller");
+    GunTypeCmd->SetParameterName("generator", false);
     GunTypeCmd->SetCandidates("ring elastic moller");
-    GunTypeCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
-    StartEventCmd = new G4UIcmdWithAnInteger("/pradsim/gun/startn", this);
-    StartEventCmd->SetGuidance("Set start point for event gun file.");
-    StartEventCmd->SetParameterName("nstart", true);
-    StartEventCmd->SetDefaultValue(0);
-    StartEventCmd->SetRange("nstart>=0");
-    StartEventCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+    RecoilCmd = new G4UIcmdWithAString("/pradsim/gun/recoil", this);
+    RecoilCmd->SetGuidance("Choose a type of recoil particle.");
+    RecoilCmd->SetGuidance("  Choice : none, proton, deuteron");
+    RecoilCmd->SetParameterName("recoil", false);
+    RecoilCmd->SetCandidates("none proton deuteron");
+
+    EBeamCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/ebeam", this);
+    EBeamCmd->SetGuidance("Set fE");
+    EBeamCmd->SetParameterName("ebeam", false);
+    EBeamCmd->SetDefaultUnit("MeV");
+    
+    ThetaDir = new G4UIdirectory("/pradsim/gun/theta/");
+    ThetaDir->SetGuidance("Scattering angle control");
+    
+    ThetaLowCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/theta/low", this);
+    ThetaLowCmd->SetGuidance("Set fThetaLo");
+    ThetaLowCmd->SetParameterName("thetalo", false);
+    ThetaLowCmd->SetDefaultUnit("deg");
+    
+    ThetaHighCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/theta/high", this);
+    ThetaHighCmd->SetGuidance("Set fThetaHi");
+    ThetaHighCmd->SetParameterName("thetahi", false);
+    ThetaHighCmd->SetDefaultUnit("deg");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
 {
-    delete RandCmd;
+    delete ThetaLowCmd;
+    delete ThetaHighCmd;
+    delete ThetaDir;
     delete GunTypeCmd;
-    delete StartEventCmd;
-    delete gunDir;
+    delete RecoilCmd;
+    delete EBeamCmd;
+    delete GunDir;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PrimaryGeneratorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 {
-    if (command == RandCmd)
-        Action->SetRandFlag(newValue);
-
     if (command == GunTypeCmd)
         Action->SetGunType(newValue);
 
-    if (command == StartEventCmd)
-        Action->SetStartEvent(StartEventCmd->GetNewIntValue(newValue));
+    if (command == RecoilCmd)
+        Action->SetRecoilParticle(newValue);
+    
+    if (command == EBeamCmd)
+        Action->SetBeamEnergy(EBeamCmd->GetNewDoubleValue(newValue));
+    
+    if (command == ThetaLowCmd)
+        Action->SetThetaRange(ThetaLowCmd->GetNewDoubleValue(newValue), -10000);
+    
+    if (command == ThetaHighCmd)
+        Action->SetThetaRange(-10000, ThetaHighCmd->GetNewDoubleValue(newValue));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

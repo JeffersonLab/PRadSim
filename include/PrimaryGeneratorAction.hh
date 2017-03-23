@@ -28,6 +28,7 @@
 // History:
 //   Aug 2012, C. Peng, Original version.
 //   Jan 2017, C. Gu, Rewrite with ROOT support.
+//   Mar 2017, C. Gu, Rewrite with class PrimaryGenerator.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -40,43 +41,58 @@
 
 #include "G4String.hh"
 
-#include <fstream>
-
 class PrimaryGeneratorMessenger;
 
-class G4Event;
-class G4ParticleGun;
+class PrimaryGenerator;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
 public:
-    PrimaryGeneratorAction();
+    PrimaryGeneratorAction(G4String conf);
     virtual ~PrimaryGeneratorAction();
 
     void GeneratePrimaries(G4Event *);
 
-    inline void SetRandFlag(G4String val);
-    void SetGunType(G4String val);
-    void SetStartEvent(G4int val);
+    inline void SetGunType(G4String val);
+    inline void SetRecoilParticle(G4String val);
+    inline void SetBeamEnergy(G4double val);
+    inline void SetThetaRange(G4double lo, G4double hi);
 
 private:
-    G4String fRandFlag; // flag for a rndm impact point
-    G4String fGunType; // select event generator
-    G4int fStartEvent;
+    G4String fConfig;
+    G4String fGunType;
+    G4String fRecoil;
 
-    std::ifstream fEvGunFile;
+    double fE;
+    double fThetaLo, fThetaHi;
 
-    G4ParticleGun *particleGun;
+    G4String fEventFile;
 
-    PrimaryGeneratorMessenger *gunMessenger; //messenger of this class
+    PrimaryGenerator *fPrimaryGenerator;
+
+    PrimaryGeneratorMessenger *gunMessenger; // pointer to the messenger
 };
 
-inline void PrimaryGeneratorAction::SetRandFlag(G4String val)
+inline void PrimaryGeneratorAction::SetGunType(G4String val)
 {
-    fRandFlag = val;
+    fGunType = val;
 }
+
+inline void PrimaryGeneratorAction::SetRecoilParticle(G4String val)
+{
+    fRecoil = val;
+}
+
+    inline void PrimaryGeneratorAction::SetBeamEnergy(G4double val) {
+        fE = val;
+    }
+    
+    inline void PrimaryGeneratorAction::SetThetaRange(G4double lo, G4double hi) {
+        if (lo > -9999) fThetaLo = lo;
+        if (hi > -9999) fThetaHi = hi;
+    }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

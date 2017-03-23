@@ -23,52 +23,68 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// RunAction.cc
-// Developer : Chao Peng
+// TrackingAction.cc
+// Developer : Chao Gu
 // History:
-//   Aug 2012, C. Peng, Original version.
+//   Mar 2017, C. Gu, Rewrite sensitive detectors.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "RunAction.hh"
+#include "TrackingAction.hh"
 
-#include "G4Run.hh"
-#include "G4RunManager.hh"
-#include "G4UserRunAction.hh"
+#include "TrackInformation.hh"
 
-#include "G4ios.hh"
+#include "G4Track.hh"
+#include "G4TrackVector.hh"
+#include "G4TrackingManager.hh"
+#include "G4UserTrackingAction.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RunAction::RunAction() : G4UserRunAction()
+TrackingAction::TrackingAction() : G4UserTrackingAction()
 {
     //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-RunAction::~RunAction()
+TrackingAction::~TrackingAction()
 {
     //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void RunAction::BeginOfRunAction(const G4Run *aRun)
+void TrackingAction::PreUserTrackingAction(const G4Track *aTrack)
 {
-    G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
-
-    // inform the runManager to save random number seed
-    G4RunManager::GetRunManager()->SetRandomNumberStore(true);
+    if (aTrack->GetParentID() == 0 && aTrack->GetUserInformation() == 0) {
+        TrackInformation *aTrackInfo = new TrackInformation(aTrack);
+        G4Track *theTrack = (G4Track *)aTrack;
+        theTrack->SetUserInformation(aTrackInfo);
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void RunAction::EndOfRunAction(const G4Run * /*aRun*/)
+void TrackingAction::PostUserTrackingAction(const G4Track *aTrack)
 {
-    //
+    G4TrackVector *theSecondaries = fpTrackingManager->GimmeSecondaries();
+
+    if (theSecondaries) {
+        TrackInformation *theTrackInfo = (TrackInformation *)(aTrack->GetUserInformation());
+        size_t nSecondaries = theSecondaries->size();
+
+        if (nSecondaries > 0) {
+            for (size_t i = 0; i < nSecondaries; i++) {
+                if ((*theSecondaries)[i]->GetUserInformation() == 0) {
+                    TrackInformation *newTrackInfo = new TrackInformation(theTrackInfo);
+                    (*theSecondaries)[i]->SetUserInformation(newTrackInfo);
+                }
+            }
+        }
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

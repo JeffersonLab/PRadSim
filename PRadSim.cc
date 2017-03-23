@@ -47,11 +47,11 @@
 #include "G4String.hh"
 #include "Randomize.hh"
 
-#include <ctime>
 #include <fstream>
 #include <getopt.h>
 #include <iostream>
 #include <string>
+#include <time.h>
 
 #ifdef G4VIS_USE
     #include "G4VisExecutive.hh"
@@ -71,7 +71,8 @@ void usage(int, char **argv)
 {
     printf("usage: %s [options] [MACRO_NAME]\n", argv[0]);
     printf("  -c, --conf=prad          Set configuration\n");
-    printf("  -h, --help                 Print usage\n");
+    printf("  -s, --seed=1             Set random seed\n");
+    printf("  -h, --help               Print usage\n");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
@@ -79,18 +80,20 @@ void usage(int, char **argv)
 int main(int argc, char **argv)
 {
     std::string conf = "prad";
+    std::string seed = "random";
     std::string macro;
     macro.clear();
 
     while (1) {
         static struct option long_options[] = {
-            {"help",  no_argument, 0, 'h'},
+            {"help", no_argument, 0, 'h'},
             {"conf", required_argument, 0, 'c'},
+            {"seed", required_argument, 0, 's'},
             {0, 0, 0, 0}
         };
 
         int option_index = 0;
-        int c = getopt_long(argc, argv, "c:h", long_options, &option_index);
+        int c = getopt_long(argc, argv, "c:hs:", long_options, &option_index);
 
         if (c == -1)
             break;
@@ -103,6 +106,10 @@ int main(int argc, char **argv)
         case 'h':
             usage(argc, argv);
             exit(0);
+            break;
+            
+        case 's':
+            seed = optarg;
             break;
 
         case '?':
@@ -120,13 +127,11 @@ int main(int argc, char **argv)
 
     // Initialize the random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
-    long seeds[2];
-    int index;
-    time_t systime = time(NULL);
-    index = (int)systime;
-    seeds[0] = (long)systime;
-    seeds[1] = (long)(systime * G4UniformRand());
-    CLHEP::HepRandom::setTheSeeds(seeds, index);
+    if (seed == "random")
+        CLHEP::HepRandom::setTheSeed((long)(time(NULL)));
+    else {
+        CLHEP::HepRandom::setTheSeed(stol(seed));
+    }
 
     // Initialize output root tree
     std::ifstream data_file("output/file.output");
@@ -161,19 +166,17 @@ int main(int argc, char **argv)
     gRootTree = new RootTree(outf);
 
     // Construct the default run manager
-    G4VSteppingVerbose *verbosity = new SteppingVerbose;
-    G4VSteppingVerbose::SetInstance(verbosity);
+    G4VSteppingVerbose::SetInstance(new SteppingVerbose);
     G4RunManager *runManager = new G4RunManager;
 
     // Set mandatory initialization classes
-    G4String confstr = conf;
-    DetectorConstruction *detector = new DetectorConstruction(confstr);
+    DetectorConstruction *detector = new DetectorConstruction(conf);
     runManager->SetUserInitialization(detector);
 
     PhysicsList *physics = new PhysicsList;
     runManager->SetUserInitialization(physics);
 
-    ActionInitialization *action = new ActionInitialization();
+    ActionInitialization *action = new ActionInitialization(conf);
     runManager->SetUserInitialization(action);
 
 #ifdef G4VIS_USE

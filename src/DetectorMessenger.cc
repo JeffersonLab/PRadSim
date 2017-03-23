@@ -40,9 +40,10 @@
 #include "G4UImessenger.hh"
 #include "G4UIcommand.hh"
 #include "G4UIdirectory.hh"
-#include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithABool.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
-#include "G4UIcmdWithoutParameter.hh"
+#include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithAString.hh"
 
 #include "G4String.hh"
 
@@ -96,14 +97,19 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
     TargetHalfLCmd->SetGuidance("Set fTargetHalfL");
     TargetHalfLCmd->SetParameterName("targetl", false);
     TargetHalfLCmd->SetDefaultUnit("mm");
+    
+    TargetMatCmd = new G4UIcmdWithAString("/pradsim/det/target/material", this);
+    TargetMatCmd->SetGuidance("Choose a target material.");
+    TargetMatCmd->SetGuidance("  Choice : hydrogen, deuteron");
+    TargetMatCmd->SetParameterName("targetm", false);
+    TargetMatCmd->SetCandidates("hydrogen deuteron");
 
     RecoilDetDir = new G4UIdirectory("/pradsim/det/recoil/");
     RecoilDetDir->SetGuidance("Recoil detector control");
 
     RecoilDetNSegCmd = new G4UIcmdWithAnInteger("/pradsim/det/recoil/nseg", this);
     RecoilDetNSegCmd->SetGuidance("Set fRecoilDetNSeg");
-    RecoilDetNSegCmd->SetParameterName("recoiln", true);
-    RecoilDetNSegCmd->SetDefaultValue(8);
+    RecoilDetNSegCmd->SetParameterName("recoiln", false);
 
     RecoilDetHalfLCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/recoil/halfl", this);
     RecoilDetHalfLCmd->SetGuidance("Set fRecoilDetHalfL");
@@ -114,18 +120,43 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
     RecoilDetThicknessCmd->SetGuidance("Set fRecoilDetThickness");
     RecoilDetThicknessCmd->SetParameterName("recoilt", false);
     RecoilDetThicknessCmd->SetDefaultUnit("mm");
+
+    SDDir = new G4UIdirectory("/pradsim/det/sensitive/");
+    SDDir->SetGuidance("Sensitive detector control");
+
+    RecoilDetSDCmd = new G4UIcmdWithABool("/pradsim/det/sensitive/recoil", this);
+    RecoilDetSDCmd->SetGuidance("Turn on RecoilDetSD");
+    RecoilDetSDCmd->SetParameterName("recoilsd", false);
+
+    GEMSDCmd = new G4UIcmdWithABool("/pradsim/det/sensitive/gem", this);
+    GEMSDCmd->SetGuidance("Turn on GEMSD");
+    GEMSDCmd->SetParameterName("gemsd", false);
+
+    SciPlaneSDCmd = new G4UIcmdWithABool("/pradsim/det/sensitive/sciplane", this);
+    SciPlaneSDCmd->SetGuidance("Turn on SciPlaneSD");
+    SciPlaneSDCmd->SetParameterName("sciplanesd", false);
+
+    HyCalSDCmd = new G4UIcmdWithABool("/pradsim/det/sensitive/hycal", this);
+    HyCalSDCmd->SetGuidance("Turn on HyCalSD");
+    HyCalSDCmd->SetParameterName("hycalsd", false);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorMessenger::~DetectorMessenger()
 {
+    delete RecoilDetSDCmd;
+    delete GEMSDCmd;
+    delete SciPlaneSDCmd;
+    delete HyCalSDCmd;
+    delete SDDir;
     delete RecoilDetNSegCmd;
     delete RecoilDetHalfLCmd;
     delete RecoilDetThicknessCmd;
     delete RecoilDetDir;
     delete TargetRCmd;
     delete TargetHalfLCmd;
+    delete TargetMatCmd;
     delete TargetDir;
     delete TargetZCmd;
     delete GEM1ZCmd;
@@ -161,6 +192,9 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 
     if (command == TargetHalfLCmd)
         Detector->SetTarget(-10000, TargetHalfLCmd->GetNewDoubleValue(newValue));
+    
+     if (command == TargetMatCmd)
+        Detector->SetTargetMaterial(newValue);
 
     if (command == RecoilDetNSegCmd)
         Detector->SetRecoilDetector(RecoilDetNSegCmd->GetNewIntValue(newValue), -10000, -10000);
@@ -170,6 +204,26 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 
     if (command == RecoilDetThicknessCmd)
         Detector->SetRecoilDetector(-10000, -10000, RecoilDetThicknessCmd->GetNewDoubleValue(newValue));
+
+    if (command == RecoilDetSDCmd) {
+        if (RecoilDetSDCmd->GetNewBoolValue(newValue)) Detector->EnableSD("Recoil Detector");
+        else Detector->DisableSD("Recoil Detector");
+    }
+
+    if (command == GEMSDCmd) {
+        if (GEMSDCmd->GetNewBoolValue(newValue)) Detector->EnableSD("GEM");
+        else Detector->DisableSD("GEM");
+    }
+
+    if (command == SciPlaneSDCmd) {
+        if (SciPlaneSDCmd->GetNewBoolValue(newValue)) Detector->EnableSD("Scintillator Plane");
+        else Detector->DisableSD("Scintillator Plane");
+    }
+
+    if (command == HyCalSDCmd) {
+        if (HyCalSDCmd->GetNewBoolValue(newValue)) Detector->EnableSD("HyCal");
+        else Detector->DisableSD("HyCal");
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

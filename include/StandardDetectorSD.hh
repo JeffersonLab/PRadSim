@@ -27,6 +27,7 @@
 // Developer : Chao Gu
 // History:
 //   Jan 2017, C. Gu, Add for ROOT support.
+//   Mar 2017, C. Gu, Rewrite sensitive detectors.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -41,9 +42,12 @@
 
 #include "G4String.hh"
 
+#define MaxNHits 100
+
 class G4HCofThisEvent;
 class G4Step;
 class G4TouchableHistory;
+class TTree;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -51,17 +55,37 @@ class StandardDetectorSD : public G4VSensitiveDetector
 {
 public:
     StandardDetectorSD(G4String name, G4String abbrev);
-    ~StandardDetectorSD();
+    virtual ~StandardDetectorSD();
 
-    void Initialize(G4HCofThisEvent *);
-    G4bool ProcessHits(G4Step *, G4TouchableHistory *);
-    void EndOfEvent(G4HCofThisEvent *);
+    virtual void Initialize(G4HCofThisEvent *);
+    virtual G4bool ProcessHits(G4Step *, G4TouchableHistory *);
+    virtual void EndOfEvent(G4HCofThisEvent *);
 
-private:
+protected:
+    virtual void Register(TTree *);
+    virtual void Clear();
+
+    G4int fID;
     G4String fAbbrev;
 
-    G4int fHCID;
     StandardHitsCollection *fHitsCollection;
+
+    bool fRegistered;
+
+    int fN;
+    int fPID[MaxNHits]; // Particle ID
+    int fTID[MaxNHits]; // Track ID
+    int fPTID[MaxNHits]; // Parent Track ID
+    int fDID[MaxNHits];
+    double fX[MaxNHits];
+    double fY[MaxNHits];
+    double fZ[MaxNHits];
+    double fMomentum[MaxNHits];
+    double fTheta[MaxNHits];
+    double fPhi[MaxNHits];
+    double fTime[MaxNHits];
+    double fEdep[MaxNHits];
+    double fTrackL[MaxNHits];
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

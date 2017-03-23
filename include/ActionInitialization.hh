@@ -37,6 +37,8 @@
 
 #include "G4VUserActionInitialization.hh"
 
+#include "G4String.hh"
+
 class G4VSteppingVerbose;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -44,12 +46,15 @@ class G4VSteppingVerbose;
 class ActionInitialization : public G4VUserActionInitialization
 {
 public:
-    ActionInitialization();
+    ActionInitialization(G4String conf);
     virtual ~ActionInitialization();
 
     void Build() const;
     void BuildForMaster() const;
     G4VSteppingVerbose *InitializeSteppingVerbose() const;
+
+private:
+    G4String fConfig;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

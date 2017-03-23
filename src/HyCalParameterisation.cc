@@ -84,7 +84,7 @@ void HyCalParameterisation::LoadModuleList(const std::string &path)
     ConfigParser c_parser;
 
     if (!c_parser.ReadFile(path)) {
-        std::cerr << "Error: Failed to read module list file " << "\"" << path << "\"." << std::endl;
+        G4cout << "ERROR: failed to read module list file " << "\"" << path << "\"" << G4endl;
         return;
     }
 
@@ -117,7 +117,7 @@ void HyCalParameterisation::LoadModuleList(const std::string &path)
 void HyCalParameterisation::ComputeTransformation(const G4int copyNo, G4VPhysicalVolume *physVol) const
 {
     if ((size_t)copyNo >= moduleList.size()) {
-        std::cerr << "HyCalParameterisation: trying to load module no." << copyNo << ", but the loaded module list only has " << moduleList.size() << " modules, please check the setup." << std::endl;
+        G4cout << "ERROR: trying to load module no." << copyNo << ", but the loaded module list only has " << moduleList.size() << " modules" << G4endl;
         exit(1);
     }
 
@@ -131,7 +131,7 @@ void HyCalParameterisation::ComputeTransformation(const G4int copyNo, G4VPhysica
 void HyCalParameterisation::ComputeDimensions(G4Box &CalBlock, const G4int copyNo, const G4VPhysicalVolume *) const
 {
     if ((size_t)copyNo >= moduleList.size()) {
-        std::cerr << "HyCalParameterisation: trying to load module no." << copyNo << ", but the loaded module list only has " << moduleList.size() << " modules, please check the setup." << std::endl;
+        G4cout << "ERROR: trying to load module no." << copyNo << ", but the loaded module list only has " << moduleList.size() << " modules" << G4endl;
         exit(1);
     }
 
@@ -145,7 +145,7 @@ void HyCalParameterisation::ComputeDimensions(G4Box &CalBlock, const G4int copyN
 G4Material *HyCalParameterisation::ComputeMaterial(const G4int copyNo, G4VPhysicalVolume * /*currVol*/, const G4VTouchable * /*parentTouch*/)
 {
     if ((size_t)copyNo >= moduleList.size()) {
-        std::cerr << "HyCalParameterisation: trying to load module no." << copyNo << ", but the loaded module list only has " << moduleList.size() << " modules, please check the setup." << std::endl;
+        G4cout << "ERROR: trying to load module no." << copyNo << ", but the loaded module list only has " << moduleList.size() << " modules" << G4endl;
         exit(1);
     }
 
@@ -154,7 +154,7 @@ G4Material *HyCalParameterisation::ComputeMaterial(const G4int copyNo, G4VPhysic
         return G4Material::GetMaterial("Galaxy");
 
     case Lead_Glass:
-        return G4Material::GetMaterial("Lead Glass");
+        return G4Material::GetMaterial("PbGlass");
 
     case Lead_Tungstate:
         return G4Material::GetMaterial("PbWO4");

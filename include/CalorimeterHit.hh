@@ -23,32 +23,79 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// SteppingAction.hh
-// Developer : Geant4 Developers
+// CalorimeterHit.hh
+// Developer : Chao Gu
 // History:
-//   Aug 2012, Copy from ExampleN02.
+//   Mar 2017, C. Gu, Rewrite sensitive detectors.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef SteppingAction_h
-#define SteppingAction_h 1
+#ifndef CalorimeterHit_h
+#define CalorimeterHit_h 1
 
-#include "G4UserSteppingAction.hh"
+#include "G4VHit.hh"
 
-class G4Step;
+#include "G4Allocator.hh"
+#include "G4THitsCollection.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class SteppingAction : public G4UserSteppingAction
+class CalorimeterHit : public G4VHit
 {
 public:
-    SteppingAction();
-    virtual ~SteppingAction();
+    CalorimeterHit();
+    virtual ~CalorimeterHit();
 
-    void UserSteppingAction(const G4Step *);
+    inline void *operator new (size_t);
+    inline void operator delete (void *);
+
+    bool operator ==(const CalorimeterHit &) const;
+
+    void Print();
+
+    G4double GetEdep() const;
+    G4double GetTrackLength() const;
+
+    inline void Add(G4double &de, G4double &dl);
+
+private:
+    G4double fEdep;
+    G4double fTrackLen;
 };
+
+typedef G4THitsCollection<CalorimeterHit> CalorimeterHitsCollection;
+
+extern G4Allocator<CalorimeterHit> CalorimeterHitAllocator;
+
+inline void *CalorimeterHit::operator new (size_t)
+{
+    void *aHit;
+    aHit = (void *)CalorimeterHitAllocator.MallocSingle();
+    return aHit;
+}
+
+inline void CalorimeterHit::operator delete (void *aHit)
+{
+    CalorimeterHitAllocator.FreeSingle((CalorimeterHit *)aHit);
+}
+
+inline G4double CalorimeterHit::GetEdep() const
+{
+    return fEdep;
+}
+
+inline G4double CalorimeterHit::GetTrackLength() const
+{
+    return fTrackLen;
+}
+
+inline void CalorimeterHit::Add(G4double &de, G4double &dl)
+{
+    fEdep += de;
+    fTrackLen += dl;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

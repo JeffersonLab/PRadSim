@@ -43,7 +43,6 @@
 #include "G4UserEventAction.hh"
 
 #include "G4ios.hh"
-#include "Randomize.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -65,10 +64,8 @@ void EventAction::BeginOfEventAction(const G4Event *evt)
 {
     G4int evtNb = evt->GetEventID();
 
-    if (evtNb % printModulo == 0) {
+    if (evtNb % printModulo == 0)
         G4cout << "\n---> Begin of event: " << evtNb << G4endl;
-        CLHEP::HepRandom::showEngineStatus();
-    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

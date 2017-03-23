@@ -23,39 +23,54 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// SteppingAction.cc
-// Developer : Geant4 Developers
+// CalorimeterSD.hh
+// Developer : Chao Gu
 // History:
-//   Aug 2012, Copy from ExampleN02.
+//   Mar 2017, C. Gu, Rewrite sensitive detectors.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "SteppingAction.hh"
+#ifndef CalorimeterSD_h
+#define CalorimeterSD_h 1
 
-#include "G4Step.hh"
-#include "G4UserSteppingAction.hh"
+#include "StandardDetectorSD.hh"
+
+#include "CalorimeterHit.hh"
+
+#include "G4String.hh"
+
+#define NModules 1728
+
+class G4HCofThisEvent;
+class G4Step;
+class G4TouchableHistory;
+class TTree;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SteppingAction::SteppingAction() : G4UserSteppingAction()
+class CalorimeterSD : public StandardDetectorSD
 {
-    //
-}
+public:
+    CalorimeterSD(G4String name, G4String abbrev);
+    virtual ~CalorimeterSD();
+
+    virtual void Initialize(G4HCofThisEvent *);
+    virtual G4bool ProcessHits(G4Step *, G4TouchableHistory *);
+    virtual void EndOfEvent(G4HCofThisEvent *);
+
+protected:
+    virtual void Register(TTree *);
+    virtual void Clear();
+
+    CalorimeterHitsCollection *fCalorHitsCollection;
+
+    double fTotalEdep;
+    double fModuleEdep[NModules];
+    double fModuleTrackL[NModules];
+};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SteppingAction::~SteppingAction()
-{
-    //
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void SteppingAction::UserSteppingAction(const G4Step * /*aStep*/)
-{
-    //
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#endif

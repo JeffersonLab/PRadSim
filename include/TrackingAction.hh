@@ -23,62 +23,32 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// ActionInitialization.cc
+// TrackingAction.hh
 // Developer : Chao Gu
 // History:
-//   Mar 2017, C. Gu, Add DRad configuration.
+//   Mar 2017, C. Gu, Rewrite sensitive detectors.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "ActionInitialization.hh"
+#ifndef TrackingAction_h
+#define TrackingAction_h 1
 
-#include "EventAction.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "SteppingVerbose.hh"
-#include "TrackingAction.hh"
-
-#include "G4VSteppingVerbose.hh"
-#include "G4VUserActionInitialization.hh"
-
-#include "G4String.hh"
+#include "G4UserTrackingAction.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::ActionInitialization(G4String conf) : G4VUserActionInitialization(), fConfig(conf)
+class TrackingAction : public G4UserTrackingAction
 {
-    //
-}
+public:
+    TrackingAction();
+    virtual ~TrackingAction();
+
+    void PreUserTrackingAction(const G4Track *);
+    void PostUserTrackingAction(const G4Track *);
+};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::~ActionInitialization()
-{
-    //
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ActionInitialization::Build() const
-{
-    SetUserAction(new PrimaryGeneratorAction(fConfig));
-    SetUserAction(new EventAction());
-    SetUserAction(new TrackingAction());
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void ActionInitialization::BuildForMaster() const
-{
-    //
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4VSteppingVerbose *ActionInitialization::InitializeSteppingVerbose() const
-{
-    return new SteppingVerbose();
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#endif

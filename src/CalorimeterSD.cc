@@ -23,20 +23,21 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// StandardDetectorSD.cc
+// CalorimeterSD.cc
 // Developer : Chao Gu
 // History:
-//   Jan 2017, C. Gu, Add for ROOT support.
 //   Mar 2017, C. Gu, Rewrite sensitive detectors.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "StandardDetectorSD.hh"
+#include "CalorimeterSD.hh"
 
+#include "CalorimeterHit.hh"
 #include "Globals.hh"
 #include "RootTree.hh"
+#include "StandardDetectorSD.hh"
 #include "StandardHit.hh"
 #include "TrackInformation.hh"
 
@@ -52,50 +53,35 @@
 #include "G4TouchableHistory.hh"
 #include "G4Track.hh"
 #include "G4VPhysicalVolume.hh"
-#include "G4VSensitiveDetector.hh"
 
 #include "G4ThreeVector.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-StandardDetectorSD::StandardDetectorSD(G4String name, G4String abbrev) : G4VSensitiveDetector(name), fAbbrev(abbrev), fHitsCollection(NULL), fRegistered(false)
+CalorimeterSD::CalorimeterSD(G4String name, G4String abbrev) : StandardDetectorSD(name, abbrev)
 {
-    fID = name.hash() % 100000;
-    //G4cout << name << "\t" << fAbbrev << "\t" << fID << G4endl;
-
-    G4String cname = "Coll";
+    G4String cname = "ModuleColl";
     cname = fAbbrev + cname;
     collectionName.insert(cname);
 
-    fN = 0;
+    fTotalEdep = 0;
 
-    for (int i = 0; i < MaxNHits; i++) {
-        fPID[i] = -9999;
-        fTID[i] = -9999;
-        fPTID[i] = -9999;
-        fDID[i] = -9999;
-        fX[i] = 1e+38;
-        fY[i] = 1e+38;
-        fZ[i] = 1e+38;
-        fMomentum[i] = 1e+38;
-        fTheta[i] = 1e+38;
-        fPhi[i] = 1e+38;
-        fTime[i] = 1e+38;
-        fEdep[i] = 1e+38;
-        fTrackL[i] = 1e+38;
+    for (int i = 0; i < NModules + 1; i++) {
+        fModuleEdep[i] = 1e+38;
+        fModuleTrackL[i] = 1e+38;
     }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-StandardDetectorSD::~StandardDetectorSD()
+CalorimeterSD::~CalorimeterSD()
 {
     //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void StandardDetectorSD::Initialize(G4HCofThisEvent *HCE)
+void CalorimeterSD::Initialize(G4HCofThisEvent *HCE)
 {
     if (!fRegistered) {
         Register(gRootTree->GetTree());
@@ -103,18 +89,24 @@ void StandardDetectorSD::Initialize(G4HCofThisEvent *HCE)
     }
 
     fHitsCollection = new StandardHitsCollection(SensitiveDetectorName, collectionName[0]);
+    fCalorHitsCollection = new CalorimeterHitsCollection(SensitiveDetectorName, collectionName[1]);
 
     G4int HCID = G4SDManager::GetSDMpointer()->GetCollectionID(fHitsCollection);
     HCE->AddHitsCollection(HCID, fHitsCollection);
+    HCID = G4SDManager::GetSDMpointer()->GetCollectionID(fCalorHitsCollection);
+    HCE->AddHitsCollection(HCID, fCalorHitsCollection);
+
+    for (G4int i = 0; i < NModules; i++)
+        fCalorHitsCollection->insert(new CalorimeterHit());
 
     Clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
+G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 {
-    if (!fHitsCollection) return false;
+    if (!fHitsCollection || !fCalorHitsCollection) return false;
 
     G4Track *theTrack = aStep->GetTrack();
     TrackInformation *theTrackInfo = (TrackInformation *)(theTrack->GetUserInformation());
@@ -141,7 +133,12 @@ G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
         G4double Time = preStepPoint->GetGlobalTime();
 
-        G4int CopyNo = thePhysVol->GetCopyNo();
+        G4double StepLength = 0;
+
+        if (theTrack->GetParticleDefinition()->GetPDGCharge() != 0.)
+            StepLength = aStep->GetStepLength();
+
+        G4int CopyNo = theTouchable->GetVolume()->GetCopyNo();
 
         if (AncestorID < 0) AncestorID = TrackID;
 
@@ -183,6 +180,10 @@ G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
             fHitsCollection->insert(aHit);
         }
+
+        CalorimeterHit *aCalorHit = (*fCalorHitsCollection)[CopyNo];
+
+        aCalorHit->Add(Edep, StepLength);
     }
 
     G4int nSecondaries = aStep->GetNumberOfSecondariesInCurrentStep();
@@ -203,7 +204,7 @@ G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void StandardDetectorSD::EndOfEvent(G4HCofThisEvent *HCE)
+void CalorimeterSD::EndOfEvent(G4HCofThisEvent *HCE)
 {
     if (!HCE) return; //no hits collection found
 
@@ -232,14 +233,22 @@ void StandardDetectorSD::EndOfEvent(G4HCofThisEvent *HCE)
         fTheta[i] = aHit->GetInMom().theta();
         fPhi[i] = aHit->GetInMom().phi();
         fTime[i] = aHit->GetTime();
-        fEdep[i] = aHit->GetEdep();
-        fTrackL[i] = aHit->GetTrackLength();
+    }
+
+    fTotalEdep = 0;
+
+    for (int i = 0; i < NModules; i++) {
+        CalorimeterHit *aCalorHit = (*fCalorHitsCollection)[i];
+
+        fModuleEdep[i] = aCalorHit->GetEdep();
+        fModuleTrackL[i] = aCalorHit->GetTrackLength();
+        fTotalEdep += fModuleEdep[i];
     }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void StandardDetectorSD::Register(TTree *tree)
+void CalorimeterSD::Register(TTree *tree)
 {
     const char *abbr = fAbbrev.data();
 
@@ -255,29 +264,23 @@ void StandardDetectorSD::Register(TTree *tree)
     tree->Branch(Form("%s.Phi", abbr), fPhi, Form("%s.Phi[%s.N]/D", abbr, abbr));
     tree->Branch(Form("%s.Time", abbr), fTime, Form("%s.Time[%s.N]/D", abbr, abbr));
     tree->Branch(Form("%s.Edep", abbr), fEdep, Form("%s.Edep[%s.N]/D", abbr, abbr));
+    tree->Branch(Form("%s.TotalEdep", abbr), &fTotalEdep, Form("%s.TotalEdep/D", abbr));
+    tree->Branch(Form("%s.ModuleEdep", abbr), fModuleEdep, Form("%s.ModuleEdep[%d]/D", abbr, NModules));
+    tree->Branch(Form("%s.ModuleTrackL", abbr), fModuleTrackL, Form("%s.ModuleTrackL[%d]/D", abbr, NModules));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void StandardDetectorSD::Clear()
+void CalorimeterSD::Clear()
 {
-    for (int i = 0; i < fN; i++) {
-        fPID[i] = -9999;
-        fTID[i] = -9999;
-        fPTID[i] = -9999;
-        fDID[i] = -9999;
-        fX[i] = 1e+38;
-        fY[i] = 1e+38;
-        fZ[i] = 1e+38;
-        fMomentum[i] = 1e+38;
-        fTheta[i] = 1e+38;
-        fPhi[i] = 1e+38;
-        fTime[i] = 1e+38;
-        fEdep[i] = 1e+38;
-        fTrackL[i] = 1e+38;
-    }
+    StandardDetectorSD::Clear();
 
-    fN = 0;
+    fTotalEdep = 0;
+
+    for (int i = 0; i < NModules + 1; i++) {
+        fModuleEdep[i] = 1e+38;
+        fModuleTrackL[i] = 1e+38;
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

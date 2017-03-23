@@ -28,6 +28,7 @@
 // History:
 //   Aug 2012, C. Peng, Original version.
 //   Jan 2017, C. Gu, Rewrite with ROOT support.
+//   Mar 2017, C. Gu, Rewrite with class PrimaryGenerator.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -35,221 +36,60 @@
 
 #include "PrimaryGeneratorAction.hh"
 
+#include "PrimaryGenerator.hh"
 #include "PrimaryGeneratorMessenger.hh"
 
 #include "G4Event.hh"
-#include "G4ParticleGun.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
 
-#include "G4ios.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4ParticleTable.hh"
-#include "G4SystemOfUnits.hh"
 #include "G4String.hh"
-#include "G4ThreeVector.hh"
-#include "Randomize.hh"
-
-#include <cmath>
-#include <fstream>
-#include <string>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction() : G4VUserPrimaryGeneratorAction(), fRandFlag("on"), fGunType("ring"), fStartEvent(0)
+PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf) : G4VUserPrimaryGeneratorAction(), fConfig(conf), fGunType("ring"), fE(0), fThetaLo(0), fThetaHi(0), fPrimaryGenerator(NULL)
 {
-    G4double n_particle = 1;
-    particleGun  = new G4ParticleGun(n_particle);
+    if (fConfig != "prad" && fConfig != "drad")
+        fConfig = "prad";
+
+    fRecoil.clear();
+    fEventFile.clear();
 
     // create a messenger for this class
     gunMessenger = new PrimaryGeneratorMessenger(this);
-
-    // default particle kinematic
-    G4ParticleTable *particleTable = G4ParticleTable::GetParticleTable();
-    G4String particleName;
-    G4ParticleDefinition *particle = particleTable->FindParticle(particleName = "e-");
-    particleGun->SetParticleDefinition(particle);
-    particleGun->SetParticleMomentumDirection(G4ThreeVector(0., 0., 1.));
-    particleGun->SetParticleEnergy(1100. * MeV);
-    particleGun->SetParticlePosition(G4ThreeVector(0. * cm, 0. * cm, -300. * cm));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
-    delete particleGun;
-    delete gunMessenger;
+    if (fPrimaryGenerator)
+        delete fPrimaryGenerator;
 
-    fEvGunFile.close();
+    delete gunMessenger;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
 {
-    // this function is called at the beginning of an event
-
-    G4double x0 = 0., y0 = 0., z0 = -300.;
-    G4double Ene = 0.;
-    G4double kx = 0., ky = 0., kz = 1.;
-    G4double theta, phi;
-    G4double tmp1[3], tmp2[3], tmp3[3];
-    G4ParticleDefinition *particle;
-    G4ParticleTable *particleTable = G4ParticleTable::GetParticleTable();
-    G4String particleName;
-
-    G4double xrand = 0., yrand = 0., zrand = 0., prand = 0.;
-
-    if (fRandFlag == "on") {
-        xrand = G4RandGauss::shoot(0., 0.008) * cm;
-        yrand = G4RandGauss::shoot(0., 0.008) * cm;
-        zrand = 4. * (0.5 - G4UniformRand()) * cm;
-        prand = G4UniformRand();
-    }
-
-    // generate a theta ring
-    if (fGunType == "ring") {
-        theta = 0.8;
-        Ene = 1100 * MeV;
-        x0 = xrand;
-        y0 = yrand;
-        z0 = -300. * cm + zrand;
-        particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
-        theta = theta / 180. * 3.14159265358979;
-        phi = 2. * 3.14159265358979 * prand;
-        kx = sin(theta) * cos(phi);
-        ky = sin(theta) * sin(phi);
-        kz = cos(theta);
-        particleGun->SetParticleMomentumDirection(G4ThreeVector(kx, ky, kz));
-        particleGun->SetParticleEnergy(Ene);
-        particleGun->GeneratePrimaryVertex(anEvent);
-    }
-
-    // RCEP PART
-    if (fGunType == "elastic") {
-        fEvGunFile >> tmp1[0] >> tmp2[0] >> tmp3[0] >> tmp1[1] >> tmp2[1] >> tmp3[1] >> tmp1[2] >> tmp2[2] >> tmp3[2];
-
-        particle = particleTable->FindParticle(particleName = "e-");
-        particleGun->SetParticleDefinition(particle);
-        x0 = xrand;
-        y0 = yrand;
-        z0 = -300. * cm + zrand;
-        Ene = tmp1[0];
-        theta = tmp2[0];
-        phi = tmp3[0];
-        kx = sin(theta) * cos(phi);
-        ky = sin(theta) * sin(phi);
-        kz = cos(theta);
-        particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
-        particleGun->SetParticleMomentumDirection(G4ThreeVector(kx, ky, kz));
-        particleGun->SetParticleEnergy(Ene * MeV);
-        particleGun->GeneratePrimaryVertex(anEvent);
-
-        if (tmp1[2] > 0.00) {
-            particle = particleTable->FindParticle(particleName = "gamma");
-            particleGun->SetParticleDefinition(particle);
-            Ene = tmp1[2];
-            theta = tmp2[2];
-            phi = tmp3[2];
-            kx = sin(theta) * cos(phi);
-            ky = sin(theta) * sin(phi);
-            kz = cos(theta);
-            particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
-            particleGun->SetParticleMomentumDirection(G4ThreeVector(kx, ky, kz));
-            particleGun->SetParticleEnergy(Ene * MeV);
-            particleGun->GeneratePrimaryVertex(anEvent);
+    bool recoilon = false;
+    if (!fRecoil.empty() && fRecoil != "none") recoilon = true;
+    
+    if (!fPrimaryGenerator) {
+        if (fConfig == "prad") {
+            if (fGunType == "ring")
+                fPrimaryGenerator = new PrimaryGenerator(fE, fThetaLo, fThetaHi, false, "proton");
+            else
+                fPrimaryGenerator = new PRadPrimaryGenerator(fGunType, false, "proton", fEventFile);
+        } else {
+            if (fGunType == "ring")
+                fPrimaryGenerator = new PrimaryGenerator(fE, fThetaLo, fThetaHi, recoilon, fRecoil);
+            else
+                fPrimaryGenerator = new DRadPrimaryGenerator(fGunType, recoilon, fRecoil, fEventFile);
         }
     }
 
-    // RCEE PART
-    if (fGunType == "moller") {
-        fEvGunFile >> tmp1[0] >> tmp2[0] >> tmp3[0] >> tmp1[1] >> tmp2[1] >> tmp3[1] >> tmp1[2] >> tmp2[2] >> tmp3[2];
-
-        // 1st e
-        particle = particleTable->FindParticle(particleName = "e-");
-        particleGun->SetParticleDefinition(particle);
-        x0 = xrand;
-        y0 = yrand;
-        z0 = -300. * cm + zrand;
-        Ene = tmp1[0];
-        theta = tmp2[0];
-        phi = tmp3[0];
-        //G4cout << Ene << "  " << theta/3.14159265358979*180. << G4endl;
-        kx = sin(theta) * cos(phi);
-        ky = sin(theta) * sin(phi);
-        kz = cos(theta);
-        particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
-        particleGun->SetParticleMomentumDirection(G4ThreeVector(kx, ky, kz));
-        particleGun->SetParticleEnergy(Ene * MeV);
-        particleGun->GeneratePrimaryVertex(anEvent);
-
-        // 2nd e
-        Ene = tmp1[1];
-        theta = tmp2[1];
-        phi = tmp3[1];
-        kx = sin(theta) * cos(phi);
-        ky = sin(theta) * sin(phi);
-        kz = cos(theta);
-        particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
-        particleGun->SetParticleMomentumDirection(G4ThreeVector(kx, ky, kz));
-        particleGun->SetParticleEnergy(Ene * MeV);
-        particleGun->GeneratePrimaryVertex(anEvent);
-
-        if (tmp1[2] > 0.00) {
-            particle = particleTable->FindParticle(particleName = "gamma");
-            particleGun->SetParticleDefinition(particle);
-            Ene = tmp1[2];
-            theta = tmp2[2];
-            phi = tmp3[2];
-            kx = sin(theta) * cos(phi);
-            ky = sin(theta) * sin(phi);
-            kz = cos(theta);
-            particleGun->SetParticlePosition(G4ThreeVector(x0, y0, z0));
-            particleGun->SetParticleMomentumDirection(G4ThreeVector(kx, ky, kz));
-            particleGun->SetParticleEnergy(Ene * MeV);
-            particleGun->GeneratePrimaryVertex(anEvent);
-        }
-    }
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void PrimaryGeneratorAction::SetGunType(G4String val)
-{
-    fGunType = val;
-
-    if (fGunType == "elastic") {
-        if (fEvGunFile.is_open()) {
-            fEvGunFile.close();
-            fEvGunFile.open("epelastic.dat");
-        } else
-            fEvGunFile.open("epelastic.dat");
-    } else if (fGunType == "moller") {
-        if (fEvGunFile.is_open()) {
-            fEvGunFile.close();
-            fEvGunFile.open("moller.dat");
-        } else
-            fEvGunFile.open("moller.dat");
-    }
-
-    if (fStartEvent > 0)
-        SetStartEvent(fStartEvent);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void PrimaryGeneratorAction::SetStartEvent(G4int val)
-{
-    fStartEvent = val;
-
-    if (fGunType == "elastic" || fGunType == "moller") {
-        if (fEvGunFile.is_open()) {
-            std::string temp;
-
-            for (int i = 0; i < fStartEvent; i++)
-                std::getline(fEvGunFile, temp);
-        }
-    }
+    fPrimaryGenerator->GeneratePrimaryVertex(anEvent);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

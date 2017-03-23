@@ -41,8 +41,12 @@
 
 #include "G4String.hh"
 
+#include <map>
+
 class DetectorMessenger;
 
+class G4LogicalVolume;
+class G4VisAttributes;
 class G4VPhysicalVolume;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -55,6 +59,7 @@ public:
 
 public:
     G4VPhysicalVolume *Construct();
+    void ConstructSDandField();
 
     inline void SetTargetPos(G4double z);
     inline void SetGEMPos(G4double z1, G4double z2);
@@ -63,15 +68,27 @@ public:
 
     inline void SetTarget(G4double ir, G4double l);
     inline void SetRecoilDetector(G4int n, G4double l, G4double t);
+    
+    inline void SetTargetMaterial(G4String val);
 
-    inline const G4VPhysicalVolume *GetPhysiWorld();
+    inline void EnableSD(G4String detname);
+    inline void DisableSD(G4String detname);
 
 private:
+    void DefineMaterials();
+    G4VPhysicalVolume *DefinePRadVolumes();
+    void DefinePRadSDs();
+    G4VPhysicalVolume *DefineDRadVolumes();
+    void DefineDRadSDs();
+
     G4String fConfig;
+
+    std::map<G4String, G4VisAttributes *> fVisAtts;
 
     G4double fTargetCenter;
     G4double fTargetR;
     G4double fTargetHalfL;
+    G4String fTargetMat;
 
     G4int fRecoilDetNSeg;
     G4double fRecoilDetHalfL;
@@ -84,10 +101,12 @@ private:
 
     G4double fCrystalSurf;
 
-    G4VPhysicalVolume *physiWorld;
+    G4bool fRecoilDetSDOn;
+    G4bool fGEMSDOn;
+    G4bool fSciPlaneSDOn;
+    G4bool fHyCalSDOn;
 
-private:
-    DetectorMessenger *detectorMessenger; //pointer to the Messenger
+    DetectorMessenger *detectorMessenger; // pointer to the messenger
 };
 
 inline void DetectorConstruction::SetTargetPos(G4double z)
@@ -128,9 +147,31 @@ inline void DetectorConstruction::SetRecoilDetector(G4int n, G4double l, G4doubl
     if (t > -9999) fRecoilDetThickness = t;
 }
 
-inline const G4VPhysicalVolume *DetectorConstruction::GetPhysiWorld()
+inline void DetectorConstruction::SetTargetMaterial(G4String val)
 {
-    return physiWorld;
+    fTargetMat = val;
+}
+
+inline void DetectorConstruction::EnableSD(G4String detname)
+{
+    if (detname == "Recoil Detector") fRecoilDetSDOn = true;
+
+    if (detname == "GEM") fGEMSDOn = true;
+
+    if (detname == "Scintillator Plane") fSciPlaneSDOn = true;
+
+    if (detname == "HyCal") fHyCalSDOn = true;
+}
+
+inline void DetectorConstruction::DisableSD(G4String detname)
+{
+    if (detname == "Recoil Detector") fRecoilDetSDOn = false;
+
+    if (detname == "GEM") fGEMSDOn = false;
+
+    if (detname == "Scintillator Plane") fSciPlaneSDOn = false;
+
+    if (detname == "HyCal") fHyCalSDOn = false;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

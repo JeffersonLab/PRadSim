@@ -44,9 +44,10 @@ class DetectorConstruction;
 
 class G4UIcommand;
 class G4UIdirectory;
+class G4UIcmdWithABool;
 class G4UIcmdWithADoubleAndUnit;
 class G4UIcmdWithAnInteger;
-class G4UIcmdWithoutParameter;
+class G4UIcmdWithAString;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -72,10 +73,16 @@ private:
     G4UIdirectory             *TargetDir;
     G4UIcmdWithADoubleAndUnit *TargetRCmd;
     G4UIcmdWithADoubleAndUnit *TargetHalfLCmd;
+    G4UIcmdWithAString        *TargetMatCmd;
     G4UIdirectory             *RecoilDetDir;
     G4UIcmdWithAnInteger      *RecoilDetNSegCmd;
     G4UIcmdWithADoubleAndUnit *RecoilDetHalfLCmd;
     G4UIcmdWithADoubleAndUnit *RecoilDetThicknessCmd;
+    G4UIdirectory             *SDDir;
+    G4UIcmdWithABool          *RecoilDetSDCmd;
+    G4UIcmdWithABool          *GEMSDCmd;
+    G4UIcmdWithABool          *SciPlaneSDCmd;
+    G4UIcmdWithABool          *HyCalSDCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

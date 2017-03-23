@@ -23,32 +23,91 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// RunAction.hh
-// Developer : Chao Peng
+// PrimaryGenerator.hh
+// Developer : Chao Gu
 // History:
-//   Aug 2012, C. Peng, Original version.
+//   Mar 2017, C. Gu, Add for DRad configuration.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef RunAction_h
-#define RunAction_h 1
+#ifndef PrimaryGenerator_h
+#define PrimaryGenerator_h 1
 
-#include "G4UserRunAction.hh"
+#include "ConfigParser.h"
+
+#include "G4VPrimaryGenerator.hh"
+
+#include "G4String.hh"
+
+#define MaxN 10
+
+class G4Event;
+
+class TTree;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class G4Run;
-
-class RunAction : public G4UserRunAction
+class PrimaryGenerator : public G4VPrimaryGenerator
 {
 public:
-    RunAction();
-    virtual ~RunAction();
+    PrimaryGenerator(G4double e, G4double thlo, G4double thhi, G4bool rec, G4String par);
+    virtual ~PrimaryGenerator();
 
-    void BeginOfRunAction(const G4Run *);
-    void EndOfRunAction(const G4Run *);
+    virtual void GeneratePrimaryVertex(G4Event *);
+
+protected:
+    void Register(TTree *);
+   
+    void Print() const;
+    void Clear();
+ 
+    bool fRegistered;
+
+    G4bool fRecoilOn;
+    G4String fRecoilParticle;
+
+    int fN;
+    int fPID[MaxN];
+    double fX[MaxN], fY[MaxN], fZ[MaxN];
+    double fE[MaxN], fMomentum[MaxN];
+    double fTheta[MaxN], fPhi[MaxN];
+
+    G4bool fTargetInfo;
+    G4double fTargetCenter, fTargetHalfL;
+
+private:
+    G4double fEBeam;
+    G4double fThetaLo, fThetaHi;
+
+    G4double fTargetMass;
+};
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+class PRadPrimaryGenerator : public PrimaryGenerator
+{
+public:
+    PRadPrimaryGenerator(G4String type, G4bool rec, G4String par); // DRadPrimaryGenerator use this
+    PRadPrimaryGenerator(G4String type, G4bool rec, G4String par, G4String path);
+    virtual ~PRadPrimaryGenerator();
+
+    virtual void GeneratePrimaryVertex(G4Event *);
+
+protected:
+    G4String fGunType;
+
+    ConfigParser fParser;
+};
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+class DRadPrimaryGenerator : public PRadPrimaryGenerator
+{
+public:
+    DRadPrimaryGenerator(G4String type, G4bool rec, G4String par, G4String path);
+    virtual ~DRadPrimaryGenerator();
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

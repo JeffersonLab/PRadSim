@@ -23,62 +23,88 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// ActionInitialization.cc
+// TrackInformation.cc
 // Developer : Chao Gu
 // History:
-//   Mar 2017, C. Gu, Add DRad configuration.
+//   Mar 2017, C. Gu, Rewrite sensitive detectors.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "ActionInitialization.hh"
+#include "TrackInformation.hh"
 
-#include "EventAction.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "SteppingVerbose.hh"
-#include "TrackingAction.hh"
+#include "G4Allocator.hh"
+#include "G4Track.hh"
+#include "G4VUserTrackInformation.hh"
 
-#include "G4VSteppingVerbose.hh"
-#include "G4VUserActionInitialization.hh"
-
-#include "G4String.hh"
+#include <unordered_map>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::ActionInitialization(G4String conf) : G4VUserActionInitialization(), fConfig(conf)
+G4Allocator<TrackInformation> TrackInformationAllocator;
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+TrackInformation::TrackInformation() : G4VUserTrackInformation()
+{
+    fOriTrackID = 0;
+    fOriParticle = NULL;
+    fOriPosition = G4ThreeVector(0, 0, 0);
+    fOriMomentum = G4ThreeVector(0, 0, 0);
+    fOriEnergy = 0;
+    fOriTime = 0;
+    fAncestorMap.clear();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+TrackInformation::~TrackInformation()
 {
     //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::~ActionInitialization()
+TrackInformation::TrackInformation(const G4Track *aTrack)
 {
-    //
+    fOriTrackID = aTrack->GetTrackID();
+    fOriParticle = (G4ParticleDefinition *)(aTrack->GetParticleDefinition());
+    fOriPosition = aTrack->GetPosition();
+    fOriMomentum = aTrack->GetMomentum();
+    fOriEnergy = aTrack->GetTotalEnergy();
+    fOriTime = aTrack->GetGlobalTime();
+    fAncestorMap.clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ActionInitialization::Build() const
+TrackInformation::TrackInformation(const TrackInformation *aTrackInfo)
 {
-    SetUserAction(new PrimaryGeneratorAction(fConfig));
-    SetUserAction(new EventAction());
-    SetUserAction(new TrackingAction());
+    fOriTrackID = aTrackInfo->fOriTrackID;
+    fOriParticle = aTrackInfo->fOriParticle;
+    fOriPosition = aTrackInfo->fOriPosition;
+    fOriMomentum = aTrackInfo->fOriMomentum;
+    fOriEnergy = aTrackInfo->fOriEnergy;
+    fOriTime = aTrackInfo->fOriTime;
+    fAncestorMap.clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ActionInitialization::BuildForMaster() const
+G4int TrackInformation::GetAncestor(G4int aDetectorID) const
 {
-    //
+    if (fAncestorMap.count(aDetectorID) > 0)
+        return fAncestorMap.at(aDetectorID);
+
+    return -1;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4VSteppingVerbose *ActionInitialization::InitializeSteppingVerbose() const
+void TrackInformation::SetAncestor(G4int aDetectorID, G4int aTrackID)
 {
-    return new SteppingVerbose();
+    fAncestorMap.insert(std::pair<G4int, G4int>(aDetectorID, aTrackID));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

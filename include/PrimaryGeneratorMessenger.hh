@@ -44,8 +44,9 @@ class PrimaryGeneratorAction;
 
 class G4UIcommand;
 class G4UIdirectory;
+class G4UIcmdWithABool;
+class G4UIcmdWithADoubleAndUnit;
 class G4UIcmdWithAString;
-class G4UIcmdWithAnInteger;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -58,12 +59,15 @@ public:
     void SetNewValue(G4UIcommand *, G4String);
 
 private:
-    PrimaryGeneratorAction *Action;
+    PrimaryGeneratorAction    *Action;
 
-    G4UIdirectory          *gunDir;
-    G4UIcmdWithAString     *RandCmd;
-    G4UIcmdWithAString     *GunTypeCmd;
-    G4UIcmdWithAnInteger   *StartEventCmd;
+    G4UIdirectory             *GunDir;
+    G4UIcmdWithAString        *GunTypeCmd;
+    G4UIcmdWithAString        *RecoilCmd;
+    G4UIcmdWithADoubleAndUnit *EBeamCmd;
+    G4UIdirectory             *ThetaDir;
+    G4UIcmdWithADoubleAndUnit *ThetaLowCmd;
+    G4UIcmdWithADoubleAndUnit *ThetaHighCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

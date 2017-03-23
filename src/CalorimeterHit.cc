@@ -23,62 +23,59 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// ActionInitialization.cc
+// CalorimeterHit.cc
 // Developer : Chao Gu
 // History:
-//   Mar 2017, C. Gu, Add DRad configuration.
+//   Mar 2017, C. Gu, Rewrite sensitive detectors.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "ActionInitialization.hh"
+#include "CalorimeterHit.hh"
 
-#include "EventAction.hh"
-#include "PrimaryGeneratorAction.hh"
-#include "SteppingVerbose.hh"
-#include "TrackingAction.hh"
+#include "G4Allocator.hh"
+#include "G4VHit.hh"
 
-#include "G4VSteppingVerbose.hh"
-#include "G4VUserActionInitialization.hh"
+#include "G4ios.hh"
+#include "G4UnitsTable.hh"
 
-#include "G4String.hh"
+#include <iomanip>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::ActionInitialization(G4String conf) : G4VUserActionInitialization(), fConfig(conf)
+G4Allocator<CalorimeterHit> CalorimeterHitAllocator;
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+CalorimeterHit::CalorimeterHit() : G4VHit(), fEdep(0), fTrackLen(0)
 {
     //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-ActionInitialization::~ActionInitialization()
+CalorimeterHit::~CalorimeterHit()
 {
     //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ActionInitialization::Build() const
+bool CalorimeterHit::operator ==(const CalorimeterHit &right) const
 {
-    SetUserAction(new PrimaryGeneratorAction(fConfig));
-    SetUserAction(new EventAction());
-    SetUserAction(new TrackingAction());
+    return (this == &right);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void ActionInitialization::BuildForMaster() const
+void CalorimeterHit::Print()
 {
-    //
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4VSteppingVerbose *ActionInitialization::InitializeSteppingVerbose() const
-{
-    return new SteppingVerbose();
+    G4int prec = G4cout.precision(3);
+    G4cout << "Edep: " << std::setw(5) << G4BestUnit(fEdep, "Energy") << " ";
+    G4cout << "track length: " << std::setw(5) << G4BestUnit(fTrackLen, "Length");
+    G4cout << G4endl;
+    G4cout.precision(prec);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -62,45 +62,9 @@ StandardHit::~StandardHit()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-StandardHit::StandardHit(const StandardHit &right) : G4VHit()
+bool StandardHit::operator ==(const StandardHit &right) const
 {
-    fPID = right.fPID;
-    fTrackID = right.fTrackID;
-    fPTrackID = right.fPTrackID;
-    fInPos = right.fInPos;
-    fOutPos = right.fOutPos;
-    fInMom = right.fInMom;
-    fOutMom = right.fOutMom;
-    fTime = right.fTime;
-    fEdep = right.fEdep;
-    fPhysV = right.fPhysV;
-    fCopyNo = right.fCopyNo;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-const StandardHit &StandardHit::operator=(const StandardHit &right)
-{
-    fPID = right.fPID;
-    fTrackID = right.fTrackID;
-    fPTrackID = right.fPTrackID;
-    fInPos = right.fInPos;
-    fOutPos = right.fOutPos;
-    fInMom = right.fInMom;
-    fOutMom = right.fOutMom;
-    fTime = right.fTime;
-    fEdep = right.fEdep;
-    fPhysV = right.fPhysV;
-    fCopyNo = right.fCopyNo;
-
-    return *this;
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4bool StandardHit::operator==(const StandardHit &right) const
-{
-    return ((fPID == right.fPID) && (fTrackID == right.fTrackID) && (fTime == right.fTime) && (fPhysV == right.fPhysV) && (fCopyNo == right.fCopyNo));
+    return ((fPID == right.fPID) && (fTrackID == right.fTrackID) && (fDetID == right.fDetID) && (fPhysV == right.fPhysV) && (fCopyNo == right.fCopyNo));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -108,11 +72,15 @@ G4bool StandardHit::operator==(const StandardHit &right) const
 void StandardHit::Print()
 {
     G4int prec = G4cout.precision(3);
-    G4cout << std::setw(5) << fPID << " " << std::setw(5) << fTrackID << " " << std::setw(5) << fPTrackID << "   ";
-    G4cout.setf(std::ios::fixed);
-    G4cout << G4BestUnit(fInPos, "Length") << "\t" << G4BestUnit(fOutPos, "Length") << "\t";
-    G4cout.unsetf(std::ios::fixed);
-    G4cout << std::setw(5) << G4BestUnit(fInMom.mag(), "Energy") << std::setw(9) << G4BestUnit(fOutMom.mag(), "Energy") << std::setw(9) << G4BestUnit(fEdep, "Energy") <<  std::setw(5) << G4BestUnit(fTime, "Time") << " " << std::setw(18) << fPhysV->GetName() << " " << fCopyNo << G4endl;
+    G4cout << std::setw(10) << fPID << " " << std::setw(5) << fTrackID << " " << std::setw(5) << fPTrackID << " ";
+    G4cout << std::setw(5) << G4BestUnit(fInPos.x(), "Length") << " " << std::setw(5) << G4BestUnit(fInPos.y(), "Length") << " " << std::setw(5) << G4BestUnit(fInPos.z(), "Length") << " ";
+    G4cout << std::setw(5) << G4BestUnit(fOutPos.x(), "Length") << " " << std::setw(5) << G4BestUnit(fOutPos.y(), "Length") << " " << std::setw(5) << G4BestUnit(fOutPos.z(), "Length") << " ";
+    G4cout << std::setw(5) << G4BestUnit(fInMom.mag(), "Energy") << " " << std::setw(8) << G4BestUnit(fOutMom.mag(), "Energy") << " " << std::setw(8) << G4BestUnit(fEdep, "Energy") << " ";
+    G4cout << std::setw(5) << G4BestUnit(fTime, "Time") << " ";
+
+    if (fPhysV != 0) G4cout << std::setw(18) << fPhysV->GetName() << " " << fCopyNo;
+
+    G4cout << G4endl;
     G4cout.precision(prec);
 }
 
@@ -123,13 +91,15 @@ void StandardHit::Clear()
     fPID = 0;
     fTrackID = 0;
     fPTrackID = 0;
+    fDetID = 0;
     fInPos.set(0, 0, 0);
     fOutPos.set(0, 0, 0);
     fInMom.set(0, 0, 0);
     fOutMom.set(0, 0, 0);
     fTime = 0;
     fEdep = 0;
-    fPhysV = 0;
+    fTrackLen = 0;
+    fPhysV = NULL;
     fCopyNo = 0;
 }
 
