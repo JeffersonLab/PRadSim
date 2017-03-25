@@ -66,7 +66,7 @@ CalorimeterSD::CalorimeterSD(G4String name, G4String abbrev) : StandardDetectorS
 
     fTotalEdep = 0;
 
-    for (int i = 0; i < NModules + 1; i++) {
+    for (int i = 0; i < NModules; i++) {
         fModuleEdep[i] = 1e+38;
         fModuleTrackL[i] = 1e+38;
     }
@@ -250,20 +250,10 @@ void CalorimeterSD::EndOfEvent(G4HCofThisEvent *HCE)
 
 void CalorimeterSD::Register(TTree *tree)
 {
+    StandardDetectorSD::Register(tree);
+
     const char *abbr = fAbbrev.data();
 
-    tree->Branch(Form("%s.N", abbr), &fN, Form("%s.N/I", abbr));
-    tree->Branch(Form("%s.PID", abbr), fPID, Form("%s.PID[%s.N]/I", abbr, abbr));
-    tree->Branch(Form("%s.TID", abbr), fTID, Form("%s.TID[%s.N]/I", abbr, abbr));
-    tree->Branch(Form("%s.PTID", abbr), fPTID, Form("%s.PTID[%s.N]/I", abbr, abbr));
-    tree->Branch(Form("%s.X", abbr), fX, Form("%s.X[%s.N]/D", abbr, abbr));
-    tree->Branch(Form("%s.Y", abbr), fY, Form("%s.Y[%s.N]/D", abbr, abbr));
-    tree->Branch(Form("%s.Z", abbr), fZ, Form("%s.Z[%s.N]/D", abbr, abbr));
-    tree->Branch(Form("%s.P", abbr), fMomentum, Form("%s.P[%s.N]/D", abbr, abbr));
-    tree->Branch(Form("%s.Theta", abbr), fTheta, Form("%s.Theta[%s.N]/D", abbr, abbr));
-    tree->Branch(Form("%s.Phi", abbr), fPhi, Form("%s.Phi[%s.N]/D", abbr, abbr));
-    tree->Branch(Form("%s.Time", abbr), fTime, Form("%s.Time[%s.N]/D", abbr, abbr));
-    tree->Branch(Form("%s.Edep", abbr), fEdep, Form("%s.Edep[%s.N]/D", abbr, abbr));
     tree->Branch(Form("%s.TotalEdep", abbr), &fTotalEdep, Form("%s.TotalEdep/D", abbr));
     tree->Branch(Form("%s.ModuleEdep", abbr), fModuleEdep, Form("%s.ModuleEdep[%d]/D", abbr, NModules));
     tree->Branch(Form("%s.ModuleTrackL", abbr), fModuleTrackL, Form("%s.ModuleTrackL[%d]/D", abbr, NModules));
@@ -277,7 +267,7 @@ void CalorimeterSD::Clear()
 
     fTotalEdep = 0;
 
-    for (int i = 0; i < NModules + 1; i++) {
+    for (int i = 0; i < NModules; i++) {
         fModuleEdep[i] = 1e+38;
         fModuleTrackL[i] = 1e+38;
     }

@@ -792,7 +792,6 @@ void DetectorConstruction::DefineDRadSDs()
         CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC");
         SetSensitiveDetector("HyCalModuleLV", HyCalSD);
     }
-
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
