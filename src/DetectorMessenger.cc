@@ -64,6 +64,11 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
     TargetZCmd->SetGuidance("Set fTargetCenter");
     TargetZCmd->SetParameterName("targetz", false);
     TargetZCmd->SetDefaultUnit("cm");
+    
+    RecoilDetZCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/z/recoil", this);
+    RecoilDetZCmd->SetGuidance("Set fRecoilDetCenter");
+    RecoilDetZCmd->SetParameterName("recoilz", false);
+    RecoilDetZCmd->SetDefaultUnit("cm");
 
     GEM1ZCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/z/gem1", this);
     GEM1ZCmd->SetGuidance("Set fGEM1Center");
@@ -159,6 +164,7 @@ DetectorMessenger::~DetectorMessenger()
     delete TargetMatCmd;
     delete TargetDir;
     delete TargetZCmd;
+    delete RecoilDetZCmd;
     delete GEM1ZCmd;
     delete GEM2ZCmd;
     delete SciPlaneZCmd;
@@ -174,6 +180,9 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 {
     if (command == TargetZCmd)
         Detector->SetTargetPos(TargetZCmd->GetNewDoubleValue(newValue));
+
+    if (command == RecoilDetZCmd)
+        Detector->SetRecoilDetectorPos(RecoilDetZCmd->GetNewDoubleValue(newValue));
 
     if (command == GEM1ZCmd)
         Detector->SetGEMPos(GEM1ZCmd->GetNewDoubleValue(newValue), -10000);

@@ -66,6 +66,7 @@ private:
     G4UIdirectory             *DetDir;
     G4UIdirectory             *ZDir;
     G4UIcmdWithADoubleAndUnit *TargetZCmd;
+    G4UIcmdWithADoubleAndUnit *RecoilDetZCmd;
     G4UIcmdWithADoubleAndUnit *GEM1ZCmd;
     G4UIcmdWithADoubleAndUnit *GEM2ZCmd;
     G4UIcmdWithADoubleAndUnit *SciPlaneZCmd;

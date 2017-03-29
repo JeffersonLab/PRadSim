@@ -62,6 +62,7 @@ public:
     void ConstructSDandField();
 
     inline void SetTargetPos(G4double z);
+    inline void SetRecoilDetectorPos(G4double z);
     inline void SetGEMPos(G4double z1, G4double z2);
     inline void SetScitillatorPlanePos(G4double z);
     inline void SetHyCalPos(G4double z);
@@ -91,6 +92,7 @@ private:
     G4String fTargetMat;
 
     G4int fRecoilDetNSeg;
+    G4double fRecoilDetCenter;
     G4double fRecoilDetHalfL;
     G4double fRecoilDetThickness;
 
@@ -112,6 +114,11 @@ private:
 inline void DetectorConstruction::SetTargetPos(G4double z)
 {
     fTargetCenter = z;
+}
+
+inline void DetectorConstruction::SetRecoilDetectorPos(G4double z)
+{
+    fRecoilDetCenter = z;
 }
 
 inline void DetectorConstruction::SetGEMPos(G4double z1, G4double z2)

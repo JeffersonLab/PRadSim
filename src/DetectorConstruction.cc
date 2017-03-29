@@ -85,6 +85,7 @@ DetectorConstruction::DetectorConstruction(G4String conf) : G4VUserDetectorConst
     fTargetMat = "D2Gas";
 
     fRecoilDetNSeg = 72;
+    fRecoilDetCenter = -300.0 * cm;
     fRecoilDetHalfL = 2.0 * cm;
     fRecoilDetThickness = 2.0 * mm;
 
@@ -615,6 +616,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
     new G4PVPlacement(0, G4ThreeVector(0, 0, +fTargetHalfL + CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 1);
 
     // Recoil detector
+    G4double RecoilDetCenter = fRecoilDetCenter - fTargetCenter;
     G4double RecoilDetAng = twopi / fRecoilDetNSeg;
     G4double RecoilDetOR = fTargetR * cos(RecoilDetAng / 2.0) - 0.5 * mm;
     G4double RecoilDetIR = RecoilDetOR - fRecoilDetThickness;
@@ -623,7 +625,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
     G4double zPlaneRD[] = {-fRecoilDetHalfL, fRecoilDetHalfL};
     G4VSolid *solidRecoilDet = new G4Polyhedra("RecoilDetectorS", 0, twopi, fRecoilDetNSeg, 2, zPlaneRD, rInnerRD, rOuterRD);
     G4LogicalVolume *logicRecoilDet = new G4LogicalVolume(solidRecoilDet, RecoilDetectorM, "RecoilDetectorLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicRecoilDet, "Recoil Detector", logicTarget, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, RecoilDetCenter), logicRecoilDet, "Recoil Detector", logicTarget, false, 0);
 
     // Additional window (Downstream chamber window)
     G4double KaptonWinCenter = fTargetCenter + 74.0 * mm;
