@@ -52,7 +52,7 @@ class TTree;
 class PrimaryGenerator : public G4VPrimaryGenerator
 {
 public:
-    PrimaryGenerator(G4double e, G4double thlo, G4double thhi, G4bool rec, G4String par);
+  PrimaryGenerator(G4double e, G4double thlo, G4double thhi, G4bool rec, G4String par, G4String evtype);
     virtual ~PrimaryGenerator();
 
     virtual void GeneratePrimaryVertex(G4Event *);
@@ -67,6 +67,7 @@ protected:
 
     G4bool fRecoilOn;
     G4String fRecoilParticle;
+    G4String fEventType;
 
     int fN;
     int fPID[MaxN];

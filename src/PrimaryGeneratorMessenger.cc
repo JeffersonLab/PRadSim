@@ -83,6 +83,12 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act
     ThetaHighCmd->SetGuidance("Set fThetaHi");
     ThetaHighCmd->SetParameterName("thetahi", false);
     ThetaHighCmd->SetDefaultUnit("deg");
+
+    EvTypeCmd = new G4UIcmdWithAString("/pradsim/gun/evtype", this);
+    EvTypeCmd->SetGuidance("Choose a type of event.");
+    EvTypeCmd->SetGuidance("  Choice : ep, moller");
+    EvTypeCmd->SetParameterName("evtype", false);
+    EvTypeCmd->SetCandidates("ep moller");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -96,6 +102,7 @@ PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
     delete RecoilCmd;
     delete EBeamCmd;
     delete GunDir;
+    delete EvTypeCmd;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -116,6 +123,9 @@ void PrimaryGeneratorMessenger::SetNewValue(G4UIcommand *command, G4String newVa
     
     if (command == ThetaHighCmd)
         Action->SetThetaRange(-10000, ThetaHighCmd->GetNewDoubleValue(newValue));
+
+    if (command == EvTypeCmd)
+        Action->SetEventType(newValue);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

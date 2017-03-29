@@ -59,11 +59,13 @@ public:
     inline void SetRecoilParticle(G4String val);
     inline void SetBeamEnergy(G4double val);
     inline void SetThetaRange(G4double lo, G4double hi);
+    inline void SetEventType(G4String evtype);
 
 private:
     G4String fConfig;
     G4String fGunType;
     G4String fRecoil;
+    G4String fEventType;
 
     double fE;
     double fThetaLo, fThetaHi;
@@ -85,14 +87,18 @@ inline void PrimaryGeneratorAction::SetRecoilParticle(G4String val)
     fRecoil = val;
 }
 
-    inline void PrimaryGeneratorAction::SetBeamEnergy(G4double val) {
-        fE = val;
-    }
+inline void PrimaryGeneratorAction::SetBeamEnergy(G4double val) {
+  fE = val;
+}
     
-    inline void PrimaryGeneratorAction::SetThetaRange(G4double lo, G4double hi) {
-        if (lo > -9999) fThetaLo = lo;
-        if (hi > -9999) fThetaHi = hi;
-    }
+inline void PrimaryGeneratorAction::SetThetaRange(G4double lo, G4double hi) {
+  if (lo > -9999) fThetaLo = lo;
+  if (hi > -9999) fThetaHi = hi;
+}
+
+inline void PrimaryGeneratorAction::SetEventType(G4String val) {
+  fEventType = val;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

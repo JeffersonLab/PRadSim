@@ -46,7 +46,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf) : G4VUserPrimaryGeneratorAction(), fConfig(conf), fGunType("ring"), fE(1100), fThetaLo(0.5), fThetaHi(6.5), fPrimaryGenerator(NULL)
+PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf) : G4VUserPrimaryGeneratorAction(), fConfig(conf), fGunType("ring"), fE(1100), fThetaLo(0.0085), fThetaHi(0.12), fPrimaryGenerator(NULL), fEventType("ep")
 {
     if (fConfig != "prad" && fConfig != "drad")
         fConfig = "prad";
@@ -78,14 +78,14 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
     if (!fPrimaryGenerator) {
         if (fConfig == "prad") {
             if (fGunType == "ring")
-                fPrimaryGenerator = new PrimaryGenerator(fE, fThetaLo, fThetaHi, recoilon, "proton");
+	      fPrimaryGenerator = new PrimaryGenerator(fE, fThetaLo, fThetaHi, recoilon, "proton",fEventType);
             else
                 fPrimaryGenerator = new PRadPrimaryGenerator(fGunType, recoilon, "proton", fEventFile);
         } else {
             if (!recoilon) fRecoil = "deuteron";
             
             if (fGunType == "ring")
-                fPrimaryGenerator = new PrimaryGenerator(fE, fThetaLo, fThetaHi, recoilon, fRecoil);
+	      fPrimaryGenerator = new PrimaryGenerator(fE, fThetaLo, fThetaHi, recoilon, fRecoil,fEventType);
             else
                 fPrimaryGenerator = new DRadPrimaryGenerator(fGunType, recoilon, fRecoil, fEventFile);
         }

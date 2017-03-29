@@ -68,6 +68,7 @@ private:
     G4UIdirectory             *ThetaDir;
     G4UIcmdWithADoubleAndUnit *ThetaLowCmd;
     G4UIcmdWithADoubleAndUnit *ThetaHighCmd;
+    G4UIcmdWithAString        *EvTypeCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
