@@ -46,7 +46,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf) : G4VUserPrimaryGeneratorAction(), fConfig(conf), fGunType("ring"), fE(0), fThetaLo(0), fThetaHi(0), fPrimaryGenerator(NULL)
+PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf) : G4VUserPrimaryGeneratorAction(), fConfig(conf), fGunType("ring"), fE(1100), fThetaLo(0.5), fThetaHi(6.5), fPrimaryGenerator(NULL)
 {
     if (fConfig != "prad" && fConfig != "drad")
         fConfig = "prad";
