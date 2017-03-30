@@ -179,7 +179,7 @@ void PrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
         double e_l2 = E - e_l;
         double p_l2 = sqrt(e_l2 * e_l2  - me * me);
         double theta_l2 = asin(p_l * sin(theta_l) / p_l2);
-        double phi_l2 = - phi_l;
+        double phi_l2 = phi_l + pi;
 
         G4PrimaryVertex *vertexL2 = new G4PrimaryVertex(x, y, z, 0);
         G4PrimaryParticle *particleL2 = new G4PrimaryParticle(particleTable->FindParticle("e-"));
