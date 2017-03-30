@@ -15,28 +15,9 @@
 
 #include <string>
 
-//maximum number of hits in a SD
-#define MaxSDHits 5000
+#define MaxNHits 100 //maximum number of hits in a SD
 
 class TChain;
-
-struct SDData {
-    int N;
-    int PID[MaxSDHits]; // Particle ID
-    int TID[MaxSDHits]; // Track ID
-    int PTID[MaxSDHits]; // Parent Track ID
-    double InPosX[MaxSDHits];
-    double InPosY[MaxSDHits];
-    double InPosZ[MaxSDHits];
-    double OutPosX[MaxSDHits];
-    double OutPosY[MaxSDHits];
-    double OutPosZ[MaxSDHits];
-    double InMom[MaxSDHits];
-    double OutMom[MaxSDHits];
-    double Edep[MaxSDHits];
-    double Time[MaxSDHits];
-    int CopyNo[MaxSDHits];
-};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -57,7 +38,20 @@ public:
 protected:
     const char *fAbbrev;
 
-    SDData fData;
+    int fN;
+    int fPID[MaxNHits]; // Particle ID
+    int fTID[MaxNHits]; // Track ID
+    int fPTID[MaxNHits]; // Parent Track ID
+    int fDID[MaxNHits];
+    double fX[MaxNHits];
+    double fY[MaxNHits];
+    double fZ[MaxNHits];
+    double fMomentum[MaxNHits];
+    double fTheta[MaxNHits];
+    double fPhi[MaxNHits];
+    double fTime[MaxNHits];
+    double fEdep[MaxNHits];
+    double fTrackL[MaxNHits];
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

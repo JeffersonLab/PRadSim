@@ -59,10 +59,10 @@ public:
 
 protected:
     void Register(TTree *);
-   
+
     void Print() const;
     void Clear();
- 
+
     bool fRegistered;
 
     G4bool fRecoilOn;

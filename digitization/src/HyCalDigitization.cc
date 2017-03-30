@@ -17,6 +17,7 @@
 #include "TROOT.h"
 #include "TError.h"
 #include "TObject.h"
+#include "TChain.h"
 #include "TRandom2.h"
 
 #include <ctime>
@@ -29,18 +30,23 @@ static TRandom2 *RandGen = new TRandom2();
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-HyCalDigitization::HyCalDigitization(const std::string &name, const std::string &path) : StandardDigiBase(name), fTotalE(0)
+HyCalDigitization::HyCalDigitization(const std::string &name, const std::string &path) : StandardDigiBase(name)
 {
     RandGen->SetSeed((UInt_t)time(NULL));
 
     fHyCal = new PRadHyCalSystem(path);
-    //fHyCal->UpdateRunFiles();
 
     fModuleList = fHyCal->GetModuleList();
-    fNModule = fModuleList.size();
 
-    fEdep.resize(fNModule);
-    Clear();
+    if (fModuleList.size() != NModules)
+        std::cout << "ERROR: number of modules do not match" << std::endl;
+
+    fTotalEdep = 0;
+
+    for (int i = 0; i < NModules; i++) {
+        fModuleEdep[i] = 1e+38;
+        fModuleTrackL[i] = 1e+38;
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -48,6 +54,17 @@ HyCalDigitization::HyCalDigitization(const std::string &name, const std::string 
 HyCalDigitization::~HyCalDigitization()
 {
     //
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void HyCalDigitization::RegisterData(TChain *t)
+{
+    StandardDigiBase::RegisterData(t);
+
+    t->SetBranchAddress(Form("%s.TotalEdep", fAbbrev), &fTotalEdep);
+    t->SetBranchAddress(Form("%s.ModuleEdep", fAbbrev), fModuleEdep);
+    t->SetBranchAddress(Form("%s.ModuleTrackL", fAbbrev), fModuleTrackL);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -66,21 +83,15 @@ int HyCalDigitization::PreStart(uint32_t *buffer, int base_index)
 
 bool HyCalDigitization::ProcessEvent(uint32_t *buffer)
 {
-    for (int i = 0; i < fData.N; i++) {
-        fTotalE += fData.Edep[i];
-        fEdep[fData.CopyNo[i]] += fData.Edep[i];
-    }
-
-    if (fTotalE < TRIGGER_THRESHOLD) {
+    if (fTotalEdep < TRIGGER_THRESHOLD) {
         Clear();
         return false;
     }
 
-    for (int i = 0; i < fNModule; i++)
-        FillBuffer(buffer, *(fModuleList[i]), fEdep[i]);
+    for (int i = 0; i < NModules; i++)
+        FillBuffer(buffer, *(fModuleList[i]), fModuleEdep[i]);
 
     Clear();
-
     return true;
 }
 
@@ -88,8 +99,14 @@ bool HyCalDigitization::ProcessEvent(uint32_t *buffer)
 
 void HyCalDigitization::Clear()
 {
-    for (auto &edep : fEdep)
-        edep = 0;
+    StandardDigiBase::Clear();
+
+    fTotalEdep = 0;
+
+    for (int i = 0; i < NModules; i++) {
+        fModuleEdep[i] = 1e+38;
+        fModuleTrackL[i] = 1e+38;
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

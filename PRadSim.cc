@@ -107,7 +107,7 @@ int main(int argc, char **argv)
             usage(argc, argv);
             exit(0);
             break;
-            
+
         case 's':
             seed = optarg;
             break;
@@ -127,11 +127,11 @@ int main(int argc, char **argv)
 
     // Initialize the random engine
     CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
+
     if (seed == "random")
         CLHEP::HepRandom::setTheSeed((long)(time(NULL)));
-    else {
+    else
         CLHEP::HepRandom::setTheSeed(stol(seed));
-    }
 
     // Initialize output root tree
     std::ifstream data_file("output/file.output");

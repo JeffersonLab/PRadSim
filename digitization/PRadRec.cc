@@ -94,10 +94,10 @@ int main(int argc, char **argv)
     double E[100], X[100], Y[100], Z[100]; // maximum number of clusters, 100 is enough
     // retrieve part of the cluster information
     t->Branch("HC.N", &N, "HC.N/I");
-    t->Branch("HC.In.X", X, "HC.In.X[HC.N]/D");
-    t->Branch("HC.In.Y", Y, "HC.In.Y[HC.N]/D");
-    t->Branch("HC.In.Z", Z, "HC.In.Z[HC.N]/D");
-    t->Branch("HC.In.P", E, "HC.In.P[HC.N]/D");
+    t->Branch("HC.X", X, "HC.X[HC.N]/D");
+    t->Branch("HC.Y", Y, "HC.Y[HC.N]/D");
+    t->Branch("HC.Z", Z, "HC.Z[HC.N]/D");
+    t->Branch("HC.P", E, "HC.P[HC.N]/D");
 
     int i = 1;
 

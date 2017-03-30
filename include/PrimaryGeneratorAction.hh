@@ -85,14 +85,17 @@ inline void PrimaryGeneratorAction::SetRecoilParticle(G4String val)
     fRecoil = val;
 }
 
-    inline void PrimaryGeneratorAction::SetBeamEnergy(G4double val) {
-        fE = val;
-    }
-    
-    inline void PrimaryGeneratorAction::SetThetaRange(G4double lo, G4double hi) {
-        if (lo > -9999) fThetaLo = lo;
-        if (hi > -9999) fThetaHi = hi;
-    }
+inline void PrimaryGeneratorAction::SetBeamEnergy(G4double val)
+{
+    fE = val;
+}
+
+inline void PrimaryGeneratorAction::SetThetaRange(G4double lo, G4double hi)
+{
+    if (lo > -9999) fThetaLo = lo;
+
+    if (hi > -9999) fThetaHi = hi;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

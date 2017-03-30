@@ -69,7 +69,7 @@ public:
 
     inline void SetTarget(G4double ir, G4double l);
     inline void SetRecoilDetector(G4int n, G4double l, G4double t);
-    
+
     inline void SetTargetMaterial(G4String val);
 
     inline void EnableSD(G4String detname);

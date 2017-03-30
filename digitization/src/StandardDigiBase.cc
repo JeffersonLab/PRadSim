@@ -25,7 +25,23 @@
 
 StandardDigiBase::StandardDigiBase(const std::string &name) : fAbbrev(name.c_str())
 {
-    Clear();
+    fN = 0;
+
+    for (int i = 0; i < MaxNHits; i++) {
+        fPID[i] = -9999;
+        fTID[i] = -9999;
+        fPTID[i] = -9999;
+        fDID[i] = -9999;
+        fX[i] = 1e+38;
+        fY[i] = 1e+38;
+        fZ[i] = 1e+38;
+        fMomentum[i] = 1e+38;
+        fTheta[i] = 1e+38;
+        fPhi[i] = 1e+38;
+        fTime[i] = 1e+38;
+        fEdep[i] = 1e+38;
+        fTrackL[i] = 1e+38;
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -39,66 +55,64 @@ StandardDigiBase::~StandardDigiBase()
 
 void StandardDigiBase::RegisterData(TChain *t)
 {
-    t->SetBranchAddress(Form("%s.N", fAbbrev), &fData.N);
-    t->SetBranchAddress(Form("%s.PID", fAbbrev), fData.PID);
-    t->SetBranchAddress(Form("%s.TID", fAbbrev), fData.TID);
-    t->SetBranchAddress(Form("%s.PTID", fAbbrev), fData.PTID);
-    t->SetBranchAddress(Form("%s.In.X", fAbbrev), fData.InPosX);
-    t->SetBranchAddress(Form("%s.In.Y", fAbbrev), fData.InPosY);
-    t->SetBranchAddress(Form("%s.In.Z", fAbbrev), fData.InPosZ);
-    t->SetBranchAddress(Form("%s.In.P", fAbbrev), fData.InMom);
-    t->SetBranchAddress(Form("%s.Out.X", fAbbrev), fData.OutPosX);
-    t->SetBranchAddress(Form("%s.Out.Y", fAbbrev), fData.OutPosY);
-    t->SetBranchAddress(Form("%s.Out.Z", fAbbrev), fData.OutPosZ);
-    t->SetBranchAddress(Form("%s.Out.P", fAbbrev), fData.OutMom);
-    t->SetBranchAddress(Form("%s.Edep", fAbbrev), fData.Edep);
-    t->SetBranchAddress(Form("%s.Time", fAbbrev), fData.Time);
-    t->SetBranchAddress(Form("%s.DID", fAbbrev), fData.CopyNo);
+    t->SetBranchAddress(Form("%s.N", fAbbrev), &fN);
+    t->SetBranchAddress(Form("%s.PID", fAbbrev), fPID);
+    t->SetBranchAddress(Form("%s.TID", fAbbrev), fTID);
+    t->SetBranchAddress(Form("%s.PTID", fAbbrev), fPTID);
+    t->SetBranchAddress(Form("%s.X", fAbbrev), fX);
+    t->SetBranchAddress(Form("%s.Y", fAbbrev), fY);
+    t->SetBranchAddress(Form("%s.Z", fAbbrev), fZ);
+    t->SetBranchAddress(Form("%s.P", fAbbrev), fMomentum);
+    t->SetBranchAddress(Form("%s.Theta", fAbbrev), fTheta);
+    t->SetBranchAddress(Form("%s.Phi", fAbbrev), fPhi);
+    t->SetBranchAddress(Form("%s.Time", fAbbrev), fTime);
+    t->SetBranchAddress(Form("%s.Edep", fAbbrev), fEdep);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void StandardDigiBase::Clear()
 {
-    fData.N = 0;
-
-    for (int i = 0; i < MaxSDHits; i++) {
-        fData.PID[i] = -999;
-        fData.TID[i] = -999;
-        fData.PTID[i] = -999;
-        fData.InPosX[i] = 1e+38;
-        fData.InPosY[i] = 1e+38;
-        fData.InPosZ[i] = 1e+38;
-        fData.InMom[i] = 1e+38;
-        fData.OutPosX[i] = 1e+38;
-        fData.OutPosY[i] = 1e+38;
-        fData.OutPosZ[i] = 1e+38;
-        fData.OutMom[i] = 1e+38;
-        fData.Edep[i] = 1e+38;
-        fData.Time[i] = 1e+38;
-        fData.CopyNo[i] = -999;
+    for (int i = 0; i < fN; i++) {
+        fPID[i] = -9999;
+        fTID[i] = -9999;
+        fPTID[i] = -9999;
+        fDID[i] = -9999;
+        fX[i] = 1e+38;
+        fY[i] = 1e+38;
+        fZ[i] = 1e+38;
+        fMomentum[i] = 1e+38;
+        fTheta[i] = 1e+38;
+        fPhi[i] = 1e+38;
+        fTime[i] = 1e+38;
+        fEdep[i] = 1e+38;
+        fTrackL[i] = 1e+38;
     }
+
+    fN = 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void StandardDigiBase::Print() const
 {
-    std::cout << fAbbrev << " : " << fData.N << std::endl;
+    std::cout << fAbbrev << " : " << fN << std::endl;
 
-    for (int i = 0; i < fData.N; i++) {
-        int prec = std::cout.precision(3);
-        std::cout << std::setw(5) << fData.PID[i] << " " << std::setw(5) << fData.TID[i] << " " << std::setw(5) << fData.PTID[i] << " ";
+    int prec = std::cout.precision(3);
+
+    for (int i = 0; i < fN; i++) {
+        std::cout << std::setw(5) << fPID[i] << " " << std::setw(5) << fTID[i] << " " << std::setw(5) << fPTID[i] << " ";
         std::cout.setf(std::ios::fixed);
         std::cout.precision(1);
-        std::cout << std::setw(6) << fData.InPosX[i] << " " << std::setw(6) << fData.InPosY[i] << " " << std::setw(7) << fData.InPosZ[i] << " ";
-        std::cout << std::setw(6) << fData.OutPosX[i] << " " << std::setw(6) << fData.OutPosY[i] << " " << std::setw(7) << fData.OutPosZ[i] << " ";
+        std::cout << std::setw(6) << fX[i] << " " << std::setw(6) << fY[i] << " " << std::setw(7) << fZ[i] << " ";
         std::cout.unsetf(std::ios::fixed);
         std::cout.precision(3);
-        std::cout << std::setw(8) << fData.InMom[i] << " " << std::setw(8) << fData.OutMom[i] << " " << std::setw(8) << fData.Edep[i] << " ";
-        std::cout << std::setw(5) << fData.Time[i] << " " << std::setw(5) << fData.CopyNo[i] << std::endl;
-        std::cout.precision(prec);
+        std::cout << std::setw(8) << fMomentum[i] << " " << std::setw(8) << fEdep[i] << " ";
+        std::cout << std::setw(5) << fTime[i] << " ";
+        std::cout << std::endl;
     }
+
+    std::cout.precision(prec);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

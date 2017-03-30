@@ -70,15 +70,15 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act
     EBeamCmd->SetGuidance("Set fE");
     EBeamCmd->SetParameterName("ebeam", false);
     EBeamCmd->SetDefaultUnit("MeV");
-    
+
     ThetaDir = new G4UIdirectory("/pradsim/gun/theta/");
     ThetaDir->SetGuidance("Scattering angle control");
-    
+
     ThetaLowCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/theta/low", this);
     ThetaLowCmd->SetGuidance("Set fThetaLo");
     ThetaLowCmd->SetParameterName("thetalo", false);
     ThetaLowCmd->SetDefaultUnit("deg");
-    
+
     ThetaHighCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/theta/high", this);
     ThetaHighCmd->SetGuidance("Set fThetaHi");
     ThetaHighCmd->SetParameterName("thetahi", false);
@@ -107,13 +107,13 @@ void PrimaryGeneratorMessenger::SetNewValue(G4UIcommand *command, G4String newVa
 
     if (command == RecoilCmd)
         Action->SetRecoilParticle(newValue);
-    
+
     if (command == EBeamCmd)
         Action->SetBeamEnergy(EBeamCmd->GetNewDoubleValue(newValue));
-    
+
     if (command == ThetaLowCmd)
         Action->SetThetaRange(ThetaLowCmd->GetNewDoubleValue(newValue), -10000);
-    
+
     if (command == ThetaHighCmd)
         Action->SetThetaRange(-10000, ThetaHighCmd->GetNewDoubleValue(newValue));
 }

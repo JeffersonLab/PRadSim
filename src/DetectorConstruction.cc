@@ -567,8 +567,10 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
 {
     G4Material *DefaultM = G4Material::GetMaterial("Galaxy");
     G4Material *TargetM = G4Material::GetMaterial("D2Gas");
+
     if (fTargetMat == "H2Gas" || fTargetMat == "hydrogen")
         TargetM = G4Material::GetMaterial("H2Gas");
+
     G4Material *TargetCellM = G4Material::GetMaterial("Copper");
     G4Material *TargetWindowM = G4Material::GetMaterial("Kapton");
     G4Material *RecoilDetectorM = G4Material::GetMaterial("Silicon");

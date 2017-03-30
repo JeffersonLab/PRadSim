@@ -64,7 +64,7 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
     TargetZCmd->SetGuidance("Set fTargetCenter");
     TargetZCmd->SetParameterName("targetz", false);
     TargetZCmd->SetDefaultUnit("cm");
-    
+
     RecoilDetZCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/z/recoil", this);
     RecoilDetZCmd->SetGuidance("Set fRecoilDetCenter");
     RecoilDetZCmd->SetParameterName("recoilz", false);
@@ -102,7 +102,7 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
     TargetHalfLCmd->SetGuidance("Set fTargetHalfL");
     TargetHalfLCmd->SetParameterName("targetl", false);
     TargetHalfLCmd->SetDefaultUnit("mm");
-    
+
     TargetMatCmd = new G4UIcmdWithAString("/pradsim/det/target/material", this);
     TargetMatCmd->SetGuidance("Choose a target material.");
     TargetMatCmd->SetGuidance("  Choice : hydrogen, deuteron");
@@ -201,8 +201,8 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 
     if (command == TargetHalfLCmd)
         Detector->SetTarget(-10000, TargetHalfLCmd->GetNewDoubleValue(newValue));
-    
-     if (command == TargetMatCmd)
+
+    if (command == TargetMatCmd)
         Detector->SetTargetMaterial(newValue);
 
     if (command == RecoilDetNSegCmd)

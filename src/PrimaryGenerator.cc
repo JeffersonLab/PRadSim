@@ -221,7 +221,7 @@ void PrimaryGenerator::Register(TTree *tree)
 void PrimaryGenerator::Print() const
 {
     G4int prec = G4cout.precision(3);
-    
+
     for (int i = 0; i < fN; i++) {
         G4cout << std::setw(10) << fPID[i] << " ";
         G4cout << std::setw(5) << G4BestUnit(fX[i], "Length") << " " << std::setw(5) << G4BestUnit(fY[i], "Length") << " " << std::setw(5) << G4BestUnit(fZ[i], "Length") << " ";
@@ -229,7 +229,7 @@ void PrimaryGenerator::Print() const
         G4cout << std::setw(5) << fTheta[i] / pi * 180 << " deg ";
         G4cout << G4endl;
     }
-    
+
     G4cout.precision(prec);
 }
 
@@ -388,26 +388,26 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
     }
 
     if (e_p > 0) {
-    G4PrimaryVertex *vertexP = new G4PrimaryVertex(x, y, z, 0);
-    G4PrimaryParticle *particleP = new G4PrimaryParticle(particleTable->FindParticle("gamma"));
-    double kx_p = sin(theta_p) * cos(phi_p);
-    double ky_p = sin(theta_p) * sin(phi_p);
-    double kz_p = cos(theta_p);
-    particleP->SetMomentumDirection(G4ThreeVector(kx_p, ky_p, kz_p));
-    particleP->SetTotalEnergy(e_p);
-    vertexP->SetPrimary(particleP);
+        G4PrimaryVertex *vertexP = new G4PrimaryVertex(x, y, z, 0);
+        G4PrimaryParticle *particleP = new G4PrimaryParticle(particleTable->FindParticle("gamma"));
+        double kx_p = sin(theta_p) * cos(phi_p);
+        double ky_p = sin(theta_p) * sin(phi_p);
+        double kz_p = cos(theta_p);
+        particleP->SetMomentumDirection(G4ThreeVector(kx_p, ky_p, kz_p));
+        particleP->SetTotalEnergy(e_p);
+        vertexP->SetPrimary(particleP);
 
-    anEvent->AddPrimaryVertex(vertexP);
+        anEvent->AddPrimaryVertex(vertexP);
 
-    fPID[fN] = particleP->GetPDGcode();
-    fX[fN] = x;
-    fY[fN] = y;
-    fZ[fN] = z;
-    fE[fN] = e_p;
-    fMomentum[fN] = e_p;
-    fTheta[fN] = theta_p;
-    fPhi[fN] = phi_p;
-    fN++;
+        fPID[fN] = particleP->GetPDGcode();
+        fX[fN] = x;
+        fY[fN] = y;
+        fZ[fN] = z;
+        fE[fN] = e_p;
+        fMomentum[fN] = e_p;
+        fTheta[fN] = theta_p;
+        fPhi[fN] = phi_p;
+        fN++;
     }
 }
 
