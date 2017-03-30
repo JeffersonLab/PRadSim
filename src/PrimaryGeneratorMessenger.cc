@@ -56,9 +56,15 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act
 
     GunTypeCmd = new G4UIcmdWithAString("/pradsim/gun/type", this);
     GunTypeCmd->SetGuidance("Choose a type of event generator.");
-    GunTypeCmd->SetGuidance("  Choice : ring, elastic, moller");
-    GunTypeCmd->SetParameterName("generator", false);
-    GunTypeCmd->SetCandidates("ring elastic moller");
+    GunTypeCmd->SetGuidance("  Choice : ring, file");
+    GunTypeCmd->SetParameterName("guntype", false);
+    GunTypeCmd->SetCandidates("ring file");
+
+    EventTypeCmd = new G4UIcmdWithAString("/pradsim/gun/evtype", this);
+    EventTypeCmd->SetGuidance("Choose a type of model.");
+    EventTypeCmd->SetGuidance("  Choice : elastic, moller");
+    EventTypeCmd->SetParameterName("evtype", false);
+    EventTypeCmd->SetCandidates("elastic moller");
 
     RecoilCmd = new G4UIcmdWithAString("/pradsim/gun/recoil", this);
     RecoilCmd->SetGuidance("Choose a type of recoil particle.");
@@ -93,6 +99,7 @@ PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
     delete ThetaHighCmd;
     delete ThetaDir;
     delete GunTypeCmd;
+    delete EventTypeCmd;
     delete RecoilCmd;
     delete EBeamCmd;
     delete GunDir;
@@ -104,6 +111,9 @@ void PrimaryGeneratorMessenger::SetNewValue(G4UIcommand *command, G4String newVa
 {
     if (command == GunTypeCmd)
         Action->SetGunType(newValue);
+
+    if (command == EventTypeCmd)
+        Action->SetEventType(newValue);
 
     if (command == RecoilCmd)
         Action->SetRecoilParticle(newValue);

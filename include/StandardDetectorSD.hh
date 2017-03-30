@@ -42,7 +42,7 @@
 
 #include "G4String.hh"
 
-#define MaxNHits 100
+#define MaxNHits 300
 
 class G4HCofThisEvent;
 class G4Step;

@@ -47,12 +47,12 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf) : G4VUserPrimaryGeneratorAction(), fConfig(conf), fGunType("ring"), fE(1100 * MeV), fThetaLo(0.5 * deg), fThetaHi(6.5 * deg), fPrimaryGenerator(NULL)
+PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf) : G4VUserPrimaryGeneratorAction(), fConfig(conf), fGunType("ring"), fEventType("elastic"), fE(1100 * MeV), fThetaLo(0.5 * deg), fThetaHi(6.5 * deg), fPrimaryGenerator(NULL)
 {
     if (fConfig != "prad" && fConfig != "drad")
         fConfig = "prad";
 
-    fRecoil.clear();
+    fRecoilParticle.clear();
     fEventFile.clear();
 
     // create a messenger for this class
@@ -73,23 +73,23 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
 {
-    bool recoilon = false;
-
-    if (!fRecoil.empty() && fRecoil != "none") recoilon = true;
-
     if (!fPrimaryGenerator) {
+        bool recoilon = false;
+
+        if (!fRecoilParticle.empty() && fRecoilParticle != "none") recoilon = true;
+
         if (fConfig == "prad") {
             if (fGunType == "ring")
-                fPrimaryGenerator = new PrimaryGenerator(fE, fThetaLo, fThetaHi, recoilon, "proton");
+                fPrimaryGenerator = new PrimaryGenerator(fEventType, fE, fThetaLo, fThetaHi, false, "proton");
             else
-                fPrimaryGenerator = new PRadPrimaryGenerator(fGunType, recoilon, "proton", fEventFile);
+                fPrimaryGenerator = new PRadPrimaryGenerator(fEventType, false, "proton", fEventFile);
         } else {
-            if (!recoilon) fRecoil = "deuteron";
+            if (!recoilon) fRecoilParticle = "deuteron";
 
             if (fGunType == "ring")
-                fPrimaryGenerator = new PrimaryGenerator(fE, fThetaLo, fThetaHi, recoilon, fRecoil);
+                fPrimaryGenerator = new PrimaryGenerator(fEventType, fE, fThetaLo, fThetaHi, recoilon, fRecoilParticle);
             else
-                fPrimaryGenerator = new DRadPrimaryGenerator(fGunType, recoilon, fRecoil, fEventFile);
+                fPrimaryGenerator = new DRadPrimaryGenerator(fEventType, recoilon, fRecoilParticle, fEventFile);
         }
     }
 
