@@ -23,7 +23,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-StandardDigiBase::StandardDigiBase(const std::string &name) : fAbbrev(name.c_str())
+StandardDigiBase::StandardDigiBase(const std::string &abbrev) : fAbbrev(abbrev.c_str())
 {
     fN = 0;
 

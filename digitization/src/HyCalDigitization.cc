@@ -11,6 +11,8 @@
 
 #include "HyCalDigitization.hh"
 
+#include "PRadClusterProfile.h"
+#include "PRadEventStruct.h"
 #include "PRadHyCalSystem.h"
 #include "PRadHyCalModule.h"
 
@@ -30,8 +32,10 @@ static TRandom2 *RandGen = new TRandom2();
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-HyCalDigitization::HyCalDigitization(const std::string &name, const std::string &path) : StandardDigiBase(name)
+HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::string &path, const std::string &method) : StandardDigiBase(abbrev), fDMethod(0)
 {
+    if (method == "cluster") fDMethod = 1;
+
     RandGen->SetSeed((UInt_t)time(NULL));
 
     fHyCal = new PRadHyCalSystem(path);
@@ -41,11 +45,18 @@ HyCalDigitization::HyCalDigitization(const std::string &name, const std::string 
     if (fModuleList.size() != NModules)
         std::cout << "ERROR: number of modules do not match" << std::endl;
 
+    fModuleHitList.clear();
+
+    for (auto &module : fModuleList)
+        fModuleHitList.push_back(ModuleHit(module->GetID(), module->GetGeometry(), module->GetLayout(), 0, false));
+
+    fProfile = &PRadClusterProfile::Instance();
+
     fTotalEdep = 0;
 
     for (int i = 0; i < NModules; i++) {
-        fModuleEdep[i] = 1e+38;
-        fModuleTrackL[i] = 1e+38;
+        fModuleEdep[i] = 0;
+        fModuleTrackL[i] = 0;
     }
 }
 
@@ -63,8 +74,11 @@ void HyCalDigitization::RegisterData(TChain *t)
     StandardDigiBase::RegisterData(t);
 
     t->SetBranchAddress(Form("%s.TotalEdep", fAbbrev), &fTotalEdep);
-    t->SetBranchAddress(Form("%s.ModuleEdep", fAbbrev), fModuleEdep);
-    t->SetBranchAddress(Form("%s.ModuleTrackL", fAbbrev), fModuleTrackL);
+
+    if (fDMethod != 1) {
+        t->SetBranchAddress(Form("%s.ModuleEdep", fAbbrev), fModuleEdep);
+        t->SetBranchAddress(Form("%s.ModuleTrackL", fAbbrev), fModuleTrackL);
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -88,6 +102,8 @@ bool HyCalDigitization::ProcessEvent(uint32_t *buffer)
         return false;
     }
 
+    if (fDMethod == 1) UpdateEnergy();
+
     for (int i = 0; i < NModules; i++)
         FillBuffer(buffer, *(fModuleList[i]), fModuleEdep[i]);
 
@@ -104,8 +120,21 @@ void HyCalDigitization::Clear()
     fTotalEdep = 0;
 
     for (int i = 0; i < NModules; i++) {
-        fModuleEdep[i] = 1e+38;
-        fModuleTrackL[i] = 1e+38;
+        fModuleEdep[i] = 0;
+        fModuleTrackL[i] = 0;
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+void HyCalDigitization::UpdateEnergy()
+{
+    for (int i = 0; i < fN; i++) {
+        for (int j = 0; j < NModules; j++) {
+            float fx = fX[i];
+            float fy = fY[i];
+            float frac = fProfile->GetProfile(fx, fy, fModuleHitList[j]).frac;
+            fModuleEdep[j] += fMomentum[i] * frac;
+        }
     }
 }
 

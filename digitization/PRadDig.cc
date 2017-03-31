@@ -28,6 +28,7 @@ void usage(int, char **argv)
 {
     printf("usage: %s [options] FILE_NAME\n", argv[0]);
     printf("  -l, --list=run.list        Set run list\n");
+    printf("  -y, --hycal=direct         Set HyCal digi method\n");
     printf("  -h, --help                 Print usage\n");
 }
 
@@ -36,17 +37,19 @@ void usage(int, char **argv)
 int main(int argc, char **argv)
 {
     std::string list_name;
+    std::string hycal_method = "direct";
     bool use_file_list = false;
 
     while (1) {
         static struct option long_options[] = {
-            {"help",  no_argument, 0, 'h'},
+            {"help", no_argument, 0, 'h'},
+            {"hycal", required_argument, 0, 'y'},
             {"list", required_argument, 0, 'l'},
             {0, 0, 0, 0}
         };
 
         int option_index = 0;
-        int c = getopt_long(argc, argv, "hl:", long_options, &option_index);
+        int c = getopt_long(argc, argv, "hl:y:", long_options, &option_index);
 
         if (c == -1)
             break;
@@ -60,6 +63,10 @@ int main(int argc, char **argv)
         case 'l':
             list_name = optarg;
             use_file_list = true;
+            break;
+
+        case 'y':
+            hycal_method = optarg;
             break;
 
         case '?':
@@ -122,7 +129,7 @@ int main(int argc, char **argv)
     std::string outf = tf + ".evio";
 
     PRadDigitization *prad_digi = new PRadDigitization(t, outf);
-    prad_digi->RegisterDet(new HyCalDigitization("HC", "config/hycal.conf"));
+    prad_digi->RegisterDet(new HyCalDigitization("HC", "config/hycal.conf", hycal_method));
 
     int N = t->GetEntries();
 

@@ -15,7 +15,7 @@
 
 #include <string>
 
-#define MaxNHits 100 //maximum number of hits in a SD
+#define MaxNHits 300 //maximum number of hits in a SD
 
 class TChain;
 
@@ -24,7 +24,7 @@ class TChain;
 class StandardDigiBase
 {
 public:
-    StandardDigiBase(const std::string &name);
+    StandardDigiBase(const std::string &abbrev);
     virtual ~StandardDigiBase();
 
     virtual void RegisterData(TChain *t);

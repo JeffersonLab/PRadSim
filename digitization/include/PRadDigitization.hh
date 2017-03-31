@@ -53,7 +53,7 @@ private:
 private:
     TChain *fData;
 
-    std::vector <StandardDigiBase *> fDigitizer;
+    std::vector<StandardDigiBase *> fDigitizer;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
