@@ -64,12 +64,12 @@ private:
     G4UIdirectory             *GunDir;
     G4UIcmdWithAString        *GunTypeCmd;
     G4UIcmdWithAString        *EventTypeCmd;
-    G4UIcmdWithAString        *EventFileCmd;
     G4UIcmdWithAString        *RecoilCmd;
     G4UIcmdWithADoubleAndUnit *EBeamCmd;
     G4UIdirectory             *ThetaDir;
     G4UIcmdWithADoubleAndUnit *ThetaLowCmd;
     G4UIcmdWithADoubleAndUnit *ThetaHighCmd;
+    G4UIcmdWithAString        *EventFileCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

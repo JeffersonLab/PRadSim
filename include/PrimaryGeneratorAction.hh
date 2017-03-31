@@ -57,11 +57,12 @@ public:
 
     inline void SetGunType(G4String val);
     inline void SetEventType(G4String evtype);
-    inline void SetEventFile(G4String path);
     inline void SetRecoilParticle(G4String val);
 
     inline void SetBeamEnergy(G4double val);
     inline void SetThetaRange(G4double lo, G4double hi);
+
+    inline void SetEventFile(G4String path);
 
 private:
     G4String fConfig;
@@ -90,11 +91,6 @@ inline void PrimaryGeneratorAction::SetEventType(G4String val)
     fEventType = val;
 }
 
-inline void PrimaryGeneratorAction::SetEventFile(G4String val)
-{
-    fEventFile = val;
-}
-
 inline void PrimaryGeneratorAction::SetRecoilParticle(G4String val)
 {
     fRecoilParticle = val;
@@ -110,6 +106,11 @@ inline void PrimaryGeneratorAction::SetThetaRange(G4double lo, G4double hi)
     if (lo > -9999) fThetaLo = lo;
 
     if (hi > -9999) fThetaHi = hi;
+}
+
+inline void PrimaryGeneratorAction::SetEventFile(G4String val)
+{
+    fEventFile = val;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

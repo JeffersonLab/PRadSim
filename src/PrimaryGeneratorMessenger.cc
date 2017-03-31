@@ -66,10 +66,6 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act
     EventTypeCmd->SetParameterName("evtype", false);
     EventTypeCmd->SetCandidates("elastic moller");
 
-    EventFileCmd = new G4UIcmdWithAString("/pradsim/gun/path", this);
-    EventFileCmd->SetGuidance("Choose path of event file");
-    EventFileCmd->SetParameterName("path", false);
-
     RecoilCmd = new G4UIcmdWithAString("/pradsim/gun/recoil", this);
     RecoilCmd->SetGuidance("Choose a type of recoil particle.");
     RecoilCmd->SetGuidance("  Choice : none, proton, deuteron");
@@ -94,6 +90,9 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act
     ThetaHighCmd->SetParameterName("thetahi", false);
     ThetaHighCmd->SetDefaultUnit("deg");
 
+    EventFileCmd = new G4UIcmdWithAString("/pradsim/gun/path", this);
+    EventFileCmd->SetGuidance("Choose path of event file");
+    EventFileCmd->SetParameterName("path", false);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -105,9 +104,9 @@ PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
     delete ThetaDir;
     delete GunTypeCmd;
     delete EventTypeCmd;
-    delete EventFileCmd;
     delete RecoilCmd;
     delete EBeamCmd;
+    delete EventFileCmd;
     delete GunDir;
 }
 
@@ -121,9 +120,6 @@ void PrimaryGeneratorMessenger::SetNewValue(G4UIcommand *command, G4String newVa
     if (command == EventTypeCmd)
         Action->SetEventType(newValue);
 
-    if (command == EventFileCmd)
-        Action->SetEventFile(newValue);
-
     if (command == RecoilCmd)
         Action->SetRecoilParticle(newValue);
 
@@ -135,6 +131,9 @@ void PrimaryGeneratorMessenger::SetNewValue(G4UIcommand *command, G4String newVa
 
     if (command == ThetaHighCmd)
         Action->SetThetaRange(-10000, ThetaHighCmd->GetNewDoubleValue(newValue));
+
+    if (command == EventFileCmd)
+        Action->SetEventFile(newValue);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
