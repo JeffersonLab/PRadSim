@@ -57,6 +57,7 @@ public:
 
     inline void SetGunType(G4String val);
     inline void SetEventType(G4String evtype);
+    inline void SetEventFile(G4String path);
     inline void SetRecoilParticle(G4String val);
 
     inline void SetBeamEnergy(G4double val);
@@ -87,6 +88,11 @@ inline void PrimaryGeneratorAction::SetGunType(G4String val)
 inline void PrimaryGeneratorAction::SetEventType(G4String val)
 {
     fEventType = val;
+}
+
+inline void PrimaryGeneratorAction::SetEventFile(G4String val)
+{
+    fEventFile = val;
 }
 
 inline void PrimaryGeneratorAction::SetRecoilParticle(G4String val)
