@@ -129,12 +129,27 @@ void HyCalDigitization::Clear()
 void HyCalDigitization::UpdateEnergy()
 {
     for (int i = 0; i < fN; i++) {
+        float fx = fX[i];
+        float fy = fY[i];
+
+        double fracsum = 0;
+        double frac[NModules];
+
         for (int j = 0; j < NModules; j++) {
-            float fx = fX[i];
-            float fy = fY[i];
-            float frac = fProfile->GetProfile(fx, fy, fModuleHitList[j]).frac;
-            fModuleEdep[j] += fMomentum[i] * frac;
+            PRadClusterProfile::Profile profile = fProfile->GetProfile(fx, fy, fModuleHitList[j]);
+
+            if (profile.frac > 0)
+                frac[j] = RandGen->Gaus(profile.frac, profile.err);
+            else
+                frac[j] = 0;
+
+            if (frac[j] < 0) frac[j] = 0;
+
+            fracsum += frac[j];
         }
+
+        for (int j = 0; j < NModules; j++)
+            fModuleEdep[j] += fMomentum[i] * frac[j] / fracsum;
     }
 }
 
