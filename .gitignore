@@ -49,3 +49,4 @@ compile_commands.json
 PRadSim
 !evgen/esepp/Makefile
 !evgen/moller/Makefile
+!evgen/norc/Makefile
