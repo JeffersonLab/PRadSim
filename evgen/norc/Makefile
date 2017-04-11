@@ -3,10 +3,10 @@
 include Makefile.arch
 
 EPNORCO     = epnorc.$(ObjSuf)
-EPNORCS     = norc.cxx
+EPNORCS     = norc.cxx ep.h
 EPNORC      = epnorc
 EDNORCO     = ednorc.$(ObjSuf)
-EDNORCS     = norc.cxx
+EDNORCS     = norc.cxx ed.h
 EDNORC      = ednorc
 
 OBJS        = $(EPNORCO) $(EDNORCO)

@@ -27,18 +27,18 @@
 int main()
 {
     char mychar[64];
-    /*
+
     std::cout << "Full energy of the incident lepton (MeV): " << std::flush;
     std::cin.getline(mychar, 64);
-    Ei = 0.001 * atof(mychar); // MeV
+    E_li = 0.001 * atof(mychar); // MeV
 
     std::cout << "Minimum polar angle of the electron (degree): " << std::flush;
     std::cin.getline(mychar, 64);
-    thetamin = atof(mychar) * deg;
+    theta_min = atof(mychar) * deg;
 
     std::cout << "Maximum polar angle of the electron (degree): " << std::flush;
     std::cin.getline(mychar, 64);
-    thetamax = atof(mychar) * deg;
+    theta_max = atof(mychar) * deg;
 
     std::cout << "Parameterization to be used: " << std::flush;
     std::cin.getline(mychar, 64);
@@ -47,12 +47,12 @@ int main()
     std::cout << "Number of events to generate: " << std::flush;
     std::cin.getline(mychar, 64);
     int N = atoi(mychar);
-    */
-    E_li = 1.1;
-    theta_min = 0.6 * deg;
-    theta_max = 6.0 * deg;
-    select = 1;
-    int N = 100000;
+
+    //E_li = 1.1;
+    //theta_min = 0.6 * deg;
+    //theta_max = 6.0 * deg;
+    //select = 1;
+    //int N = 100000;
 
     PseRan->SetSeed(0);
 
@@ -84,8 +84,8 @@ int main()
     TFoam *FoamX = new TFoam("FoamX");
     TFoamIntegrand *pFoamI = new ElasticIntegrand();
     FoamX->SetkDim(1);
-    FoamX->SetnCells(1000); // Set number of cells
-    FoamX->SetnSampl(200); // Set number os samples
+    FoamX->SetnCells(10000); // Set number of cells
+    FoamX->SetnSampl(500); // Set number of samples
     FoamX->SetOptRej(1); // Unweighted events in MC generation
     FoamX->SetRho(pFoamI); // Set distribution function
     FoamX->SetPseRan(PseRan); // Set random number generator
@@ -100,8 +100,8 @@ int main()
         if (phi_l < 0.) phi_p = phi_l + Pi;
         else phi_p = phi_l - Pi;
 
-        fprintf(fp, "%8.2lf %6.4lf %7.4lf %8.2lf %6.4lf %7.4lf %8.2lf %6.4lf %7.4lf\n", 1000. * E_lf, theta_l, phi_l, 1000. * E_p, theta_p, phi_p, 0., 0., 0.);
-        //printf("%8.2lf %6.4lf %7.4lf %8.2lf %6.4lf %7.4lf %8.2lf %6.4lf %7.4lf\n", 1000. * E_lf, theta_l, phi_l, 1000. * E_p, theta_p, phi_p, 0., 0., 0.);
+        fprintf(fp, "%9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf\n", 1000. * E_lf, theta_l, phi_l, 1000. * E_p, theta_p, phi_p, 0., 0., 0.);
+        //printf("%9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf\n", 1000. * E_lf, theta_l, phi_l, 1000. * E_p, theta_p, phi_p, 0., 0., 0.);
     }
 
     std::cout << std::endl;

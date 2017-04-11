@@ -18,7 +18,7 @@
 #include "TFoamIntegrand.h"
 #include "TLorentzVector.h"
 #include "TMath.h"
-#include "TRandom3.h"
+#include "TRandom2.h"
 
 #include "Math/Functor.h"
 #include "Math/Interpolator.h"
@@ -29,7 +29,7 @@
 #define IntOpt ROOT::Math::IntegrationOneDim::kADAPTIVE
 #define IntTol 0.00001
 
-#define InterpolPoints 10000
+#define InterpolPoints 50000
 #define InterpolType ROOT::Math::Interpolation::kCSPLINE
 
 #define Abs   TMath::Abs
@@ -95,7 +95,7 @@ TLorentzVector v_pi; // Initial proton four-momentum
 TLorentzVector v_lf; // Final lepton four-momentum
 TLorentzVector v_pf; // Final proton four-momentum
 
-TRandom3 *PseRan = new TRandom3();
+TRandom2 *PseRan = new TRandom2();
 
 double ElasticXS_Sin(double theta);
 
