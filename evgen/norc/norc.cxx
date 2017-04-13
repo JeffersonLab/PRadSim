@@ -92,7 +92,7 @@ int main()
     //FoamX->SetChat(1); // Set "chat level" in the standard output
     FoamX->Initialize();
 
-    for(int i = 0; i < N; ++i) {
+    for (int i = 0; i < N; ++i) {
         FoamX->MakeEvent();
 
         phi_l = phi_min + (phi_max - phi_min) * (PseRan->Rndm());

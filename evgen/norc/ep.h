@@ -29,7 +29,7 @@
 #define IntOpt ROOT::Math::IntegrationOneDim::kADAPTIVE
 #define IntTol 0.00001
 
-#define InterpolPoints 10000
+#define InterpolPoints 50000
 #define InterpolType ROOT::Math::Interpolation::kCSPLINE
 
 #define Abs   TMath::Abs
@@ -48,13 +48,13 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 const double Pi = TMath::Pi();
-const double deg = TMath::Pi()/180.; // Degree to radian conversion
+const double deg = Pi / 180.; // Degree to radian conversion
 const double m = 0.51099893e-3; // Mass of the electron/positron (in GeV)
 const double m2 = TMath::Power(m, 2);
 const double M = 938.272046e-3; // Mass of the proton (in GeV)
 const double M2 = TMath::Power(M, 2);
 const double alpha = 1. / 137.036; // Fine-structure constant
-const double e = Sqrt(4. * Pi * alpha); // Electron charge magnitude
+const double e = Sqrt(4. * Pi *alpha);  // Electron charge magnitude
 const double mu = 2.79284736; // Magnetic moment of the proton
 const double fm = 0.197327; // GeV^{-1} to fm conversion
 const double mkb = 389.379404; // GeV^{-2} to mkbarn conversion
@@ -83,7 +83,7 @@ const double b25 = 12.7977739;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-const char* filename = "elastic_ep.dat";
+const char *filename = "elastic_ep.dat";
 
 double E_li; // Full energy of the initial lepton
 
@@ -158,7 +158,7 @@ double GEp(double qq)
     double t = Abs(qq) / (4. * M * M); // Tau
 
     if (select == 1)
-        return 1. - (-qq) / 6. * Pow2(rp);
+        return 1. - (-qq) / 6. * Pow2(rp) + Pow2(-qq) / 120. * Pow4(rp);
     else
         return (1. + a11 * t + a12 * Pow2(t) + a13 * Pow3(t)) / (1. + b11 * t + b12 * Pow2(t) + b13 * Pow3(t) + b14 * Pow4(t) + b15 * Pow5(t));
 }
@@ -198,9 +198,8 @@ void SetFinalFourMomenta()
     v_pf = v_li + v_pi - v_lf;
 
     // Checking the kinematics:
-    if (Abs(M2 - v_pf * v_pf) > 1.e-8) {
-        std::cout << std::endl << "Warning: bad kinematics! M^2 - v_pf^2 = " << M2 - v_pf * v_pf << " GeV^2" << std::endl;
-    }
+    if (Abs(M2 - v_pf * v_pf) > 1.e-8)
+        std::cout << "Warning: bad kinematics! M^2 - v_pf^2 = " << M2 - v_pf *v_pf << " GeV^2" << std::endl;
 
     // Kinematic parameters of the final proton:
     E_p = v_pf.E();
@@ -227,7 +226,8 @@ class ElasticIntegrand: public TFoamIntegrand
 public:
     ElasticIntegrand() {};
 
-    Double_t Density(int nDim, Double_t *arg) {
+    Double_t Density(int nDim, Double_t *arg)
+    {
         theta_l = theta_min + arg[0] * (theta_max - theta_min);
         E_lf = ElasticEnergy(theta_l);
         SetFinalFourMomenta();
