@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// PhysicsList.hh
+// PhysicsListMessenger.cc
 // Developer : Geant4 Developers
 // History:
 //   Aug 2012, Copy from examples/extended/electromagnetic/TestEm9.
@@ -32,53 +32,41 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef PhysicsList_h
-#define PhysicsList_h 1
+#include "PhysicsListMessenger.hh"
 
-#include "G4VModularPhysicsList.hh"
-#include "globals.hh"
+#include "PhysicsList.hh"
 
-class PhysicsListMessenger;
-class StepMax;
-
-class G4VPhysicsConstructor;
+#include "G4UIcmdWithADoubleAndUnit.hh"
+#include "G4UIcmdWithAString.hh"
+#include "G4UIcmdWithABool.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PhysicsList: public G4VModularPhysicsList
+PhysicsListMessenger::PhysicsListMessenger(PhysicsList *pPhys) : G4UImessenger(), fPhysicsList(pPhys)
 {
-public:
-    PhysicsList();
-    virtual ~PhysicsList();
+    fPhysDir = new G4UIdirectory("/pradsim/phys/");
+    fPhysDir->SetGuidance("Physics list control");
 
-    virtual void ConstructParticle();
-
-    virtual void ConstructProcess();
-
-    void AddPhysicsList(const G4String &name);
-    void AddStepMax();
-
-private:
-    // hide assignment operator
-    PhysicsList &operator=(const PhysicsList &right);
-    PhysicsList(const PhysicsList &);
-
-    G4VPhysicsConstructor  *fEmPhysicsList;
-    G4VPhysicsConstructor  *fDecayPhysicsList;
-
-    std::vector<G4VPhysicsConstructor *> fHadronPhys;
-    G4String fEmName;
-
-    StepMax *fStepMaxProcess;
-
-    PhysicsListMessenger *fMessenger;
-
-    G4bool fHelIsRegisted;
-    G4bool fBicIsRegisted;
-    G4bool fGnucIsRegisted;
-    G4bool fStopIsRegisted;
-};
+    fListCmd = new G4UIcmdWithAString("/pradsim/phys/add", this);
+    fListCmd->SetGuidance("Add modular physics list.");
+    fListCmd->SetParameterName("plist", false);
+    fListCmd->AvailableForStates(G4State_PreInit);
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif
+PhysicsListMessenger::~PhysicsListMessenger()
+{
+    delete fListCmd;
+    delete fPhysDir;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void PhysicsListMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
+{
+    if (command == fListCmd)
+        fPhysicsList->AddPhysicsList(newValue);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

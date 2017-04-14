@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// PhysicsList.hh
+// StepMaxMessenger.cc
 // Developer : Geant4 Developers
 // History:
 //   Aug 2012, Copy from examples/extended/electromagnetic/TestEm9.
@@ -32,53 +32,39 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef PhysicsList_h
-#define PhysicsList_h 1
+#include "StepMaxMessenger.hh"
 
-#include "G4VModularPhysicsList.hh"
+#include "StepMax.hh"
+
+#include "G4UIcmdWithADoubleAndUnit.hh"
+
 #include "globals.hh"
 
-class PhysicsListMessenger;
-class StepMax;
-
-class G4VPhysicsConstructor;
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PhysicsList: public G4VModularPhysicsList
+StepMaxMessenger::StepMaxMessenger(StepMax *stepM) : G4UImessenger(), fStepMax(stepM), fStepMaxCmd(0)
 {
-public:
-    PhysicsList();
-    virtual ~PhysicsList();
-
-    virtual void ConstructParticle();
-
-    virtual void ConstructProcess();
-
-    void AddPhysicsList(const G4String &name);
-    void AddStepMax();
-
-private:
-    // hide assignment operator
-    PhysicsList &operator=(const PhysicsList &right);
-    PhysicsList(const PhysicsList &);
-
-    G4VPhysicsConstructor  *fEmPhysicsList;
-    G4VPhysicsConstructor  *fDecayPhysicsList;
-
-    std::vector<G4VPhysicsConstructor *> fHadronPhys;
-    G4String fEmName;
-
-    StepMax *fStepMaxProcess;
-
-    PhysicsListMessenger *fMessenger;
-
-    G4bool fHelIsRegisted;
-    G4bool fBicIsRegisted;
-    G4bool fGnucIsRegisted;
-    G4bool fStopIsRegisted;
-};
+    fStepMaxCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/phys/stepmax", this);
+    fStepMaxCmd->SetGuidance("Set max allowed step length");
+    fStepMaxCmd->SetParameterName("stepmax", false);
+    fStepMaxCmd->SetRange("mxStep>0.");
+    fStepMaxCmd->SetUnitCategory("Length");
+    fStepMaxCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif
+StepMaxMessenger::~StepMaxMessenger()
+{
+    delete fStepMaxCmd;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void StepMaxMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
+{
+    if (command == fStepMaxCmd)
+        fStepMax->SetMaxStep(fStepMaxCmd->GetNewDoubleValue(newValue));
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

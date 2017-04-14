@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// PhysicsList.hh
+// PhysicsListMessenger.hh
 // Developer : Geant4 Developers
 // History:
 //   Aug 2012, Copy from examples/extended/electromagnetic/TestEm9.
@@ -32,51 +32,32 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef PhysicsList_h
-#define PhysicsList_h 1
+#ifndef PhysicsListMessenger_h
+#define PhysicsListMessenger_h 1
 
-#include "G4VModularPhysicsList.hh"
+#include "G4UImessenger.hh"
 #include "globals.hh"
 
-class PhysicsListMessenger;
-class StepMax;
+class PhysicsList;
 
-class G4VPhysicsConstructor;
+class G4UIdirectory;
+class G4UIcmdWithAString;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PhysicsList: public G4VModularPhysicsList
+class PhysicsListMessenger: public G4UImessenger
 {
 public:
-    PhysicsList();
-    virtual ~PhysicsList();
+    PhysicsListMessenger(PhysicsList *);
+    virtual ~PhysicsListMessenger();
 
-    virtual void ConstructParticle();
-
-    virtual void ConstructProcess();
-
-    void AddPhysicsList(const G4String &name);
-    void AddStepMax();
+    virtual void SetNewValue(G4UIcommand *, G4String);
 
 private:
-    // hide assignment operator
-    PhysicsList &operator=(const PhysicsList &right);
-    PhysicsList(const PhysicsList &);
+    PhysicsList *fPhysicsList;
 
-    G4VPhysicsConstructor  *fEmPhysicsList;
-    G4VPhysicsConstructor  *fDecayPhysicsList;
-
-    std::vector<G4VPhysicsConstructor *> fHadronPhys;
-    G4String fEmName;
-
-    StepMax *fStepMaxProcess;
-
-    PhysicsListMessenger *fMessenger;
-
-    G4bool fHelIsRegisted;
-    G4bool fBicIsRegisted;
-    G4bool fGnucIsRegisted;
-    G4bool fStopIsRegisted;
+    G4UIdirectory             *fPhysDir;
+    G4UIcmdWithAString        *fListCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

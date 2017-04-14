@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// PhysicsList.hh
+// PhysListEmStandard.hh
 // Developer : Geant4 Developers
 // History:
 //   Aug 2012, Copy from examples/extended/electromagnetic/TestEm9.
@@ -32,51 +32,27 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef PhysicsList_h
-#define PhysicsList_h 1
+#ifndef PhysListEmStandard_h
+#define PhysListEmStandard_h 1
 
-#include "G4VModularPhysicsList.hh"
+#include "G4VPhysicsConstructor.hh"
 #include "globals.hh"
-
-class PhysicsListMessenger;
-class StepMax;
-
-class G4VPhysicsConstructor;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PhysicsList: public G4VModularPhysicsList
+class PhysListEmStandard : public G4VPhysicsConstructor
 {
 public:
-    PhysicsList();
-    virtual ~PhysicsList();
+    PhysListEmStandard(const G4String &name = "standard");
+    virtual ~PhysListEmStandard();
 
-    virtual void ConstructParticle();
+    // This method is dummy for physics
+    virtual void ConstructParticle() {};
 
+    // This method will be invoked in the Construct() method.
+    // each physics process will be instantiated and
+    // registered to the process manager of each particle type
     virtual void ConstructProcess();
-
-    void AddPhysicsList(const G4String &name);
-    void AddStepMax();
-
-private:
-    // hide assignment operator
-    PhysicsList &operator=(const PhysicsList &right);
-    PhysicsList(const PhysicsList &);
-
-    G4VPhysicsConstructor  *fEmPhysicsList;
-    G4VPhysicsConstructor  *fDecayPhysicsList;
-
-    std::vector<G4VPhysicsConstructor *> fHadronPhys;
-    G4String fEmName;
-
-    StepMax *fStepMaxProcess;
-
-    PhysicsListMessenger *fMessenger;
-
-    G4bool fHelIsRegisted;
-    G4bool fBicIsRegisted;
-    G4bool fGnucIsRegisted;
-    G4bool fStopIsRegisted;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

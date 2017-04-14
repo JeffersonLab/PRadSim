@@ -23,60 +23,41 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// PhysicsList.hh
+// StepMaxMessenger.hh
 // Developer : Geant4 Developers
 // History:
 //   Aug 2012, Copy from examples/extended/electromagnetic/TestEm9.
 //
 
+// $Id: StepMaxMessenger.hh 66241 2012-12-13 18:34:42Z gunter $
+//
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef PhysicsList_h
-#define PhysicsList_h 1
+#ifndef StepMaxMessenger_h
+#define StepMaxMessenger_h 1
 
-#include "G4VModularPhysicsList.hh"
+#include "G4UImessenger.hh"
 #include "globals.hh"
 
-class PhysicsListMessenger;
 class StepMax;
 
-class G4VPhysicsConstructor;
+class G4UIcmdWithADoubleAndUnit;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PhysicsList: public G4VModularPhysicsList
+class StepMaxMessenger: public G4UImessenger
 {
 public:
-    PhysicsList();
-    virtual ~PhysicsList();
+    StepMaxMessenger(StepMax *);
+    virtual ~StepMaxMessenger();
 
-    virtual void ConstructParticle();
-
-    virtual void ConstructProcess();
-
-    void AddPhysicsList(const G4String &name);
-    void AddStepMax();
+    virtual void SetNewValue(G4UIcommand *, G4String);
 
 private:
-    // hide assignment operator
-    PhysicsList &operator=(const PhysicsList &right);
-    PhysicsList(const PhysicsList &);
+    StepMax *fStepMax;
 
-    G4VPhysicsConstructor  *fEmPhysicsList;
-    G4VPhysicsConstructor  *fDecayPhysicsList;
-
-    std::vector<G4VPhysicsConstructor *> fHadronPhys;
-    G4String fEmName;
-
-    StepMax *fStepMaxProcess;
-
-    PhysicsListMessenger *fMessenger;
-
-    G4bool fHelIsRegisted;
-    G4bool fBicIsRegisted;
-    G4bool fGnucIsRegisted;
-    G4bool fStopIsRegisted;
+    G4UIcmdWithADoubleAndUnit *fStepMaxCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

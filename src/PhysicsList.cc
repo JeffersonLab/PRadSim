@@ -23,10 +23,10 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// PhyscisList.cc
-// Developer : Chao Peng
+// PhysicsList.cc
+// Developer : Geant4 Developers
 // History:
-//   Aug 2012, C. Peng, Original version.
+//   Aug 2012, Copy from examples/extended/electromagnetic/TestEm9.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -34,59 +34,88 @@
 
 #include "PhysicsList.hh"
 
-#include "G4ProcessManager.hh"
-#include "G4VUserPhysicsList.hh"
+#include "PhysListEmStandard.hh"
+#include "PhysicsListMessenger.hh"
+#include "StepMax.hh"
 
-#include "G4ios.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4String.hh"
-#include "G4SystemOfUnits.hh"
+#include "G4EmStandardPhysics.hh"
+#include "G4EmStandardPhysics_option1.hh"
+#include "G4EmStandardPhysics_option2.hh"
+#include "G4EmStandardPhysics_option3.hh"
+#include "G4EmStandardPhysics_option4.hh"
+#include "G4EmLivermorePhysics.hh"
+#include "G4EmPenelopePhysics.hh"
+#include "G4EmLowEPPhysics.hh"
+#include "G4EmStandardPhysicsGS.hh"
+#include "G4EmStandardPhysicsSS.hh"
+#include "G4EmStandardPhysicsWVI.hh"
+#include "G4DecayPhysics.hh"
+#include "G4HadronElasticPhysics.hh"
+#include "G4HadronInelasticQBBC.hh"
+#include "G4IonPhysics.hh"
+#include "G4EmExtraPhysics.hh"
+#include "G4StoppingPhysics.hh"
+
+#include "G4RegionStore.hh"
+#include "G4ProcessManager.hh"
+#include "G4ParticleTypes.hh"
+#include "G4ParticleTable.hh"
+
+#include "G4Gamma.hh"
+#include "G4Electron.hh"
+#include "G4Positron.hh"
+#include "G4Proton.hh"
+
 #include "G4UnitsTable.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4LossTableManager.hh"
+
+#include "G4EmProcessOptions.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PhysicsList::PhysicsList() : G4VUserPhysicsList()
+PhysicsList::PhysicsList() : G4VModularPhysicsList(), fEmPhysicsList(0), fDecayPhysicsList(0), fStepMaxProcess(0), fMessenger(0)
 {
-    defaultCutValue = 1.0 * mm;
+    G4LossTableManager::Instance();
+    SetDefaultCutValue(1 * mm);
+
+    fMessenger = new PhysicsListMessenger(this);
+    fStepMaxProcess = new StepMax();
+
+    // Initialize flags
     SetVerboseLevel(1);
+
+    fHelIsRegisted  = false;
+    fBicIsRegisted  = false;
+    fGnucIsRegisted = false;
+    fStopIsRegisted = false;
+
+    // EM physics
+    fEmName = G4String("emstandard");
+    fEmPhysicsList = new G4EmStandardPhysics();
+
+    // Decay Physics is always defined
+    fDecayPhysicsList = new G4DecayPhysics();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PhysicsList::~PhysicsList()
 {
-    //
+    delete fMessenger;
+    delete fDecayPhysicsList;
+    delete fEmPhysicsList;
+    delete fStepMaxProcess;
+
+    for (size_t i = 0; i < fHadronPhys.size(); i++)
+        delete fHadronPhys[i];
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "G4BosonConstructor.hh"
-#include "G4LeptonConstructor.hh"
-#include "G4MesonConstructor.hh"
-#include "G4BaryonConstructor.hh"
-#include "G4IonConstructor.hh"
-
 void PhysicsList::ConstructParticle()
 {
-    // In this method, static member functions should be called
-    // for all particles which you want to use.
-    // This ensures that objects of these particle types will be
-    // created in the program.
-
-    G4BosonConstructor  pBosonConstructor;
-    pBosonConstructor.ConstructParticle();
-
-    G4LeptonConstructor pLeptonConstructor;
-    pLeptonConstructor.ConstructParticle();
-
-    G4MesonConstructor pMesonConstructor;
-    pMesonConstructor.ConstructParticle();
-
-    G4BaryonConstructor pBaryonConstructor;
-    pBaryonConstructor.ConstructParticle();
-
-    G4IonConstructor pIonConstructor;
-    pIonConstructor.ConstructParticle();
+    fDecayPhysicsList->ConstructParticle();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -94,135 +123,153 @@ void PhysicsList::ConstructParticle()
 void PhysicsList::ConstructProcess()
 {
     AddTransportation();
-    ConstructEM();
-    ConstructDecay();
-}
+    fEmPhysicsList->ConstructProcess();
+    fDecayPhysicsList->ConstructProcess();
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+    for (size_t i = 0; i < fHadronPhys.size(); ++i)
+        fHadronPhys[i]->ConstructProcess();
 
-#include "G4ComptonScattering.hh"
-#include "G4GammaConversion.hh"
-#include "G4PhotoElectricEffect.hh"
-
-#include "G4eMultipleScattering.hh"
-#include "G4eIonisation.hh"
-#include "G4eBremsstrahlung.hh"
-#include "G4eplusAnnihilation.hh"
-
-#include "G4MuMultipleScattering.hh"
-#include "G4MuIonisation.hh"
-#include "G4MuBremsstrahlung.hh"
-#include "G4MuPairProduction.hh"
-
-#include "G4hMultipleScattering.hh"
-#include "G4hIonisation.hh"
-#include "G4hBremsstrahlung.hh"
-#include "G4hPairProduction.hh"
-
-#include "G4ionIonisation.hh"
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void PhysicsList::ConstructEM()
-{
-    theParticleIterator->reset();
-
-    while ((*theParticleIterator)()) {
-        G4ParticleDefinition *particle = theParticleIterator->value();
-        G4ProcessManager *pmanager = particle->GetProcessManager();
-        G4String particleName = particle->GetParticleName();
-
-        if (particleName == "gamma") {
-            // gamma
-            pmanager->AddDiscreteProcess(new G4PhotoElectricEffect);
-            pmanager->AddDiscreteProcess(new G4ComptonScattering);
-            pmanager->AddDiscreteProcess(new G4GammaConversion);
-        } else if (particleName == "e-") {
-            // electron
-            G4eMultipleScattering *msc = new G4eMultipleScattering();
-            msc->SetStepLimitType(fMinimal);
-            pmanager->AddProcess(msc, -1, 1, 1);
-            //pmanager->AddProcess(new G4eMultipleScattering, -1, 1, 1);
-            pmanager->AddProcess(new G4eIonisation, -1, 2, 2);
-            pmanager->AddProcess(new G4eBremsstrahlung, -1, 3, 3);
-        } else if (particleName == "e+") {
-            // positron
-            G4eMultipleScattering *msc = new G4eMultipleScattering();
-            msc->SetStepLimitType(fMinimal);
-            pmanager->AddProcess(msc, -1, 1, 1);
-            //pmanager->AddProcess(new G4eMultipleScattering, -1, 1, 1);
-            pmanager->AddProcess(new G4eIonisation, -1, 2, 2);
-            pmanager->AddProcess(new G4eBremsstrahlung, -1, 3, 3);
-            pmanager->AddProcess(new G4eplusAnnihilation, 0, -1, 4);
-        } else if (particleName == "mu+" || particleName == "mu-") {
-            // muon
-            pmanager->AddProcess(new G4MuMultipleScattering, -1, 1, 1);
-            pmanager->AddProcess(new G4MuIonisation, -1, 2, 2);
-            pmanager->AddProcess(new G4MuBremsstrahlung, -1, 3, 3);
-            pmanager->AddProcess(new G4MuPairProduction, -1, 4, 4);
-        } else if (particleName == "proton" || particleName == "pi-" || particleName == "pi+") {
-            // proton
-            pmanager->AddProcess(new G4hMultipleScattering, -1, 1, 1);
-            pmanager->AddProcess(new G4hIonisation, -1, 2, 2);
-            pmanager->AddProcess(new G4hBremsstrahlung, -1, 3, 3);
-            pmanager->AddProcess(new G4hPairProduction, -1, 4, 4);
-        } else if (particleName == "alpha" || particleName == "He3") {
-            // alpha
-            pmanager->AddProcess(new G4hMultipleScattering, -1, 1, 1);
-            pmanager->AddProcess(new G4ionIonisation, -1, 2, 2);
-        } else if (particleName == "GenericIon") {
-            // Ions
-            pmanager->AddProcess(new G4hMultipleScattering, -1, 1, 1);
-            pmanager->AddProcess(new G4ionIonisation, -1, 2, 2);
-        } else if ((!particle->IsShortLived()) && (particle->GetPDGCharge() != 0.0) && (particle->GetParticleName() != "chargedgeantino")) {
-            // all others charged particles except geantino
-            pmanager->AddProcess(new G4hMultipleScattering, -1, 1, 1);
-            pmanager->AddProcess(new G4hIonisation, -1, 2, 2);
-        }
-    }
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-#include "G4Decay.hh"
-
-void PhysicsList::ConstructDecay()
-{
-    // Add Decay Process
-    G4Decay *theDecayProcess = new G4Decay();
-    theParticleIterator->reset();
-
-    while ((*theParticleIterator)()) {
-        G4ParticleDefinition *particle = theParticleIterator->value();
-        G4ProcessManager *pmanager = particle->GetProcessManager();
-
-        if (theDecayProcess->IsApplicable(*particle)) {
-            pmanager->AddProcess(theDecayProcess);
-            // set ordering for PostStepDoIt and AtRestDoIt
-            pmanager->SetProcessOrdering(theDecayProcess, idxPostStep);
-            pmanager->SetProcessOrdering(theDecayProcess, idxAtRest);
-        }
-    }
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-void PhysicsList::SetCuts()
-{
-    if (verboseLevel > 0) {
-        G4cout << "PhysicsList::SetCuts:";
-        G4cout << "CutLength : " << G4BestUnit(defaultCutValue, "Length") << G4endl;
-    }
-
-    // set cut values for gamma at first and for e- second and next for e+,
-    // because some processes for e+/e- need cut values for gamma
-    //
-    SetCutValue(defaultCutValue, "gamma");
-    SetCutValue(defaultCutValue, "e-");
-    SetCutValue(defaultCutValue, "e+");
-    SetCutValue(defaultCutValue, "proton");
+    AddStepMax();
 
     if (verboseLevel > 0) DumpCutValuesTable();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void PhysicsList::AddPhysicsList(const G4String &name)
+{
+    if (verboseLevel > 1)
+        G4cout << "PhysicsList::AddPhysicsList: <" << name << ">" << G4endl;
+
+    if (name == fEmName) return;
+
+    if (name == "emstandard") {
+        fEmName = name;
+        delete fEmPhysicsList;
+        fEmPhysicsList = new G4EmStandardPhysics();
+
+        if (verboseLevel > 0)
+            G4cout << "PhysicsList::Set " << name << " EM physics" << G4endl;
+
+    } else if (name == "emstandard_opt1") {
+        fEmName = name;
+        delete fEmPhysicsList;
+        fEmPhysicsList = new G4EmStandardPhysics_option1();
+
+        if (verboseLevel > 0)
+            G4cout << "PhysicsList::Set " << name << " EM physics" << G4endl;
+
+    } else if (name == "emstandard_opt2") {
+        fEmName = name;
+        delete fEmPhysicsList;
+        fEmPhysicsList = new G4EmStandardPhysics_option2();
+
+        if (verboseLevel > 0)
+            G4cout << "PhysicsList::Set " << name << " EM physics" << G4endl;
+
+    } else if (name == "emstandard_opt3") {
+        fEmName = name;
+        delete fEmPhysicsList;
+        fEmPhysicsList = new G4EmStandardPhysics_option3();
+
+        if (verboseLevel > 0)
+            G4cout << "PhysicsList::Set " << name << " EM physics" << G4endl;
+
+    } else if (name == "emstandard_opt4") {
+        fEmName = name;
+        delete fEmPhysicsList;
+        fEmPhysicsList = new G4EmStandardPhysics_option4();
+
+        if (verboseLevel > 0)
+            G4cout << "PhysicsList::Set " << name << " EM physics" << G4endl;
+
+    } else if (name == "emstandard_local") {
+        fEmName = name;
+        delete fEmPhysicsList;
+        fEmPhysicsList = new PhysListEmStandard();
+
+        if (verboseLevel > 0)
+            G4cout << "PhysicsList::Set " << name << " EM physics" << G4endl;
+
+    } else if (name == "emlivermore") {
+        fEmName = name;
+        delete fEmPhysicsList;
+        fEmPhysicsList = new G4EmLivermorePhysics();
+
+    } else if (name == "empenelope") {
+        fEmName = name;
+        delete fEmPhysicsList;
+        fEmPhysicsList = new G4EmPenelopePhysics();
+
+    } else if (name == "emlowenergy") {
+        fEmName = name;
+        delete fEmPhysicsList;
+        fEmPhysicsList = new G4EmLowEPPhysics();
+
+    } else if (name == "emstandardGS") {
+        fEmName = name;
+        delete fEmPhysicsList;
+        fEmPhysicsList = new G4EmStandardPhysicsGS();
+
+    } else if (name == "emstandardSS") {
+        fEmName = name;
+        delete fEmPhysicsList;
+        fEmPhysicsList = new G4EmStandardPhysicsSS();
+
+    } else if (name == "emstandardWVI") {
+        fEmName = name;
+        delete fEmPhysicsList;
+        fEmPhysicsList = new G4EmStandardPhysicsWVI();
+
+    } else if (name == "elastic" && !fHelIsRegisted) {
+        fHadronPhys.push_back(new G4HadronElasticPhysics());
+        fHelIsRegisted = true;
+
+        if (verboseLevel > 0)
+            G4cout << "PhysicsList::Add hadron elastic physics" << G4endl;
+
+    } else if (name == "binary" && !fBicIsRegisted) {
+        fHadronPhys.push_back(new G4HadronInelasticQBBC());
+        fHadronPhys.push_back(new G4IonPhysics());
+        fBicIsRegisted = true;
+
+        if (verboseLevel > 0)
+            G4cout << "PhysicsList::Add hadron inelastic physics from <QBBC>" << G4endl;
+
+    } else if (name == "gamma_nuc" && !fGnucIsRegisted) {
+        fHadronPhys.push_back(new G4EmExtraPhysics());
+        fGnucIsRegisted = true;
+
+        if (verboseLevel > 0)
+            G4cout << "PhysicsList::Add gamma- and electro-nuclear physics" << G4endl;
+
+    } else if (name == "stopping" && !fStopIsRegisted) {
+        fHadronPhys.push_back(new G4StoppingPhysics());
+        fStopIsRegisted = true;
+
+        if (verboseLevel > 0)
+            G4cout << "PhysicsList::Add stopping physics" << G4endl;
+
+    } else
+        G4cout << "PhysicsList::AddPhysicsList: <" << name << ">" << " is not defined" << G4endl;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void PhysicsList::AddStepMax()
+{
+    // Step limitation seen as a process
+
+    auto particleIterator = GetParticleIterator();
+    particleIterator->reset();
+
+    while ((*particleIterator)()) {
+        G4ParticleDefinition *particle = particleIterator->value();
+        G4ProcessManager *pmanager = particle->GetProcessManager();
+
+        if (fStepMaxProcess->IsApplicable(*particle) && !particle->IsShortLived())
+            pmanager->AddDiscreteProcess(fStepMaxProcess);
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
