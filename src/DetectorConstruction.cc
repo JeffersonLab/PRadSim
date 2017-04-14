@@ -61,6 +61,8 @@
 #include "G4VSolid.hh"
 #include "G4VUserDetectorConstruction.hh"
 
+#include "G4SDManager.hh"
+
 #include "G4Colour.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
@@ -552,11 +554,13 @@ void DetectorConstruction::DefinePRadSDs()
 {
     if (fGEMSDOn) {
         TrackingDetectorSD *GEMSD = new TrackingDetectorSD("GEMSD", "GEM");
+        G4SDManager::GetSDMpointer()->AddNewDetector(GEMSD);
         SetSensitiveDetector("GEMGasLV", GEMSD);
     }
 
     if (fHyCalSDOn) {
         CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC");
+        G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
         SetSensitiveDetector("HyCalModuleLV", HyCalSD);
     }
 }
@@ -779,21 +783,25 @@ void DetectorConstruction::DefineDRadSDs()
 {
     if (fRecoilDetSDOn) {
         StandardDetectorSD *RecoilDetSD = new StandardDetectorSD("RecoilDetectorSD", "RD");
+        G4SDManager::GetSDMpointer()->AddNewDetector(RecoilDetSD);
         SetSensitiveDetector("RecoilDetectorLV", RecoilDetSD);
     }
 
     if (fGEMSDOn) {
         TrackingDetectorSD *GEMSD = new TrackingDetectorSD("GEMSD", "GEM");
+        G4SDManager::GetSDMpointer()->AddNewDetector(GEMSD);
         SetSensitiveDetector("GEMGasLV", GEMSD);
     }
 
     if (fSciPlaneSDOn) {
         StandardDetectorSD *SciPlaneSD = new StandardDetectorSD("ScintillatorPlaneSD", "SP");
+        G4SDManager::GetSDMpointer()->AddNewDetector(SciPlaneSD);
         SetSensitiveDetector("ScintillatorPlaneLV", SciPlaneSD);
     }
 
     if (fHyCalSDOn) {
         CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC");
+        G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
         SetSensitiveDetector("HyCalModuleLV", HyCalSD);
     }
 }

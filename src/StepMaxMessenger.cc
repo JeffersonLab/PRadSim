@@ -47,7 +47,7 @@ StepMaxMessenger::StepMaxMessenger(StepMax *stepM) : G4UImessenger(), fStepMax(s
     fStepMaxCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/phys/stepmax", this);
     fStepMaxCmd->SetGuidance("Set max allowed step length");
     fStepMaxCmd->SetParameterName("stepmax", false);
-    fStepMaxCmd->SetRange("mxStep>0.");
+    fStepMaxCmd->SetRange("stepmax>0.");
     fStepMaxCmd->SetUnitCategory("Length");
     fStepMaxCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 }

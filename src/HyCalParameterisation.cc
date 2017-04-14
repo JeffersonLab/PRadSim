@@ -108,7 +108,7 @@ void HyCalParameterisation::LoadModuleList(const std::string &path)
         } else
             continue;
 
-        moduleList.push_back(HyCal_Module(name, t, sizex, sizey, length, x, y, z));
+        moduleList.push_back(HyCal_Module(name, t, sizex - 0.5 * nm, sizey - 0.5 * nm, length, x, y, z));
     }
 }
 

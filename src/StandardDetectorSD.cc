@@ -49,7 +49,7 @@
 #include "G4SDManager.hh"
 #include "G4Step.hh"
 #include "G4StepPoint.hh"
-#include "G4TouchableHistory.hh"
+#include "G4TouchableHandle.hh"
 #include "G4Track.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VSensitiveDetector.hh"
@@ -126,7 +126,7 @@ G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
     if (Edep > 0) {
         G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
         G4StepPoint *postStepPoint = aStep->GetPostStepPoint();
-        G4TouchableHistory *theTouchable = (G4TouchableHistory *)(preStepPoint->GetTouchable());
+        G4TouchableHandle theTouchable = preStepPoint->GetTouchableHandle();
         G4VPhysicalVolume *thePhysVol = theTouchable->GetVolume();
 
         G4int PID = theTrack->GetParticleDefinition()->GetPDGEncoding();
@@ -141,7 +141,7 @@ G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
         G4double Time = preStepPoint->GetGlobalTime();
 
-        G4int CopyNo = thePhysVol->GetCopyNo();
+        G4int CopyNo = theTouchable->GetCopyNumber();
 
         if (AncestorID < 0) AncestorID = TrackID;
 
