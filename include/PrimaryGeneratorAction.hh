@@ -40,6 +40,7 @@
 #include "G4VUserPrimaryGeneratorAction.hh"
 
 #include "G4String.hh"
+#include "G4ThreeVector.hh"
 
 class PrimaryGeneratorMessenger;
 
@@ -60,6 +61,9 @@ public:
     inline void SetRecoilParticle(G4String val);
 
     inline void SetBeamEnergy(G4double val);
+    inline void SetPosition(G4ThreeVector xyz);
+    inline void SetTheta(G4double theta);
+    inline void SetPhi(G4double phi);
     inline void SetThetaRange(G4double lo, G4double hi);
 
     inline void SetEventFile(G4String path);
@@ -72,6 +76,8 @@ private:
     G4String fRecoilParticle;
 
     double fE;
+    double fX, fY, fZ;
+    double fTheta, fPhi;
     double fThetaLo, fThetaHi;
 
     G4String fEventFile;
@@ -99,6 +105,23 @@ inline void PrimaryGeneratorAction::SetRecoilParticle(G4String val)
 inline void PrimaryGeneratorAction::SetBeamEnergy(G4double val)
 {
     fE = val;
+}
+
+inline void PrimaryGeneratorAction::SetPosition(G4ThreeVector xyz)
+{
+    fX = xyz.x();
+    fY = xyz.y();
+    fZ = xyz.z();
+}
+
+inline void PrimaryGeneratorAction::SetTheta(G4double theta)
+{
+    fTheta = theta;
+}
+
+inline void PrimaryGeneratorAction::SetPhi(G4double phi)
+{
+    fPhi = phi;
 }
 
 inline void PrimaryGeneratorAction::SetThetaRange(G4double lo, G4double hi)

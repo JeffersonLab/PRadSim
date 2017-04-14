@@ -47,6 +47,7 @@ class G4UIdirectory;
 class G4UIcmdWithABool;
 class G4UIcmdWithADoubleAndUnit;
 class G4UIcmdWithAString;
+class G4UIcmdWith3VectorAndUnit;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -66,7 +67,9 @@ private:
     G4UIcmdWithAString        *EventTypeCmd;
     G4UIcmdWithAString        *RecoilCmd;
     G4UIcmdWithADoubleAndUnit *EBeamCmd;
-    G4UIdirectory             *ThetaDir;
+    G4UIcmdWith3VectorAndUnit *PosCmd;
+    G4UIcmdWithADoubleAndUnit *ThetaCmd;
+    G4UIcmdWithADoubleAndUnit *PhiCmd;
     G4UIcmdWithADoubleAndUnit *ThetaLowCmd;
     G4UIcmdWithADoubleAndUnit *ThetaHighCmd;
     G4UIcmdWithAString        *EventFileCmd;

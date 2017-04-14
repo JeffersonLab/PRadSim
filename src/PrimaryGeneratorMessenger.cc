@@ -43,7 +43,7 @@
 #include "G4UIcmdWithABool.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithAString.hh"
-#include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWith3VectorAndUnit.hh"
 
 #include "G4String.hh"
 
@@ -56,9 +56,9 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act
 
     GunTypeCmd = new G4UIcmdWithAString("/pradsim/gun/type", this);
     GunTypeCmd->SetGuidance("Choose a type of event generator.");
-    GunTypeCmd->SetGuidance("  Choice : ring, file");
+    GunTypeCmd->SetGuidance("  Choice : point, ring, file");
     GunTypeCmd->SetParameterName("guntype", false);
-    GunTypeCmd->SetCandidates("ring file");
+    GunTypeCmd->SetCandidates("point ring file");
 
     EventTypeCmd = new G4UIcmdWithAString("/pradsim/gun/evtype", this);
     EventTypeCmd->SetGuidance("Choose a type of model.");
@@ -77,15 +77,27 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act
     EBeamCmd->SetParameterName("ebeam", false);
     EBeamCmd->SetDefaultUnit("MeV");
 
-    ThetaDir = new G4UIdirectory("/pradsim/gun/theta/");
-    ThetaDir->SetGuidance("Scattering angle control");
+    PosCmd = new G4UIcmdWith3VectorAndUnit("/pradsim/gun/pos", this);
+    PosCmd->SetGuidance("Set fX,fY,fZ");
+    PosCmd->SetParameterName("x", "y", "z", false);
+    PosCmd->SetDefaultUnit("mm");
 
-    ThetaLowCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/theta/low", this);
+    ThetaCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/theta", this);
+    ThetaCmd->SetGuidance("Set fTheta");
+    ThetaCmd->SetParameterName("theta", false);
+    ThetaCmd->SetDefaultUnit("deg");
+
+    PhiCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/phi", this);
+    PhiCmd->SetGuidance("Set fPhi");
+    PhiCmd->SetParameterName("phi", false);
+    PhiCmd->SetDefaultUnit("deg");
+
+    ThetaLowCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/thetalow", this);
     ThetaLowCmd->SetGuidance("Set fThetaLo");
     ThetaLowCmd->SetParameterName("thetalo", false);
     ThetaLowCmd->SetDefaultUnit("deg");
 
-    ThetaHighCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/theta/high", this);
+    ThetaHighCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/thetahigh", this);
     ThetaHighCmd->SetGuidance("Set fThetaHi");
     ThetaHighCmd->SetParameterName("thetahi", false);
     ThetaHighCmd->SetDefaultUnit("deg");
@@ -101,11 +113,13 @@ PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
 {
     delete ThetaLowCmd;
     delete ThetaHighCmd;
-    delete ThetaDir;
     delete GunTypeCmd;
     delete EventTypeCmd;
     delete RecoilCmd;
     delete EBeamCmd;
+    delete PosCmd;
+    delete ThetaCmd;
+    delete PhiCmd;
     delete EventFileCmd;
     delete GunDir;
 }
@@ -125,6 +139,15 @@ void PrimaryGeneratorMessenger::SetNewValue(G4UIcommand *command, G4String newVa
 
     if (command == EBeamCmd)
         Action->SetBeamEnergy(EBeamCmd->GetNewDoubleValue(newValue));
+
+    if (command == PosCmd)
+        Action->SetPosition(PosCmd->GetNew3VectorValue(newValue));
+
+    if (command == ThetaCmd)
+        Action->SetTheta(ThetaCmd->GetNewDoubleValue(newValue));
+
+    if (command == PhiCmd)
+        Action->SetPhi(PhiCmd->GetNewDoubleValue(newValue));
 
     if (command == ThetaLowCmd)
         Action->SetThetaRange(ThetaLowCmd->GetNewDoubleValue(newValue), -10000);

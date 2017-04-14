@@ -71,12 +71,36 @@ static double me = 0.510998928 * MeV;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGenerator::PrimaryGenerator(G4String type, G4double e, G4double thlo, G4double thhi, G4bool rec, G4String par) : G4VPrimaryGenerator(), fRegistered(false), fEventType(type), fRecoilOn(rec), fRecoilParticle(par), fTargetInfo(false), fTargetCenter(-300 * cm), fTargetHalfL(0), fEBeam(e), fThetaLo(thlo), fThetaHi(thhi), fTargetMass(0)
+PrimaryGenerator::PrimaryGenerator(G4String type, G4double e, G4double x, G4double y, G4double z, G4double theta, G4double phi, G4bool rec, G4String par) : G4VPrimaryGenerator(), fRegistered(false), fEventType(type), fRecoilOn(rec), fRecoilParticle(par), fTargetInfo(false), fTargetCenter(-300 * cm), fTargetHalfL(0), fEBeam(e), fBeamX(x), fBeamY(y), fBeamZ(z), fBeamTheta(theta), fBeamPhi(phi), fBeamThetaLo(-1e5), fBeamThetaHi(-1e5), fTargetMass(0)
 {
     if (fRecoilParticle != "proton" && fRecoilParticle != "deuteron")
         fRecoilParticle = "proton";
 
-    if (fEventType != "elastic" && fEventType != "moller")
+    if (fEventType != "point" && fEventType != "elastic" && fEventType != "moller")
+        fEventType = "elastic";
+
+    fN = 0;
+
+    for (int i = 0; i < MaxN; i++) {
+        fPID[i] = -9999;
+        fX[i] = 1e+38;
+        fY[i] = 1e+38;
+        fZ[i] = 1e+38;
+        fE[i] = 1e+38;
+        fMomentum[i] = 1e+38;
+        fTheta[i] = 1e+38;
+        fPhi[i] = 1e+38;
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+PrimaryGenerator::PrimaryGenerator(G4String type, G4double e, G4double thlo, G4double thhi, G4bool rec, G4String par) : G4VPrimaryGenerator(), fRegistered(false), fEventType(type), fRecoilOn(rec), fRecoilParticle(par), fTargetInfo(false), fTargetCenter(-300 * cm), fTargetHalfL(0), fEBeam(e), fBeamX(-1e5), fBeamY(-1e5), fBeamZ(-1e5), fBeamTheta(-1e5), fBeamPhi(-1e5), fBeamThetaLo(thlo), fBeamThetaHi(thhi), fTargetMass(0)
+{
+    if (fRecoilParticle != "proton" && fRecoilParticle != "deuteron")
+        fRecoilParticle = "proton";
+
+    if (fEventType != "point" && fEventType != "elastic" && fEventType != "moller")
         fEventType = "elastic";
 
     fN = 0;
@@ -131,11 +155,21 @@ void PrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
         fTargetMass = particleTable->FindParticle(fRecoilParticle)->GetPDGMass();
     }
 
-    double x = G4RandGauss::shoot(0, 0.08) * mm;
-    double y = G4RandGauss::shoot(0, 0.08) * mm;
-    double z = fTargetCenter + fTargetHalfL * 2 * (0.5 - G4UniformRand());
-    double theta_l = fThetaLo + (fThetaHi - fThetaLo) * G4UniformRand();
-    double phi_l = twopi * G4UniformRand();
+    double x, y, z, theta_l, phi_l;
+
+    if (fEventType == "point") {
+        x = fBeamX;
+        y = fBeamY;
+        z = fBeamZ;
+        theta_l = fBeamTheta;
+        phi_l = fBeamPhi;
+    } else {
+        x = G4RandGauss::shoot(0, 0.08) * mm;
+        y = G4RandGauss::shoot(0, 0.08) * mm;
+        z = fTargetCenter + fTargetHalfL * 2 * (0.5 - G4UniformRand());
+        theta_l = fBeamThetaLo + (fBeamThetaHi - fBeamThetaLo) * G4UniformRand();
+        phi_l = twopi * G4UniformRand();
+    }
 
     double M = fTargetMass;
     double E = fEBeam;
@@ -149,6 +183,9 @@ void PrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
     } else if (fEventType == "moller") {
         a = (E - me) / (E + me);
         e_l = me * (1 + a * cosang * cosang) / (1 - a * cosang * cosang);
+        p_l = sqrt(e_l * e_l - me * me);
+    } else if (fEventType == "point") {
+        e_l = E;
         p_l = sqrt(e_l * e_l - me * me);
     }
 
