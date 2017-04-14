@@ -109,11 +109,11 @@ int main(int argc, char **argv)
         auto &hits = hycal->GetDetector()->GetHits();
         N = (int)hits.size();
 
-        for (size_t i = 0; i < hits.size(); ++i) {
-            X[i] = hits[i].x;
-            Y[i] = hits[i].y;
-            Z[i] = 5640.0 - 3000.0 + 88.9;
-            E[i] = hits[i].E;
+        for (int j = 0; j < (int)hits.size(); ++j) {
+            X[j] = hits[j].x;
+            Y[j] = hits[j].y;
+            Z[j] = 5640.0 - 3000.0 + 88.9;
+            E[j] = hits[j].E;
         }
 
         t->Fill();
