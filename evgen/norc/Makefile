@@ -2,6 +2,9 @@
 
 include Makefile.arch
 
+EENORCO     = eenorc.$(ObjSuf)
+EENORCS     = norc.cxx ee.h
+EENORC      = eenorc
 EPNORCO     = epnorc.$(ObjSuf)
 EPNORCS     = norc.cxx ep.h
 EPNORC      = epnorc
@@ -9,13 +12,20 @@ EDNORCO     = ednorc.$(ObjSuf)
 EDNORCS     = norc.cxx ed.h
 EDNORC      = ednorc
 
-OBJS        = $(EPNORCO) $(EDNORCO)
+OBJS        = $(EENORCO) $(EPNORCO) $(EDNORCO)
 
-PROGRAMS    = $(EPNORC) $(EDNORC)
+PROGRAMS    = $(EENORC) $(EPNORC) $(EDNORC)
 
 .SUFFIXES: .$(SrcSuf) .$(ObjSuf) .$(DllSuf)
 
 all: $(PROGRAMS)
+
+$(EENORC): $(EENORCO)
+	$(LD) $(LDFLAGS) $(LIBS) -o $@ $<
+	@echo "$@ done"
+
+$(EENORCO): $(EENORCS)
+	$(CXX) -c $(CXXFLAGS) -DELASTIC_EE -o $@ $<
 
 $(EPNORC): $(EPNORCO)
 	$(LD) $(LDFLAGS) $(LIBS) -o $@ $<
@@ -32,4 +42,4 @@ $(EDNORCO): $(EDNORCS)
 	$(CXX) -c $(CXXFLAGS) -DELASTIC_ED -o $@ $<
 
 clean:
-	rm -rf $(EPNORCO) $(EPNORC) $(EDNORCO) $(EDNORC)
+	rm -rf $(EENORCO) $(EENORC) $(EPNORCO) $(EPNORC) $(EDNORCO) $(EDNORC)

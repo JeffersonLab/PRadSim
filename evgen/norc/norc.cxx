@@ -12,8 +12,11 @@
 #include "TError.h"
 #include "TObject.h"
 #include "TFoam.h"
+#include "TRandom2.h"
 
-#ifdef ELASTIC_ED
+#ifdef ELASTIC_EE
+    #include "ee.h"
+#elif ELASTIC_ED
     #include "ed.h"
 #else
     #include "ep.h"
@@ -30,7 +33,7 @@ int main()
 
     std::cout << "Full energy of the incident lepton (MeV): " << std::flush;
     std::cin.getline(mychar, 64);
-    E_li = 0.001 * atof(mychar); // MeV
+    Ei_1 = 0.001 * atof(mychar); // MeV
 
     std::cout << "Minimum polar angle of the electron (degree): " << std::flush;
     std::cin.getline(mychar, 64);
@@ -42,18 +45,19 @@ int main()
 
     std::cout << "Parameterization to be used: " << std::flush;
     std::cin.getline(mychar, 64);
-    select = atoi(mychar);
+    fselect = atoi(mychar);
 
     std::cout << "Number of events to generate: " << std::flush;
     std::cin.getline(mychar, 64);
     int N = atoi(mychar);
 
-    //E_li = 1.1;
+    //Ei_1 = 1.1;
     //theta_min = 0.6 * deg;
     //theta_max = 6.0 * deg;
     //select = 1;
     //int N = 100000;
 
+    TRandom2 *PseRan = new TRandom2();
     PseRan->SetSeed(0);
 
     phi_min = -180.0 * deg;
@@ -61,17 +65,15 @@ int main()
 
     omega = (phi_max - phi_min) * (Cos(theta_min) - Cos(theta_max));
 
-    v_li.SetPxPyPzE(0., 0., Sqrt(Pow2(E_li) - m2), E_li);
-    v_pi.SetPxPyPzE(0., 0., 0., M);
+    vi_1.SetPxPyPzE(0., 0., Sqrt(Pow2(Ei_1) - m2), Ei_1);
+    vi_2.SetPxPyPzE(0., 0., 0., M);
 
     FILE *fp = fopen(filename, "w");
 
     for (int i = 0; i < InterpolPoints; i++) {
-        theta_l = theta_min + i * (theta_max - theta_min) / (InterpolPoints - 1);
-        E_lf = ElasticEnergy(theta_l);
-
-        theta[i] = theta_l;
-        xs_sin[i] = ElasticXS_Sin(theta_l);
+        theta_1 = theta_min + i * (theta_max - theta_min) / (InterpolPoints - 1);
+        theta[i] = theta_1;
+        xs_sin[i] = ElasticXS_Sin(theta_1);
     }
 
     Integrator_XS_Sin.SetFunction(Func_XS_Sin);
@@ -95,13 +97,13 @@ int main()
     for (int i = 0; i < N; ++i) {
         FoamX->MakeEvent();
 
-        phi_l = phi_min + (phi_max - phi_min) * (PseRan->Rndm());
+        phi_1 = phi_min + (phi_max - phi_min) * (PseRan->Rndm());
 
-        if (phi_l < 0.) phi_p = phi_l + Pi;
-        else phi_p = phi_l - Pi;
+        if (phi_1 < 0.) phi_2 = phi_1 + Pi;
+        else phi_2 = phi_1 - Pi;
 
-        fprintf(fp, "%9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf\n", 1000. * E_lf, theta_l, phi_l, 1000. * E_p, theta_p, phi_p, 0., 0., 0.);
-        //printf("%9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf\n", 1000. * E_lf, theta_l, phi_l, 1000. * E_p, theta_p, phi_p, 0., 0., 0.);
+        fprintf(fp, "%9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf\n", 1000. * Ef_1, theta_1, phi_1, 1000. * Ef_2, theta_2, phi_2, 0., 0., 0.);
+        //printf("%9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf\n", 1000. * Ef_1, theta_1, phi_1, 1000. * Ef_2, theta_2, phi_2, 0., 0., 0.);
     }
 
     std::cout << std::endl;
