@@ -48,8 +48,8 @@ public:
     CalorimeterHit();
     virtual ~CalorimeterHit();
 
-    inline void *operator new (size_t);
-    inline void operator delete (void *);
+    inline void *operator new(size_t);
+    inline void operator delete(void *);
 
     bool operator ==(const CalorimeterHit &) const;
 
@@ -69,14 +69,14 @@ typedef G4THitsCollection<CalorimeterHit> CalorimeterHitsCollection;
 
 extern G4Allocator<CalorimeterHit> CalorimeterHitAllocator;
 
-inline void *CalorimeterHit::operator new (size_t)
+inline void *CalorimeterHit::operator new(size_t)
 {
     void *aHit;
     aHit = (void *)CalorimeterHitAllocator.MallocSingle();
     return aHit;
 }
 
-inline void CalorimeterHit::operator delete (void *aHit)
+inline void CalorimeterHit::operator delete(void *aHit)
 {
     CalorimeterHitAllocator.FreeSingle((CalorimeterHit *)aHit);
 }

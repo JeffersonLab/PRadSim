@@ -51,8 +51,8 @@ public:
     StandardHit();
     virtual ~StandardHit();
 
-    inline void *operator new (size_t);
-    inline void operator delete (void *);
+    inline void *operator new(size_t);
+    inline void operator delete(void *);
 
     bool operator ==(const StandardHit &) const;
 
@@ -110,14 +110,14 @@ typedef G4THitsCollection<StandardHit> StandardHitsCollection;
 
 extern G4Allocator<StandardHit> StandardHitAllocator;
 
-inline void *StandardHit::operator new (size_t)
+inline void *StandardHit::operator new(size_t)
 {
     void *aHit;
     aHit = (void *)StandardHitAllocator.MallocSingle();
     return aHit;
 }
 
-inline void StandardHit::operator delete (void *aHit)
+inline void StandardHit::operator delete(void *aHit)
 {
     StandardHitAllocator.FreeSingle((StandardHit *)aHit);
 }

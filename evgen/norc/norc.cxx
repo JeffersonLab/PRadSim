@@ -95,6 +95,8 @@ int main()
     FoamX->Initialize();
 
     for (int i = 0; i < N; ++i) {
+        if (i % 10000 == 0 && i != 0) std::cout << i << std::endl;
+
         FoamX->MakeEvent();
 
         phi_1 = phi_min + (phi_max - phi_min) * (PseRan->Rndm());

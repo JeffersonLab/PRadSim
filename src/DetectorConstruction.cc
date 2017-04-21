@@ -628,7 +628,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
     G4double RecoilDetIR = RecoilDetOR - fRecoilDetThickness;
     G4double rInnerRD[] = {RecoilDetIR, RecoilDetIR};
     G4double rOuterRD[] = {RecoilDetOR, RecoilDetOR};
-    G4double zPlaneRD[] = {-fRecoilDetHalfL, fRecoilDetHalfL};
+    G4double zPlaneRD[] = { -fRecoilDetHalfL, fRecoilDetHalfL};
     G4VSolid *solidRecoilDet = new G4Polyhedra("RecoilDetectorS", 0, twopi, fRecoilDetNSeg, 2, zPlaneRD, rInnerRD, rOuterRD);
     G4LogicalVolume *logicRecoilDet = new G4LogicalVolume(solidRecoilDet, RecoilDetectorM, "RecoilDetectorLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, RecoilDetCenter), logicRecoilDet, "Recoil Detector", logicTarget, false, 0);

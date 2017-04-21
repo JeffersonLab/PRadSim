@@ -52,7 +52,7 @@ const double m = 0.51099893e-3; // Mass of the electron/positron (in GeV)
 const double m2 = TMath::Power(m, 2);
 const double M = m;
 const double alpha = 1. / 137.036; // Fine-structure constant
-const double e = Sqrt(4. * Pi * alpha);  // Electron charge magnitude
+const double e = Sqrt(4. * Pi *alpha);   // Electron charge magnitude
 const double fm = 0.197327; // GeV^{-1} to fm conversion
 const double mkb = 389.379404; // GeV^{-2} to mkbarn conversion
 

@@ -58,8 +58,8 @@ public:
     TrackInformation(const TrackInformation *);
     virtual ~TrackInformation();
 
-    inline void *operator new (size_t);
-    inline void operator delete (void *);
+    inline void *operator new(size_t);
+    inline void operator delete(void *);
 
     inline bool operator ==(const TrackInformation &) const;
 
@@ -86,14 +86,14 @@ private:
 
 extern G4Allocator<TrackInformation> TrackInformationAllocator;
 
-inline void *TrackInformation::operator new (size_t)
+inline void *TrackInformation::operator new(size_t)
 {
     void *aTrackInfo;
     aTrackInfo = (void *)TrackInformationAllocator.MallocSingle();
     return aTrackInfo;
 }
 
-inline void TrackInformation::operator delete (void *aTrackInfo)
+inline void TrackInformation::operator delete(void *aTrackInfo)
 {
     TrackInformationAllocator.FreeSingle((TrackInformation *)aTrackInfo);
 }

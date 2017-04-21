@@ -23,47 +23,42 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// TrackingAction.hh
+// TrackingMessenger.hh
 // Developer : Chao Gu
 // History:
-//   Mar 2017, C. Gu, Rewrite sensitive detectors.
+//   Apr 2017, C. Gu, Original version.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef TrackingAction_h
-#define TrackingAction_h 1
+#ifndef TrackingMessenger_h
+#define TrackingMessenger_h 1
 
-#include "G4UserTrackingAction.hh"
+#include "G4UImessenger.hh"
 
-#include "globals.hh"
+#include "G4String.hh"
 
-class TrackingMessenger;
+class TrackingAction;
+
+class G4UIcommand;
+class G4UIcmdWithABool;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class TrackingAction : public G4UserTrackingAction
+class TrackingMessenger: public G4UImessenger
 {
 public:
-    TrackingAction();
-    virtual ~TrackingAction();
+    TrackingMessenger(TrackingAction *);
+    virtual ~TrackingMessenger();
 
-    void PreUserTrackingAction(const G4Track *);
-    void PostUserTrackingAction(const G4Track *);
-
-    inline void SetNoSecondary(G4bool val);
+    void SetNewValue(G4UIcommand *, G4String);
 
 private:
-    G4bool fNoSecondary;
+    TrackingAction   *Action;
 
-    TrackingMessenger *trackingMessenger;
+    G4UIcmdWithABool *NoSecondaryCmd;
 };
-
-inline void TrackingAction::SetNoSecondary(G4bool val)
-{
-    fNoSecondary = val;
-}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

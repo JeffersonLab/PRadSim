@@ -53,11 +53,11 @@ const double m2 = TMath::Power(m, 2);
 const double M = 1875.612928e-3; // Mass of the deuteron (in GeV)
 const double M2 = TMath::Power(M, 2);
 const double alpha = 1. / 137.036; // Fine-structure constant
-const double e = Sqrt(4. * Pi * alpha);  // Electron charge magnitude
+const double e = Sqrt(4. * Pi *alpha);   // Electron charge magnitude
 const double fm = 0.197327; // GeV^{-1} to fm conversion
 const double mkb = 389.379404; // GeV^{-2} to mkbarn conversion
 
-const double rd = 1.0 * 2.130 / fm; // GeV^{-1}
+const double rd = 2.130 / fm; // GeV^{-1}
 const double mepsilon = 0.936 * 0.0022246 / 0.197 / 0.197;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -166,7 +166,7 @@ void SetFinalFourMomenta()
 
     // Checking the kinematics:
     if (Abs(M2 - vf_2 * vf_2) > 1.e-8)
-        std::cout << "Warning: bad kinematics! M^2 - vf^2 = " << M2 - vf_2 * vf_2 << " GeV^2" << std::endl;
+        std::cout << "Warning: bad kinematics! M^2 - vf^2 = " << M2 - vf_2 *vf_2 << " GeV^2" << std::endl;
 
     // Kinematic parameters of the final proton:
     Ef_2 = vf_2.E();

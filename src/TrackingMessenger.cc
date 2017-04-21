@@ -23,48 +23,47 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// TrackingAction.hh
+// TrackingMessenger.cc
 // Developer : Chao Gu
 // History:
-//   Mar 2017, C. Gu, Rewrite sensitive detectors.
+//   Apr 2017, C. Gu, Original version.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef TrackingAction_h
-#define TrackingAction_h 1
+#include "TrackingMessenger.hh"
 
-#include "G4UserTrackingAction.hh"
+#include "TrackingAction.hh"
 
-#include "globals.hh"
+#include "G4UImessenger.hh"
+#include "G4UIcommand.hh"
+#include "G4UIcmdWithABool.hh"
 
-class TrackingMessenger;
+#include "G4String.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class TrackingAction : public G4UserTrackingAction
+TrackingMessenger::TrackingMessenger(TrackingAction *act) : G4UImessenger(), Action(act)
 {
-public:
-    TrackingAction();
-    virtual ~TrackingAction();
-
-    void PreUserTrackingAction(const G4Track *);
-    void PostUserTrackingAction(const G4Track *);
-
-    inline void SetNoSecondary(G4bool val);
-
-private:
-    G4bool fNoSecondary;
-
-    TrackingMessenger *trackingMessenger;
-};
-
-inline void TrackingAction::SetNoSecondary(G4bool val)
-{
-    fNoSecondary = val;
+    NoSecondaryCmd = new G4UIcmdWithABool("/tracking/nosecondary", this);
+    NoSecondaryCmd->SetGuidance("Turn on/off secondary particles");
+    NoSecondaryCmd->SetParameterName("nosecondary", false);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif
+TrackingMessenger::~TrackingMessenger()
+{
+    delete NoSecondaryCmd;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void TrackingMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
+{
+    if (command == NoSecondaryCmd)
+        Action->SetNoSecondary(NoSecondaryCmd->GetNewBoolValue(newValue));
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

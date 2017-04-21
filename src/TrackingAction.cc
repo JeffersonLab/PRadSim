@@ -35,17 +35,19 @@
 #include "TrackingAction.hh"
 
 #include "TrackInformation.hh"
+#include "TrackingMessenger.hh"
 
 #include "G4Track.hh"
+#include "G4TrackStatus.hh"
 #include "G4TrackVector.hh"
 #include "G4TrackingManager.hh"
 #include "G4UserTrackingAction.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-TrackingAction::TrackingAction() : G4UserTrackingAction()
+TrackingAction::TrackingAction() : G4UserTrackingAction(), fNoSecondary(false)
 {
-    //
+    trackingMessenger = new TrackingMessenger(this);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -59,6 +61,11 @@ TrackingAction::~TrackingAction()
 
 void TrackingAction::PreUserTrackingAction(const G4Track *aTrack)
 {
+    if (aTrack->GetParentID() != 0 && fNoSecondary) {
+        fpTrackingManager->GetTrack()->SetTrackStatus(fKillTrackAndSecondaries);
+        return;
+    }
+
     if (aTrack->GetParentID() == 0 && aTrack->GetUserInformation() == 0) {
         TrackInformation *aTrackInfo = new TrackInformation(aTrack);
         G4Track *theTrack = (G4Track *)aTrack;
