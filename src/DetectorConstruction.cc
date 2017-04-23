@@ -455,10 +455,10 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     G4Tubs *GEMPipeHole = new G4Tubs("GEMPipeHole", 0, 22.0 * mm, 6.1 * mm, 0, twopi);
     G4SubtractionSolid *solidGEM = new G4SubtractionSolid("GEMS", GEMOuterFrame, GEMPipeHole, 0, G4ThreeVector(-253.0 * mm, 0, 0));
     G4LogicalVolume *logicGEM = new G4LogicalVolume(solidGEM, DefaultM, "GEMLV");
-    new G4PVPlacement(0, G4ThreeVector(25.3 * cm, 0, -GEMGap / 2.0), logicGEM, "GEM L", logicGEMCon, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(25.3 * cm, 0, GEMGap / 2.0), logicGEM, "GEM L", logicGEMCon, false, 0);
     G4RotationMatrix rmGEM;
     rmGEM.rotateZ(180.0 * deg);
-    new G4PVPlacement(G4Transform3D(rmGEM, G4ThreeVector(-25.3 * cm, 0, GEMGap / 2.0)), logicGEM, "GEM R", logicGEMCon, false, 1);
+    new G4PVPlacement(G4Transform3D(rmGEM, G4ThreeVector(-25.3 * cm, 0, -GEMGap / 2.0)), logicGEM, "GEM R", logicGEMCon, false, 1);
 
     // GEM Gas
     G4Box *GEMGasPiece1 = new G4Box("GEMGasPiece1", 275.0 * mm, 674.4 * mm, 6.0 * mm);
@@ -671,10 +671,10 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
     G4Tubs *GEMPipeHole = new G4Tubs("GEMPipeHole", 0, 22.0 * mm, 6.1 * mm, 0, twopi);
     G4SubtractionSolid *solidGEM = new G4SubtractionSolid("GEMS", GEMOuterFrame, GEMPipeHole, 0, G4ThreeVector(-253.0 * mm, 0, 0));
     G4LogicalVolume *logicGEM = new G4LogicalVolume(solidGEM, DefaultM, "GEMLV");
-    new G4PVPlacement(0, G4ThreeVector(25.3 * cm, 0, -GEMGap / 2.0), logicGEM, "GEM L", logicGEMCon, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(25.3 * cm, 0, GEMGap / 2.0), logicGEM, "GEM L", logicGEMCon, false, 0);
     G4RotationMatrix rmGEM;
     rmGEM.rotateZ(180.0 * deg);
-    new G4PVPlacement(G4Transform3D(rmGEM, G4ThreeVector(-25.3 * cm, 0, GEMGap / 2.0)), logicGEM, "GEM R", logicGEMCon, false, 1);
+    new G4PVPlacement(G4Transform3D(rmGEM, G4ThreeVector(-25.3 * cm, 0, -GEMGap / 2.0)), logicGEM, "GEM R", logicGEMCon, false, 1);
 
     // GEM Gas
     G4Box *GEMGasPiece1 = new G4Box("GEMGasPiece1", 275.0 * mm, 674.4 * mm, 6.0 * mm);
