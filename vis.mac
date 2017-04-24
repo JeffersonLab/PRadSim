@@ -1,6 +1,7 @@
 # Macro file for the visualization setting for the initialization phase
 # of the PRadSim when running in interactive mode
 #
+
 # Use these open statements to open selected visualization
 #
 # Use this open statement to create an OpenGL view:

@@ -126,7 +126,7 @@ int main(int argc, char **argv)
         macro = argv[optind++];
 
     // Initialize the random engine
-    CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
+    CLHEP::HepRandom::setTheEngine(new CLHEP::Ranlux64Engine);
 
     if (seed == "random")
         CLHEP::HepRandom::setTheSeed((long)(time(NULL)));
@@ -179,24 +179,24 @@ int main(int argc, char **argv)
     ActionInitialization *action = new ActionInitialization(conf);
     runManager->SetUserInitialization(action);
 
-#ifdef G4VIS_USE
-    // Initialize visualization
-    G4VisManager *visManager = new G4VisExecutive;
-    // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
-    // G4VisManager* visManager = new G4VisExecutive("Quiet");
-    visManager->Initialize();
-#endif
-
     // Get the pointer to the User Interface manager
     G4UImanager *UImanager = G4UImanager::GetUIpointer();
 
-    if (!macro.empty()) { // batch mode
+    if (!macro.empty()) {
+        // batch mode
         G4String command = "/control/execute ";
         UImanager->ApplyCommand(command + macro);
     } else {
         // interactive mode : define UI session
+#ifdef G4VIS_USE
+        // Initialize visualization
+        G4VisManager *visManager = new G4VisExecutive;
+        visManager->Initialize();
+#endif
+
 #ifdef G4UI_USE
         G4UIExecutive *ui = new G4UIExecutive(argc, argv);
+
 #ifdef G4VIS_USE
         UImanager->ApplyCommand("/control/execute init_vis.mac");
 #endif
@@ -207,14 +207,14 @@ int main(int argc, char **argv)
         ui->SessionStart();
         delete ui;
 #endif
+
+#ifdef G4VIS_USE
+        delete visManager;
+#endif
     }
 
     // Job termination
-#ifdef G4VIS_USE
-    delete visManager;
-#endif
     delete runManager;
-
     delete gRootTree;
 
     return 0;
