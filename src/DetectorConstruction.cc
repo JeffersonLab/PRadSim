@@ -501,11 +501,12 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     G4Box *GEMFoilBox2 = new G4Box("GEMFoilBox2", GEMCenterHalfXY, GEMCenterHalfXY, GEMHalfThickness + 0.1 * mm);
     G4SubtractionSolid *solidGEMFoil = new G4SubtractionSolid("GEMFoilS", GEMFoilBox1, GEMFoilBox2, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
     G4LogicalVolume *logicGEMFoil = new G4LogicalVolume(solidGEMFoil, GEMFoilM, "GEMFoilLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 11.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 8.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 1);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 6.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 2);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 4.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 3);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 2.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 4);
+    G4LogicalVolume *logicGEMCathode = new G4LogicalVolume(solidGEMFoil, GEMFoilM, "GEMCathodeLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 11.0 * mm), logicGEMCathode, "GEM Cathode", logicGEMGas, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 8.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 6.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 1);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 4.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 2);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 2.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 3);
 
     G4Box *GEMCuFoilBox1 = new G4Box("GEMCuFoilBox1", GEMHalfX, GEMHalfY, GEMCuFoilThickness / 2.0);
     G4Box *GEMCuFoilBox2 = new G4Box("GEMCuFoilBox2", GEMCenterHalfXY, GEMCenterHalfXY, GEMHalfThickness + 0.1 * mm);
@@ -584,7 +585,7 @@ void DetectorConstruction::DefinePRadSDs()
     if (fGEMSDOn) {
         TrackingDetectorSD *GEMSD = new TrackingDetectorSD("GEMSD", "GEM");
         G4SDManager::GetSDMpointer()->AddNewDetector(GEMSD);
-        SetSensitiveDetector("GEMGasLV", GEMSD);
+        SetSensitiveDetector("GEMCathodeLV", GEMSD);
     }
 
     if (fHyCalSDOn) {
@@ -745,11 +746,12 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
     G4Box *GEMFoilBox2 = new G4Box("GEMFoilBox2", GEMCenterHalfXY, GEMCenterHalfXY, GEMHalfThickness + 0.1 * mm);
     G4SubtractionSolid *solidGEMFoil = new G4SubtractionSolid("GEMFoilS", GEMFoilBox1, GEMFoilBox2, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
     G4LogicalVolume *logicGEMFoil = new G4LogicalVolume(solidGEMFoil, GEMFoilM, "GEMFoilLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 11.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 8.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 1);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 6.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 2);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 4.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 3);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 2.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 4);
+    G4LogicalVolume *logicGEMCathode = new G4LogicalVolume(solidGEMFoil, GEMFoilM, "GEMCathodeLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 11.0 * mm), logicGEMCathode, "GEM Cathode", logicGEMGas, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 8.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 6.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 1);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 4.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 2);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 2.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 3);
 
     G4Box *GEMCuFoilBox1 = new G4Box("GEMCuFoilBox1", GEMHalfX, GEMHalfY, GEMCuFoilThickness / 2.0);
     G4Box *GEMCuFoilBox2 = new G4Box("GEMCuFoilBox2", GEMCenterHalfXY, GEMCenterHalfXY, GEMHalfThickness + 0.1 * mm);
@@ -847,7 +849,7 @@ void DetectorConstruction::DefineDRadSDs()
     if (fGEMSDOn) {
         TrackingDetectorSD *GEMSD = new TrackingDetectorSD("GEMSD", "GEM");
         G4SDManager::GetSDMpointer()->AddNewDetector(GEMSD);
-        SetSensitiveDetector("GEMGasLV", GEMSD);
+        SetSensitiveDetector("GEMCathodeLV", GEMSD);
     }
 
     if (fSciPlaneSDOn) {
