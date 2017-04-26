@@ -3,13 +3,14 @@
 Geant4 simulation package for Jefferson Lab experiment PRad.
 
 ### Instructions:
-Must have ROOT and Geant4 package installed for the main simulation program PRadSim to compile and work.
+This package is developed with [ROOT](https://root.cern.ch/) and [Geant4](http://geant4.cern.ch/).
 
-Must have the [PRad analyzer](https://github.com/JeffersonLab/PRadAnalyzer) package installed for the digitization program PRadDig and reconstruction program PRadRec to compile and work.
+The digitization part also depends on the [EVIO](https://coda.jlab.org/drupal/content/event-io-evio) package and [PRadAnalyzer](https://github.com/JeffersonLab/PRadAnalyzer) package.
 
 ### Authors:
 Chao Peng, Mexime Levillain, Chao Gu
 
 ### Acknowledge:
-* Authors of [ROOT](https://root.cern.ch).
+* Authors of [ROOT](https://root.cern.ch/).
 * Authors of [Geant4](http://geant4.cern.ch/).
+* Authors of [EVIO](https://coda.jlab.org/drupal/content/event-io-evio).
