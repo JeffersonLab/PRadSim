@@ -3,13 +3,13 @@
 include Makefile.arch
 
 EENORCO     = eenorc.$(ObjSuf)
-EENORCS     = norc.cxx ee.h
+EENORCS     = norc.cc ee.hh
 EENORC      = eenorc
 EPNORCO     = epnorc.$(ObjSuf)
-EPNORCS     = norc.cxx ep.h
+EPNORCS     = norc.cc ep.hh
 EPNORC      = epnorc
 EDNORCO     = ednorc.$(ObjSuf)
-EDNORCS     = norc.cxx ed.h
+EDNORCS     = norc.cc ed.hh
 EDNORC      = ednorc
 
 OBJS        = $(EENORCO) $(EPNORCO) $(EDNORCO)

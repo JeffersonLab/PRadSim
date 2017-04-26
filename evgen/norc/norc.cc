@@ -15,15 +15,16 @@
 #include "TRandom2.h"
 
 #ifdef ELASTIC_EE
-    #include "ee.h"
+    #include "ee.hh"
 #elif ELASTIC_ED
-    #include "ed.h"
+    #include "ed.hh"
 #else
-    #include "ep.h"
+    #include "ep.hh"
 #endif
 
 #include <cstdlib>
 #include <cstdio>
+#include <time.h>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -58,7 +59,7 @@ int main()
     //int N = 100000;
 
     TRandom2 *PseRan = new TRandom2();
-    PseRan->SetSeed(0);
+    PseRan->SetSeed((int)(time(NULL)));
 
     phi_min = -180.0 * deg;
     phi_max = 180.0 * deg;
@@ -67,8 +68,6 @@ int main()
 
     vi_1.SetPxPyPzE(0., 0., Sqrt(Pow2(Ei_1) - m2), Ei_1);
     vi_2.SetPxPyPzE(0., 0., 0., M);
-
-    FILE *fp = fopen(filename, "w");
 
     for (int i = 0; i < InterpolPoints; i++) {
         theta_1 = theta_min + i * (theta_max - theta_min) / (InterpolPoints - 1);
@@ -94,9 +93,9 @@ int main()
     //FoamX->SetChat(1); // Set "chat level" in the standard output
     FoamX->Initialize();
 
-    for (int i = 0; i < N; ++i) {
-        if (i % 10000 == 0 && i != 0) std::cout << i << std::endl;
+    FILE *fp = fopen(filename, "w");
 
+    for (int i = 0; i < N; ++i) {
         FoamX->MakeEvent();
 
         phi_1 = phi_min + (phi_max - phi_min) * (PseRan->Rndm());
@@ -108,11 +107,19 @@ int main()
         //printf("%9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf\n", 1000. * Ef_1, theta_1, phi_1, 1000. * Ef_2, theta_2, phi_2, 0., 0., 0.);
     }
 
-    std::cout << std::endl;
-    std::cout << "cross section (averaged over the solid angle):" << std::endl;
-    std::cout << xsint / omega << " microbarn / steradian" << std::endl;
-    std::cout << "integrated luminosity:" << std::endl;
-    std::cout << N / xsint << " inverse microbarn" << std::endl;
+    fclose(fp);
+
+    fp = fopen(ifilename, "w");
+
+    fprintf(fp, "cross section (averaged over the solid angle):\n");
+    fprintf(fp, "%lf microbarn / steradian\n", xsint / omega);
+    fprintf(fp, "integrated luminosity:\n");
+    fprintf(fp, "%lf inverse microbarn\n", N / xsint);
+
+    printf("cross section (averaged over the solid angle):\n");
+    printf("%lf microbarn / steradian\n", xsint / omega);
+    printf("integrated luminosity:\n");
+    printf("%lf inverse microbarn\n", N / xsint);
 
     fclose(fp);
 }

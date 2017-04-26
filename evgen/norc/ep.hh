@@ -83,6 +83,7 @@ const double b25 = 12.7977739;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 const char *filename = "elastic_ep.dat";
+const char *ifilename = "elastic_ep.info";
 
 double Ei_1;
 

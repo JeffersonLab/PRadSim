@@ -57,12 +57,13 @@ const double e = Sqrt(4. * Pi *alpha);   // Electron charge magnitude
 const double fm = 0.197327; // GeV^{-1} to fm conversion
 const double mkb = 389.379404; // GeV^{-2} to mkbarn conversion
 
-const double rd = 2.130 / fm; // GeV^{-1}
+const double rd = 1.0 * 2.130 / fm; // GeV^{-1}
 const double mepsilon = 0.936 * 0.0022246 / 0.197 / 0.197;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 const char *filename = "elastic_ed.dat";
+const char *ifilename = "elastic_ed.info";
 
 double Ei_1;
 

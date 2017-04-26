@@ -59,6 +59,7 @@ const double mkb = 389.379404; // GeV^{-2} to mkbarn conversion
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 const char *filename = "elastic_ee.dat";
+const char *ifilename = "elastic_ee.info";
 
 double Ei_1;
 

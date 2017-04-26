@@ -164,8 +164,7 @@ int main()
     v_li.SetPxPyPzE(0., 0., Sqrt(Pow2(E_li) - m2), E_li);
     v_pi.SetPxPyPzE(0., 0., 0., M);
 
-    FILE *fpxs = fopen("xs.dat", "w");
-    FILE *fp = fopen("result.dat", "w");
+    FILE *fp = fopen("xs.dat", "w");
 
     /*
     for (int i = 0; i < 101; i++) {
@@ -173,12 +172,11 @@ int main()
         double tt = 0;
 
         RadCorEPXS(q2);
-        fprintf(fpxs, "%8.6lf %10.4le %10.4le %10.4le %10.4le %10.4le %8.6lf %8.6lf %8.6lf\n", tt * 180.0 / Pi, q2, sigmaborn, sigmatot, sigmarad, sigmabsv, sigmatot / sigmaborn - 1, sigmarad / sigmaborn, sigmabsv / sigmaborn);
+        fprintf(fp, "%8.6lf %10.4le %10.4le %10.4le %10.4le %10.4le %8.6lf %8.6lf %8.6lf\n", tt * 180.0 / Pi, q2, sigmaborn, sigmatot, sigmarad, sigmabsv, sigmatot / sigmaborn - 1, sigmarad / sigmaborn, sigmabsv / sigmaborn);
         printf("%8.6lf %10.4le %10.4le %10.4le %10.4le %10.4le %8.6lf %8.6lf %8.6lf\n", tt * 180.0 / Pi, q2, sigmaborn, sigmatot, sigmarad, sigmabsv, sigmatot / sigmaborn - 1, sigmarad / sigmaborn, sigmabsv / sigmaborn);
     }
 
     fclose(fp);
-    fclose(fpxs);
     exit(0);
     */
 
@@ -191,11 +189,11 @@ int main()
 
         thetat[i] = theta_l;
         xs_sin[i] = RadCorEPXS_Sin(theta_l);
-        fprintf(fpxs, "%8.6lf %10.4le %10.4le %10.4le %10.4le %10.4le %8.6lf %8.6lf %8.6lf\n", theta_l * 180.0 / Pi, q2, sigmaborn, sigmatot, sigmarad, sigmabsv, sigmatot / sigmaborn - 1, sigmarad / sigmaborn, sigmabsv / sigmaborn);
+        fprintf(fp, "%8.6lf %10.4le %10.4le %10.4le %10.4le %10.4le %8.6lf %8.6lf %8.6lf\n", theta_l * 180.0 / Pi, q2, sigmaborn, sigmatot, sigmarad, sigmabsv, sigmatot / sigmaborn - 1, sigmarad / sigmaborn, sigmabsv / sigmaborn);
         printf("%8.6lf %10.4le %10.4le %10.4le %10.4le %10.4le %8.6lf %8.6lf %8.6lf\n", theta_l * 180.0 / Pi, q2, sigmaborn, sigmatot, sigmarad, sigmabsv, sigmatot / sigmaborn - 1, sigmarad / sigmaborn, sigmabsv / sigmaborn);
     }
 
-    fclose(fpxs);
+    fclose(fp);
 
     Integrator_XS_Sin.SetFunction(Func_XS_Sin);
     Integrator_XS_Sin.SetRelTolerance(IntTol);
@@ -214,6 +212,8 @@ int main()
     FoamX->SetPseRan(PseRan); // Set random number generator
     //FoamX->SetChat(1); // Set "chat level" in the standard output
     FoamX->Initialize();
+
+    fp = fopen("epelastic.dat", "w");
 
     for (int i = 0; i < nevents; ++i) {
         if (i % 1000 == 0 && i != 0) std::cout << i << std::endl;
@@ -265,11 +265,19 @@ int main()
         //printf("%9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf\n", 1000. * E_lf, theta_l, phi_l, 1000. * E_p, theta_p, phi_p, 1000. * E_g, theta_g, phi_g);
     }
 
-    std::cout << std::endl;
-    std::cout << "cross section (averaged over the solid angle):" << std::endl;
-    std::cout << xsint / omega << " microbarn / steradian" << std::endl;
-    std::cout << "integrated luminosity:" << std::endl;
-    std::cout << nevents / xsint << " inverse microbarn" << std::endl;
+    fclose(fp);
+
+    fp = fopen("epelastic.info", "w");
+
+    fprintf(fp, "cross section (averaged over the solid angle):\n");
+    fprintf(fp, "%lf microbarn / steradian\n", xsint / omega);
+    fprintf(fp, "integrated luminosity:\n");
+    fprintf(fp, "%lf inverse microbarn\n", nevents / xsint);
+
+    printf("cross section (averaged over the solid angle):\n");
+    printf("%lf microbarn / steradian\n", xsint / omega);
+    printf("integrated luminosity:\n");
+    printf("%lf inverse microbarn\n", nevents / xsint);
 
     fclose(fp);
 }
