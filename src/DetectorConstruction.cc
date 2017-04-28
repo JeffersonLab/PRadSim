@@ -103,12 +103,12 @@ DetectorConstruction::DetectorConstruction(G4String conf) : G4VUserDetectorConst
         fRecoilDetSDOn = true;
         fGEMSDOn = true;
         fSciPlaneSDOn = true;
-        fHyCalSDOn = true;
+        fHyCalSDOn = 1;
     } else {
         fRecoilDetSDOn = false;
         fGEMSDOn = true;
         fSciPlaneSDOn = false;
-        fHyCalSDOn = true;
+        fHyCalSDOn = 1;
     }
 
     detectorMessenger = new DetectorMessenger(this);
@@ -588,7 +588,7 @@ void DetectorConstruction::DefinePRadSDs()
         SetSensitiveDetector("GEMCathodeLV", GEMSD);
     }
 
-    if (fHyCalSDOn) {
+    if (fHyCalSDOn != 0) {
         CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC");
         G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
         SetSensitiveDetector("HyCalModuleLV", HyCalSD);
@@ -858,8 +858,12 @@ void DetectorConstruction::DefineDRadSDs()
         SetSensitiveDetector("ScintillatorPlaneLV", SciPlaneSD);
     }
 
-    if (fHyCalSDOn) {
+    if (fHyCalSDOn == 1) {
         CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC");
+        G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
+        SetSensitiveDetector("HyCalModuleLV", HyCalSD);
+    } else if (fHyCalSDOn == 2) {
+        StandardDetectorSD *HyCalSD = new StandardDetectorSD("HyCalSD", "HC");
         G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
         SetSensitiveDetector("HyCalModuleLV", HyCalSD);
     }

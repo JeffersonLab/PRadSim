@@ -83,7 +83,7 @@ private:
     G4UIcmdWithABool          *RecoilDetSDCmd;
     G4UIcmdWithABool          *GEMSDCmd;
     G4UIcmdWithABool          *SciPlaneSDCmd;
-    G4UIcmdWithABool          *HyCalSDCmd;
+    G4UIcmdWithAString        *HyCalSDCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

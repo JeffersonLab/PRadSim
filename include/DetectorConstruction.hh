@@ -106,7 +106,7 @@ private:
     G4bool fRecoilDetSDOn;
     G4bool fGEMSDOn;
     G4bool fSciPlaneSDOn;
-    G4bool fHyCalSDOn;
+    G4int fHyCalSDOn;
 
     DetectorMessenger *detectorMessenger; // pointer to the messenger
 };
@@ -167,7 +167,9 @@ inline void DetectorConstruction::EnableSD(G4String detname)
 
     if (detname == "Scintillator Plane") fSciPlaneSDOn = true;
 
-    if (detname == "HyCal") fHyCalSDOn = true;
+    if (detname == "HyCal") fHyCalSDOn = 1;
+
+    if (detname == "HyCal No Response") fHyCalSDOn = 2;
 }
 
 inline void DetectorConstruction::DisableSD(G4String detname)
@@ -178,7 +180,7 @@ inline void DetectorConstruction::DisableSD(G4String detname)
 
     if (detname == "Scintillator Plane") fSciPlaneSDOn = false;
 
-    if (detname == "HyCal") fHyCalSDOn = false;
+    if (detname == "HyCal") fHyCalSDOn = 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

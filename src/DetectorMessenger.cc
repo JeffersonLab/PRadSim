@@ -141,9 +141,10 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
     SciPlaneSDCmd->SetGuidance("Turn on SciPlaneSD");
     SciPlaneSDCmd->SetParameterName("sciplanesd", false);
 
-    HyCalSDCmd = new G4UIcmdWithABool("/pradsim/det/sensitive/hycal", this);
+    HyCalSDCmd = new G4UIcmdWithAString("/pradsim/det/sensitive/hycal", this);
     HyCalSDCmd->SetGuidance("Turn on HyCalSD");
     HyCalSDCmd->SetParameterName("hycalsd", false);
+    HyCalSDCmd->SetCandidates("true false simple");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -230,7 +231,8 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
     }
 
     if (command == HyCalSDCmd) {
-        if (HyCalSDCmd->GetNewBoolValue(newValue)) Detector->EnableSD("HyCal");
+        if (newValue == "true") Detector->EnableSD("HyCal");
+        else if (newValue == "simple") Detector->EnableSD("HyCal No Response");
         else Detector->DisableSD("HyCal");
     }
 }
