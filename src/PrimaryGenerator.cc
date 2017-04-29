@@ -167,10 +167,7 @@ void PrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
         x = G4RandGauss::shoot(0, 0.08) * mm;
         y = G4RandGauss::shoot(0, 0.08) * mm;
         z = fTargetCenter + fTargetHalfL * 2 * (0.5 - G4UniformRand());
-        double costhetahi = cos(fBeamThetaHi);
-        double costhetalo = cos(fBeamThetaLo);
-        double costheta = costhetalo + (costhetahi - costhetalo) * G4UniformRand();
-        theta_l = acos(costheta);
+        theta_l = fBeamThetaLo + (fBeamThetaHi - fBeamThetaLo) * G4UniformRand();
         phi_l = twopi * G4UniformRand();
     }
 
