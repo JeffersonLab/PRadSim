@@ -116,7 +116,7 @@ int main(int argc, char **argv)
             X[j] = hits[j].x;
             Y[j] = hits[j].y;
             Z[j] = 5640.0 - 3000.0 + 88.9;
-            E[j] = RandGen->Gaus(hits[j].E,1./sqrt(hits[j].E/1000.));
+            E[j] = hits[j].E;
         }
 
         t->Fill();
