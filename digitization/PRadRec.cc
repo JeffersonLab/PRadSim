@@ -16,6 +16,7 @@
 #include "TObject.h"
 #include "TFile.h"
 #include "TTree.h"
+#include "TRandom2.h"
 
 #include <getopt.h>
 #include <iostream>
@@ -71,6 +72,8 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    TRandom2 *RandGen = new TRandom2();
+
     // simulation data is more like raw evio data with HyCal information only,
     // so we only need hycal system to connected to the handler
     PRadDataHandler *handler = new PRadDataHandler();
@@ -113,7 +116,7 @@ int main(int argc, char **argv)
             X[j] = hits[j].x;
             Y[j] = hits[j].y;
             Z[j] = 5640.0 - 3000.0 + 88.9;
-            E[j] = hits[j].E;
+            E[j] = RandGen->Gaus(hits[j].E,1./sqrt(hits[j].E/1000.));
         }
 
         t->Fill();
