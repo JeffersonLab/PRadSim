@@ -24,9 +24,10 @@
 // ********************************************************************
 //
 // PrimaryGenerator.hh
-// Developer : Chao Gu
+// Developer : Chao Gu, Weizhi Xiong
 // History:
 //   Mar 2017, C. Gu, Add for DRad configuration.
+//   Apr 2017, W. Xiong, Add target thickness profile.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -37,6 +38,9 @@
 
 #include "ConfigParser.h"
 
+#include "TFoamIntegrand.h"
+#include "Math/Interpolator.h"
+
 #include "G4VPrimaryGenerator.hh"
 
 #include "G4String.hh"
@@ -46,6 +50,8 @@
 class G4Event;
 
 class TTree;
+class TFoam;
+class TRandom2;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -90,18 +96,46 @@ private:
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+class PRadPrimaryGenerator;
+
+class TargetProfileIntegrand : public TFoamIntegrand
+{
+public:
+    TargetProfileIntegrand(PRadPrimaryGenerator *gen);
+
+    double Density(int nDim, double *arg);
+
+    ROOT::Math::Interpolator *fTargetProfile;
+    double fZMin, fZMax;
+};
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 class PRadPrimaryGenerator : public PrimaryGenerator
 {
+    friend class TargetProfileIntegrand;
+
 public:
-    PRadPrimaryGenerator(G4String type, G4bool rec, G4String par); // DRadPrimaryGenerator use this
-    PRadPrimaryGenerator(G4String type, G4bool rec, G4String par, G4String path);
+    PRadPrimaryGenerator(G4String type, G4bool rec, G4String par); // DRadPrimaryGenerator uses this
+    PRadPrimaryGenerator(G4String type, G4bool rec, G4String par, G4String path, G4String profile);
     virtual ~PRadPrimaryGenerator();
 
     virtual void GeneratePrimaryVertex(G4Event *);
 
 protected:
+    virtual double GenerateZ();
+
     ConfigParser fParser;
+
+private:
+    void LoadTargetProfile(const std::string &path);
+
+    ROOT::Math::Interpolator *fTargetProfile;
+    double fZMin, fZMax;
+
+    TFoam *fZGenerator;
+    TRandom2 *fPseRan;
+    TargetProfileIntegrand *fFoamI;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -111,6 +145,9 @@ class DRadPrimaryGenerator : public PRadPrimaryGenerator
 public:
     DRadPrimaryGenerator(G4String type, G4bool rec, G4String par, G4String path);
     virtual ~DRadPrimaryGenerator();
+
+protected:
+    virtual double GenerateZ();
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

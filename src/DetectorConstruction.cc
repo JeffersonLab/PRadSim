@@ -379,7 +379,7 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     // The downstream chamber window should locate at -3000.0 + 88.9 + 74.0  = -2837.1 mm
     // The length of the downstream chamber is 381.7 mm
     // The total length of the downstream chamber and the tube in total is 710.0 mm
-    // Here the downstream chamber and the tube are built together to be the now down stream chamber.
+    // Here the downstream chamber and the tube are built together to be the new down stream chamber.
     // So the center of this geometry should be at -2837.1 + 710.0 / 2 = -2482.1 mm
     G4double DownChamberCenter = -248.21 * cm;
     G4double DownChamberHalfL = 71.0 / 2.0 * cm;

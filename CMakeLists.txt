@@ -19,7 +19,7 @@ endif()
 # Tell CMake where to find the ROOT installation
 #
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{ROOTSYS}/etc/cmake)
-find_package(ROOT REQUIRED)
+find_package(ROOT REQUIRED COMPONENTS MathMore Foam)
 
 #----------------------------------------------------------------------------
 # Setup include and lib directory for this project

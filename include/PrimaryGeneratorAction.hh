@@ -67,6 +67,7 @@ public:
     inline void SetThetaRange(G4double lo, G4double hi);
 
     inline void SetEventFile(G4String path);
+    inline void SetTargetProfile(G4String profile);
 
 private:
     G4String fConfig;
@@ -81,6 +82,7 @@ private:
     double fThetaLo, fThetaHi;
 
     G4String fEventFile;
+    G4String fTargetProfile;
 
     PrimaryGenerator *fPrimaryGenerator;
 
@@ -131,9 +133,14 @@ inline void PrimaryGeneratorAction::SetThetaRange(G4double lo, G4double hi)
     if (hi > -9999) fThetaHi = hi;
 }
 
-inline void PrimaryGeneratorAction::SetEventFile(G4String val)
+inline void PrimaryGeneratorAction::SetEventFile(G4String path)
 {
-    fEventFile = val;
+    fEventFile = path;
+}
+
+inline void PrimaryGeneratorAction::SetTargetProfile(G4String profile)
+{
+    fTargetProfile = profile;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

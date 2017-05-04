@@ -73,6 +73,7 @@ private:
     G4UIcmdWithADoubleAndUnit *ThetaLowCmd;
     G4UIcmdWithADoubleAndUnit *ThetaHighCmd;
     G4UIcmdWithAString        *EventFileCmd;
+    G4UIcmdWithAString        *TargetProfileCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -24,9 +24,10 @@
 // ********************************************************************
 //
 // PrimaryGenerator.cc
-// Developer : Chao Gu
+// Developer : Chao Gu, Weizhi Xiong
 // History:
 //   Mar 2017, C. Gu, Add for DRad configuration.
+//   Apr 2017, W. Xiong, Add target thickness profile.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -42,6 +43,11 @@
 #include "TError.h"
 #include "TObject.h"
 #include "TTree.h"
+#include "TFoam.h"
+#include "TFoamIntegrand.h"
+#include "TRandom2.h"
+#include "Math/InterpolationTypes.h"
+#include "Math/Interpolator.h"
 
 #include "G4Event.hh"
 #include "G4LogicalVolume.hh"
@@ -66,6 +72,7 @@
 
 #include <cmath>
 #include <fstream>
+#include <vector>
 
 static double me = 0.510998928 * MeV;
 
@@ -153,6 +160,8 @@ void PrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
             G4cout << "WARNING: target volume not found" << G4endl;
 
         fTargetMass = particleTable->FindParticle(fRecoilParticle)->GetPDGMass();
+
+        fTargetInfo = true;
     }
 
     double x, y, z, theta_l, phi_l;
@@ -334,8 +343,11 @@ PRadPrimaryGenerator::PRadPrimaryGenerator(G4String type, G4bool rec, G4String p
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PRadPrimaryGenerator::PRadPrimaryGenerator(G4String type, G4bool rec, G4String par, G4String path) : PrimaryGenerator(type, 0, 0, 0, rec, par)
+PRadPrimaryGenerator::PRadPrimaryGenerator(G4String type, G4bool rec, G4String par, G4String path, G4String profile): PrimaryGenerator(type, 0, 0, 0, rec, par), fZGenerator(NULL), fPseRan(NULL), fFoamI(NULL)
 {
+    if (!profile.empty())
+        LoadTargetProfile(profile);
+
     if (path.empty()) {
         if (fEventType == "elastic")
             path = "epelastic.dat";
@@ -353,11 +365,17 @@ PRadPrimaryGenerator::PRadPrimaryGenerator(G4String type, G4bool rec, G4String p
 
 PRadPrimaryGenerator::~PRadPrimaryGenerator()
 {
-    //
+    if (fZGenerator)
+        delete fZGenerator;
+
+    if (fPseRan)
+        delete fPseRan;
+
+    if (fFoamI)
+        delete fFoamI;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
 {
     if (!fRegistered) {
@@ -384,6 +402,8 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
             fTargetHalfL = solidTarget->GetZHalfLength();
         else
             G4cout << "WARNING: target volume not found" << G4endl;
+
+        fTargetInfo = true;
     }
 
     double e_l = 0, theta_l = 0, phi_l = 0;
@@ -401,7 +421,7 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
 
     double x = G4RandGauss::shoot(0, 0.08) * mm;
     double y = G4RandGauss::shoot(0, 0.08) * mm;
-    double z = fTargetCenter + fTargetHalfL * 2 * (0.5 - G4UniformRand());
+    double z = GenerateZ();
 
     G4PrimaryVertex *vertexL = new G4PrimaryVertex(x, y, z, 0);
     G4PrimaryParticle *particleL = new G4PrimaryParticle(particleTable->FindParticle("e-"));
@@ -483,6 +503,64 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+double PRadPrimaryGenerator::GenerateZ()
+{
+    if (fZGenerator) {
+        double rvect[1];
+        fZGenerator->MakeEvent();
+        fZGenerator->GetMCvect(rvect);
+        return fTargetCenter + fZMin + (fZMax - fZMin) * rvect[0];
+    } else
+        return fTargetCenter + fTargetHalfL * 2 * (0.5 - G4UniformRand());
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void PRadPrimaryGenerator::LoadTargetProfile(const std::string &path)
+{
+    if (path.empty()) return;
+
+    ConfigParser c_parser;
+    c_parser.ReadFile(path);
+
+    std::vector<double> z, density;
+    z.clear();
+    density.clear();
+    double tempz, tempd;
+
+    while (c_parser.ParseLine()) {
+        if (!c_parser.CheckElements(2))
+            continue;
+
+        c_parser >> tempz >> tempd;
+
+        if (!z.empty() && tempz * 10.0 <= z.back()) continue;
+
+        // convert z to mm, and convert density to H_atom/cm^3
+        z.push_back(tempz * 10.0);
+        density.push_back(tempd * 2.0);
+    }
+
+    fTargetProfile = new ROOT::Math::Interpolator(z, density, ROOT::Math::Interpolation::kLINEAR);
+    fZMin = z[0];
+    fZMax = z.back();
+
+    fPseRan = new TRandom2();
+    fFoamI = new TargetProfileIntegrand(this);
+
+    fZGenerator = new TFoam("Z Generator");
+    fZGenerator->SetkDim(1);
+    fZGenerator->SetnCells(10000); // Set number of cells
+    fZGenerator->SetnSampl(500); // Set number of samples
+    fZGenerator->SetOptRej(1); // Unweighted events in MC generation
+    fZGenerator->SetRho(fFoamI); // Set distribution function
+    fZGenerator->SetPseRan(fPseRan); // Set random number generator
+    fZGenerator->SetChat(0); // Set "chat level" in the standard output
+    fZGenerator->Initialize();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 DRadPrimaryGenerator::DRadPrimaryGenerator(G4String type, G4bool rec, G4String par, G4String path) : PRadPrimaryGenerator(type, rec, par)
 {
     if (path.empty()) {
@@ -504,6 +582,31 @@ DRadPrimaryGenerator::DRadPrimaryGenerator(G4String type, G4bool rec, G4String p
 DRadPrimaryGenerator::~DRadPrimaryGenerator()
 {
     //
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+double DRadPrimaryGenerator::GenerateZ()
+{
+    return fTargetCenter + fTargetHalfL * 2 * (0.5 - G4UniformRand());
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+TargetProfileIntegrand::TargetProfileIntegrand(PRadPrimaryGenerator *gen)
+{
+    fTargetProfile = gen->fTargetProfile;
+    fZMin = gen->fZMin;
+    fZMax = gen->fZMax;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+double TargetProfileIntegrand::Density(int, double *arg)
+{
+    double z = fZMin + (fZMax - fZMin) * arg[0];
+
+    return fTargetProfile->Eval(z);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

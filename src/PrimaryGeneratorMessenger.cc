@@ -105,6 +105,10 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act
     EventFileCmd = new G4UIcmdWithAString("/pradsim/gun/path", this);
     EventFileCmd->SetGuidance("Choose path of event file");
     EventFileCmd->SetParameterName("path", false);
+
+    TargetProfileCmd = new G4UIcmdWithAString("/pradsim/gun/target", this);
+    TargetProfileCmd->SetGuidance("Choose path of target profile");
+    TargetProfileCmd->SetParameterName("target", false);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -121,6 +125,7 @@ PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
     delete ThetaCmd;
     delete PhiCmd;
     delete EventFileCmd;
+    delete TargetProfileCmd;
     delete GunDir;
 }
 
@@ -157,6 +162,9 @@ void PrimaryGeneratorMessenger::SetNewValue(G4UIcommand *command, G4String newVa
 
     if (command == EventFileCmd)
         Action->SetEventFile(newValue);
+
+    if (command == TargetProfileCmd)
+        Action->SetTargetProfile(newValue);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

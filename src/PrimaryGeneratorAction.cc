@@ -54,6 +54,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf) : G4VUserPrimaryGe
 
     fRecoilParticle.clear();
     fEventFile.clear();
+    fTargetProfile.clear();
 
     // create a messenger for this class
     gunMessenger = new PrimaryGeneratorMessenger(this);
@@ -84,7 +85,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
             else if (fGunType == "ring")
                 fPrimaryGenerator = new PrimaryGenerator(fEventType, fE, fThetaLo, fThetaHi, false, "proton");
             else
-                fPrimaryGenerator = new PRadPrimaryGenerator(fEventType, false, "proton", fEventFile);
+                fPrimaryGenerator = new PRadPrimaryGenerator(fEventType, false, "proton", fEventFile, fTargetProfile);
         } else {
             if (!recoilon) fRecoilParticle = "deuteron";
 
