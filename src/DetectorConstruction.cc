@@ -401,26 +401,27 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     new G4PVPlacement(0, G4ThreeVector(0, 0, DownChamberCenter - DownChamberHalfL - DownChamberWinThickness / 2.0), logicDownChamberWin, "Downstream Chamber Window", logicWorld, false, 0);
 
     // Vacuum box
-    // The length of the vacuum box is 4250.0 mm
-    // So the center of this geometry should be at -3000.0 + 88.9 + 74.0 + 710.0 + 2125.0 = -2.1 mm
-    G4double VacBoxCenter = -0.21 * cm;
-    G4double VacBoxHalfL = 212.5 * cm;
+    // The length of the vacuum box is 4251.7 mm
+    // So the center of this geometry should be at -3000.0 + 88.9 + 74.0 + 710.0 + 2125.85 = -1.25 mm
+    G4double VacBoxCenter = -0.125 * cm;
+    G4double VacBoxHalfL = 425.17 * cm / 2.0;
     G4double VacBoxMaxR = 78.11 * cm;
     G4double rInner2[] = {17.30 * cm, 17.30 * cm, 50.17 * cm, 50.17 * cm, 78.11 * cm, 78.11 * cm};
     G4double rOuter2[] = {17.78 * cm, 17.78 * cm, 50.80 * cm, 50.80 * cm, 78.74 * cm, 78.74 * cm};
-    G4double zPlane2[] = {0, 6.8 * cm, 17.6 * cm, 215.3 * cm, 229.5 * cm, 425.00 * cm};
+    G4double zPlane2[] = {0, 6.8 * cm, 17.6 * cm, 215.3 * cm, 229.5 * cm, 425.17 * cm};
     G4VSolid *solidVacBox = new G4Polycone("VacuumBoxS", 0, twopi, 6, zPlane2, rInner2, rOuter2);
     G4LogicalVolume *logicVacBox = new G4LogicalVolume(solidVacBox, VacuumBoxM, "VacuumBoxLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter - VacBoxHalfL), logicVacBox, "Vacuum Box", logicWorld, false, 0);
 
     // Vacuum box window
+    G4double VacBoxWinFlangeOffset = 3.81 * cm;
     G4double ArcDistance = 5.59 * cm;
     G4double ArcEndR = (ArcDistance * ArcDistance + VacBoxMaxR * VacBoxMaxR) / (2 * ArcDistance);
     G4double ArcEndThickness = 1.6 * mm;
     G4double VacBoxWinApertureR = 3.0 * cm;
     G4VSolid *solidVacBoxWin = new G4Sphere("VacuumBoxWindowS", ArcEndR - ArcEndThickness, ArcEndR, 0, twopi, pi - asin(VacBoxMaxR / ArcEndR), asin(VacBoxMaxR / ArcEndR) - asin((VacBoxWinApertureR + 0.1 * mm) / ArcEndR));
     G4LogicalVolume *logicVacBoxWin = new G4LogicalVolume(solidVacBoxWin, VacuumBoxM, "VacuumBoxWindowLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter + VacBoxHalfL + ArcEndR - ArcDistance), logicVacBoxWin, "Vacuum Box Window", logicWorld, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter + VacBoxHalfL + ArcEndR - ArcDistance - VacBoxWinFlangeOffset), logicVacBoxWin, "Vacuum Box Window", logicWorld, false, 0);
 
     // Vacuum Tube
     G4double VacTubeOR = 1.9 * cm;
