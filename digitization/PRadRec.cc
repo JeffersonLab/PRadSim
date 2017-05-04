@@ -16,6 +16,7 @@
 #include "TObject.h"
 #include "TFile.h"
 #include "TTree.h"
+#include "TRandom2.h"
 
 #include <getopt.h>
 #include <iostream>
@@ -70,6 +71,8 @@ int main(int argc, char **argv)
         usage(argc, argv);
         exit(1);
     }
+
+    TRandom2 *RandGen = new TRandom2();
 
     // simulation data is more like raw evio data with HyCal information only,
     // so we only need hycal system to connected to the handler
