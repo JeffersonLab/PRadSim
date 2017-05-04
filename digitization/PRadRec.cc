@@ -37,7 +37,7 @@ void usage(int, char **argv)
 
 double GetNonlinCorr(Double_t reconE) //in MeV
 {
-    return exp(-1.*reconE*1.53438e-04)+1.11330e-04*reconE+7.17932e-02;
+    return exp(-1.0 * reconE * 1.53438e-04) + 1.11330e-04 * reconE + 7.17932e-02;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
     while (1) {
         static struct option long_options[] = {
             {"help",  no_argument, 0, 'h'},
-	    {"gem_match",  no_argument, 0, 'g'},
+            {"gem_match",  no_argument, 0, 'g'},
             {0, 0, 0, 0}
         };
 
@@ -66,8 +66,8 @@ int main(int argc, char **argv)
             exit(0);
             break;
 
-	case 'g':
-	  gem_match = true;
+        case 'g':
+            gem_match = true;
             break;
 
         case '?':
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 
     std::string gemf = tf + ".root";
     TFile *fgem = new TFile(gemf.c_str());
-    TTree *tgem = (TTree*)fgem->Get("T"); 
+    TTree *tgem = (TTree *)fgem->Get("T");
 
     TFile *f = new TFile(outf.c_str(), "RECREATE");
     TTree *t = new TTree("T", "Reconstructed Sim Results");
@@ -128,80 +128,82 @@ int main(int argc, char **argv)
     t->Branch("GEM.Z", Z_GEM, "GEM.Z[GEM.N]/D");
     t->Branch("GEM.DID", DID_GEM, "GEM.DID[GEM.N]/I");
 
-    tgem->SetBranchAddress("GEM.N",&N_GEM);
-    tgem->SetBranchAddress("GEM.X",X_GEM);
-    tgem->SetBranchAddress("GEM.Y",Y_GEM);
-    tgem->SetBranchAddress("GEM.Z",Z_GEM);
-    tgem->SetBranchAddress("GEM.DID",DID_GEM);
-      
-    int i = 1;
+    tgem->SetBranchAddress("GEM.N", &N_GEM);
+    tgem->SetBranchAddress("GEM.X", X_GEM);
+    tgem->SetBranchAddress("GEM.Y", Y_GEM);
+    tgem->SetBranchAddress("GEM.Z", Z_GEM);
+    tgem->SetBranchAddress("GEM.DID", DID_GEM);
+
+    int i = 0;
 
     for (auto &event : handler->GetEventData()) {
-        if (i % 1000 == 0)
+        if (i % 1000 == 0 && i != 0)
             std::cout << i << " events processed" << std::endl;
 
         hycal->Reconstruct(event);
         auto &hits = hycal->GetDetector()->GetHits();
 
-	tgem->GetEntry(i-1);
-	if (gem_match) {
-	    std::vector<GEMHit> gem1_hits, gem2_hits;
-	    for (int j = 0; j < N_GEM; j++) {
-	        GEMHit h;
-		h.x = X_GEM[j];
-		h.y = Y_GEM[j];
-		h.z = Z_GEM[j] + 3000.0 - 89.0;
-		if (DID_GEM[j]) gem2_hits.push_back(h);
-		else gem1_hits.push_back(h);
-	    }
-    
-	    for (int j = 0; j < (int)hits.size(); ++j) hits[j].z += 5640.0;
+        tgem->GetEntry(i);
 
-	    auto matched = det_match->Match(hits, gem1_hits, gem2_hits);
-      
-	    N_HC = (int)matched.size();
-	    N_GEM = (int)matched.size();
-      
-	    for (int j = 0; j < N_HC; ++j) {
+        if (N_GEM > 100) N_GEM = 100;
 
-	        X_HC[j] = matched[j].hycal.x;
-		Y_HC[j] = matched[j].hycal.y;
-		Z_HC[j] = matched[j].hycal.z;
-		E[j] = matched[j].hycal.E * GetNonlinCorr(matched[j].hycal.E);
-		CID[j] = matched[j].hycal.cid;
-       
-		if (matched[j].gem1.empty() && matched[j].gem2.empty()) {
-		    X_GEM[j] = -10000;
-		    Y_GEM[j] = -10000;
-		    Z_GEM[j] = -10000;
-		}
-		else if (matched[j].gem1.empty()) {
-		    X_GEM[j] = matched[j].gem2[0].x;
-		    Y_GEM[j] = matched[j].gem2[0].y;
-		    Z_GEM[j] = matched[j].gem2[0].z;
-		}
-		else if (matched[j].gem2.empty()) {
-		    X_GEM[j] = matched[j].gem1[0].x;
-		    Y_GEM[j] = matched[j].gem1[0].y;
-		    Z_GEM[j] = matched[j].gem1[0].z;
-		}
-		else {
-		    X_GEM[j] = 0.5 * (matched[j].gem1[0].x + matched[j].gem2[0].x);
-		    Y_GEM[j] = 0.5 * (matched[j].gem1[0].y + matched[j].gem2[0].y);
-		    Z_GEM[j] = 0.5 * (matched[j].gem1[0].z + matched[j].gem2[0].z);
-		}
-	    } 
-	}
-	else {
+        if (gem_match) {
+            std::vector<GEMHit> gem1_hits, gem2_hits;
+
+            for (int j = 0; j < N_GEM; j++) {
+                GEMHit h;
+                h.x = X_GEM[j];
+                h.y = Y_GEM[j];
+                h.z = Z_GEM[j] + 3000.0 - 89.0;
+
+                if (DID_GEM[j]) gem2_hits.push_back(h);
+                else gem1_hits.push_back(h);
+            }
+
+            for (int j = 0; j < (int)hits.size(); ++j) hits[j].z += 5640.0;
+
+            auto matched = det_match->Match(hits, gem1_hits, gem2_hits);
+
+            N_HC = (int)matched.size();
+            N_GEM = (int)matched.size();
+
+            for (int j = 0; j < N_HC; ++j) {
+
+                X_HC[j] = matched[j].hycal.x;
+                Y_HC[j] = matched[j].hycal.y;
+                Z_HC[j] = matched[j].hycal.z;
+                E[j] = matched[j].hycal.E * GetNonlinCorr(matched[j].hycal.E);
+                CID[j] = matched[j].hycal.cid;
+
+                if (matched[j].gem1.empty() && matched[j].gem2.empty()) {
+                    X_GEM[j] = -10000;
+                    Y_GEM[j] = -10000;
+                    Z_GEM[j] = -10000;
+                } else if (matched[j].gem1.empty()) {
+                    X_GEM[j] = matched[j].gem2[0].x;
+                    Y_GEM[j] = matched[j].gem2[0].y;
+                    Z_GEM[j] = matched[j].gem2[0].z;
+                } else if (matched[j].gem2.empty()) {
+                    X_GEM[j] = matched[j].gem1[0].x;
+                    Y_GEM[j] = matched[j].gem1[0].y;
+                    Z_GEM[j] = matched[j].gem1[0].z;
+                } else {
+                    X_GEM[j] = 0.5 * (matched[j].gem1[0].x + matched[j].gem2[0].x);
+                    Y_GEM[j] = 0.5 * (matched[j].gem1[0].y + matched[j].gem2[0].y);
+                    Z_GEM[j] = 0.5 * (matched[j].gem1[0].z + matched[j].gem2[0].z);
+                }
+            }
+        } else {
             N_HC = (int)hits.size();
+
             for (int j = 0; j < (int)hits.size(); ++j) {
                 X_HC[j] = hits[j].x;
-		Y_HC[j] = hits[j].y;
-		Z_HC[j] = 5640.0 - 3000.0 + 89.0 + hits[j].z;
-		E[j] = hits[j].E * GetNonlinCorr(hits[j].E);
-		CID[j] = hits[j].cid;
-	    }
-	}
+                Y_HC[j] = hits[j].y;
+                Z_HC[j] = 5640.0 - 3000.0 + 89.0 + hits[j].z;
+                E[j] = hits[j].E * GetNonlinCorr(hits[j].E);
+                CID[j] = hits[j].cid;
+            }
+        }
 
         t->Fill();
 
