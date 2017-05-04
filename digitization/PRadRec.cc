@@ -115,7 +115,7 @@ int main(int argc, char **argv)
         for (int j = 0; j < (int)hits.size(); ++j) {
             X[j] = hits[j].x;
             Y[j] = hits[j].y;
-            Z[j] = 5640.0 - 3000.0 + 88.9;
+            Z[j] = 5640.0 - 3000.0 + 88.9 + hits[j].z;
             E[j] = hits[j].E;
         }
 

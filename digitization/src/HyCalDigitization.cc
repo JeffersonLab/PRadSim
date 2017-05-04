@@ -228,12 +228,12 @@ void HyCalDigitization::FillBuffer(uint32_t *buffer, const PRadHyCalModule &modu
     unsigned short val = 0;
 
     if (!module.GetChannel()->IsDead())
-      if(module.IsLeadTungstate())
-	val = ped + (RandGen->Gaus(edep, edep*0.029))/module.GetCalibrationFactor(); 
-      else if(module.IsLeadGlass())
-	    val = ped + (RandGen->Gaus(edep, edep*0.071))/module.GetCalibrationFactor();
-      else
-        val = ped;
+        if (module.IsLeadTungstate())
+            val = ped + (RandGen->Gaus(edep, edep * 0.029)) / module.GetCalibrationFactor();
+        else if (module.IsLeadGlass())
+            val = ped + (RandGen->Gaus(edep, edep * 0.071)) / module.GetCalibrationFactor();
+        else
+            val = ped;
 
     buffer[index] = (slot << 27) | (channel << 17) | val;
 }
