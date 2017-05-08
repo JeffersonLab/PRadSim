@@ -68,7 +68,7 @@ public:
     inline void SetHyCalPos(G4double z);
 
     inline void SetTarget(G4double ir, G4double l);
-    inline void SetRecoilDetector(G4int n, G4double l, G4double t);
+    inline void SetRecoilDetector(G4int n, G4double ir, G4double l, G4double t);
 
     inline void SetTargetMaterial(G4String val);
 
@@ -93,6 +93,7 @@ private:
 
     G4int fRecoilDetNSeg;
     G4double fRecoilDetCenter;
+    G4double fRecoilDetR;
     G4double fRecoilDetHalfL;
     G4double fRecoilDetThickness;
 
@@ -145,9 +146,11 @@ inline void DetectorConstruction::SetTarget(G4double ir, G4double l)
     if (l > -9999) fTargetHalfL = l;
 }
 
-inline void DetectorConstruction::SetRecoilDetector(G4int n, G4double l, G4double t)
+inline void DetectorConstruction::SetRecoilDetector(G4int n, G4double ir, G4double l, G4double t)
 {
     if (n > -9999) fRecoilDetNSeg = n;
+
+    if (ir > -9999) fRecoilDetR = ir;
 
     if (l > -9999) fRecoilDetHalfL = l;
 

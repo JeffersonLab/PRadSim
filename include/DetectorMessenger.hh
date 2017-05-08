@@ -77,6 +77,7 @@ private:
     G4UIcmdWithAString        *TargetMatCmd;
     G4UIdirectory             *RecoilDetDir;
     G4UIcmdWithAnInteger      *RecoilDetNSegCmd;
+    G4UIcmdWithADoubleAndUnit *RecoilDetRCmd;
     G4UIcmdWithADoubleAndUnit *RecoilDetHalfLCmd;
     G4UIcmdWithADoubleAndUnit *RecoilDetThicknessCmd;
     G4UIdirectory             *SDDir;

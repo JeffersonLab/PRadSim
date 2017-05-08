@@ -116,6 +116,11 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
     RecoilDetNSegCmd->SetGuidance("Set fRecoilDetNSeg");
     RecoilDetNSegCmd->SetParameterName("recoiln", false);
 
+    RecoilDetRCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/recoil/radius", this);
+    RecoilDetRCmd->SetGuidance("Set fRecoilDetR");
+    RecoilDetRCmd->SetParameterName("recoilr", false);
+    RecoilDetRCmd->SetDefaultUnit("mm");
+
     RecoilDetHalfLCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/recoil/halfl", this);
     RecoilDetHalfLCmd->SetGuidance("Set fRecoilDetHalfL");
     RecoilDetHalfLCmd->SetParameterName("recoill", false);
@@ -157,6 +162,7 @@ DetectorMessenger::~DetectorMessenger()
     delete HyCalSDCmd;
     delete SDDir;
     delete RecoilDetNSegCmd;
+    delete RecoilDetRCmd;
     delete RecoilDetHalfLCmd;
     delete RecoilDetThicknessCmd;
     delete RecoilDetDir;
@@ -207,13 +213,16 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
         Detector->SetTargetMaterial(newValue);
 
     if (command == RecoilDetNSegCmd)
-        Detector->SetRecoilDetector(RecoilDetNSegCmd->GetNewIntValue(newValue), -10000, -10000);
+        Detector->SetRecoilDetector(RecoilDetNSegCmd->GetNewIntValue(newValue), -10000, -10000, -10000);
+
+    if (command == RecoilDetRCmd)
+        Detector->SetRecoilDetector(-10000, RecoilDetHalfLCmd->GetNewDoubleValue(newValue), -10000, -10000);
 
     if (command == RecoilDetHalfLCmd)
-        Detector->SetRecoilDetector(-10000, RecoilDetHalfLCmd->GetNewDoubleValue(newValue), -10000);
+        Detector->SetRecoilDetector(-10000, -10000, RecoilDetHalfLCmd->GetNewDoubleValue(newValue), -10000);
 
     if (command == RecoilDetThicknessCmd)
-        Detector->SetRecoilDetector(-10000, -10000, RecoilDetThicknessCmd->GetNewDoubleValue(newValue));
+        Detector->SetRecoilDetector(-10000, -10000, -10000, RecoilDetThicknessCmd->GetNewDoubleValue(newValue));
 
     if (command == RecoilDetSDCmd) {
         if (RecoilDetSDCmd->GetNewBoolValue(newValue)) Detector->EnableSD("Recoil Detector");
