@@ -35,7 +35,7 @@ class TChain;
 class HyCalDigitization : public StandardDigiBase
 {
 public:
-    HyCalDigitization(const std::string &abbrev, const std::string &path, const std::string &method);
+    HyCalDigitization(const std::string &abbrev, const std::string &path, double ebeam);
     virtual ~HyCalDigitization();
 
     void RegisterData(TChain *t);
@@ -52,6 +52,7 @@ private:
     void FillBuffer(uint32_t *buffer, const PRadHyCalModule &module, double edep);
 
     int fDMethod;
+    double fBeamEnergy;
 
     double fTotalEdep;
     double fModuleEdep[NModules];

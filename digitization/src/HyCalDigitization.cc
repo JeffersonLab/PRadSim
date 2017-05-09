@@ -20,6 +20,7 @@
 #include "TError.h"
 #include "TObject.h"
 #include "TChain.h"
+#include "TMath.h"
 #include "TRandom2.h"
 
 #include <ctime>
@@ -32,10 +33,8 @@ static TRandom2 *RandGen = new TRandom2();
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::string &path, const std::string &method) : StandardDigiBase(abbrev), fDMethod(0)
+HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::string &path, double ebeam) : StandardDigiBase(abbrev), fDMethod(0), fBeamEnergy(ebeam)
 {
-    if (method == "cluster") fDMethod = 1;
-
     RandGen->SetSeed((UInt_t)time(NULL));
 
     fHyCal = new PRadHyCalSystem(path);
@@ -227,13 +226,22 @@ void HyCalDigitization::FillBuffer(uint32_t *buffer, const PRadHyCalModule &modu
     double ped = RandGen->Gaus(module.GetChannel()->GetPedestal().mean, module.GetChannel()->GetPedestal().sigma);
     unsigned short val = 0;
 
-    if (!module.GetChannel()->IsDead())
-        if (module.IsLeadTungstate())
-            val = ped + (RandGen->Gaus(edep, edep * 0.029)) / module.GetCalibrationFactor();
-        else if (module.IsLeadGlass())
-            val = ped + (RandGen->Gaus(edep, edep * 0.071)) / module.GetCalibrationFactor();
-        else
-            val = ped;
+    if (!module.GetChannel()->IsDead()) {
+        if (module.IsLeadTungstate()) {
+            if (fBeamEnergy > 1600) // 2 GeV
+                val = ped + (RandGen->Gaus(edep, edep * 0.026 / TMath::Sqrt(2.14))) / module.GetCalibrationFactor();
+
+            else   // 1 GeV
+                val = ped + (RandGen->Gaus(edep, edep * 0.026 / TMath::Sqrt(1.1))) / module.GetCalibrationFactor();
+        } else if (module.IsLeadGlass()) {
+            if (fBeamEnergy > 1600) // 2 GeV
+                val = ped + (RandGen->Gaus(edep, edep * 0.065 / TMath::Sqrt(2.14))) / module.GetCalibrationFactor();
+
+            else   // 1 GeV
+                val = ped + (RandGen->Gaus(edep, edep * 0.065 / TMath::Sqrt(1.1))) / module.GetCalibrationFactor();
+        }
+    } else
+        val = ped;
 
     buffer[index] = (slot << 27) | (channel << 17) | val;
 }

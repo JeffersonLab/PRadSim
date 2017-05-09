@@ -16,8 +16,8 @@
 #include "TError.h"
 #include "TObject.h"
 #include "TFile.h"
+#include "TMath.h"
 #include "TTree.h"
-#include "TRandom2.h"
 
 #include <getopt.h>
 #include <iostream>
@@ -29,15 +29,38 @@
 void usage(int, char **argv)
 {
     printf("usage: %s [options] FILE_NAME\n", argv[0]);
+    printf("  -e, --energy=1100          Set beam energy (MeV)\n");
     printf("  -h, --help                 Print usage\n");
     printf("  -g, --gem_match=1          Do GEM matching\n");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-double GetNonlinCorr(Double_t reconE) //in MeV
+double GetNonlinCorr(Double_t reconE)
 {
+    // reconE in MeV
     return exp(-1.0 * reconE * 1.53438e-04) + 1.11330e-04 * reconE + 7.17932e-02;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+double ScaleEnergy(double e)
+{
+    if (e < 1600) {
+        double p3 = 0.539865;
+        double p2 = -0.271654;
+        double p1 =  6.43518e-05;
+        double p0 =  0.546174;
+
+        return (p3 * TMath::Exp(p2 * TMath::Sqrt(e / 1100.0)) + p1 * e + p0) * e;
+    } else {
+        double p3 = 0.557136;
+        double p2 = -0.351049;
+        double p1 = 3.5904e-05;
+        double p0 = 0.549588;
+
+        return (p3 * TMath::Exp(p2 * TMath::Sqrt(e / 2141.0)) + p1 * e + p0) * e;
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -46,21 +69,33 @@ int main(int argc, char **argv)
 {
     std::string filename;
     bool gem_match = false;
+    double ei = 1100.0;
 
     while (1) {
         static struct option long_options[] = {
             {"help",  no_argument, 0, 'h'},
+            {"energy",  required_argument, 0, 'e'},
             {"gem_match",  no_argument, 0, 'g'},
             {0, 0, 0, 0}
         };
 
         int option_index = 0;
-        int c = getopt_long(argc, argv, "hg", long_options, &option_index);
+        int c = getopt_long(argc, argv, "e:gh", long_options, &option_index);
 
         if (c == -1)
             break;
 
         switch (c) {
+        case 'e':
+            ei = atof(optarg);
+
+            if (ei < 1.0) {
+                usage(argc, argv);
+                exit(1);
+            }
+
+            break;
+
         case 'h':
             usage(argc, argv);
             exit(0);
@@ -86,8 +121,6 @@ int main(int argc, char **argv)
         usage(argc, argv);
         exit(1);
     }
-
-    TRandom2 *RandGen = new TRandom2();
 
     // simulation data is more like raw evio data with HyCal information only,
     // so we only need hycal system to connected to the handler
@@ -172,7 +205,10 @@ int main(int argc, char **argv)
                 X_HC[j] = matched[j].hycal.x;
                 Y_HC[j] = matched[j].hycal.y;
                 Z_HC[j] = matched[j].hycal.z;
-                E[j] = matched[j].hycal.E * GetNonlinCorr(matched[j].hycal.E);
+                //E[j] = matched[j].hycal.E * GetNonlinCorr(matched[j].hycal.E);
+
+                E[j] = ScaleEnergy(matched[j].hycal.E);
+
                 CID[j] = matched[j].hycal.cid;
 
                 if (matched[j].gem1.empty() && matched[j].gem2.empty()) {
