@@ -236,7 +236,8 @@ int main(int argc, char **argv)
                 X_HC[j] = hits[j].x;
                 Y_HC[j] = hits[j].y;
                 Z_HC[j] = 5640.0 - 3000.0 + 89.0 + hits[j].z;
-                E[j] = hits[j].E * GetNonlinCorr(hits[j].E);
+                //E[j] = hits[j].E * GetNonlinCorr(hits[j].E);
+                E[j] = ScaleEnergy(hits[j].E);
                 CID[j] = hits[j].cid;
             }
         }
