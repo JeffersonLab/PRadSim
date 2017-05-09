@@ -141,6 +141,11 @@ G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
         G4double Time = preStepPoint->GetGlobalTime();
 
+        G4double StepLength = 0;
+
+        if (theTrack->GetParticleDefinition()->GetPDGCharge() != 0.)
+            StepLength = aStep->GetStepLength();
+
         G4int CopyNo = theTouchable->GetCopyNumber();
 
         if (AncestorID < 0) AncestorID = TrackID;
@@ -158,6 +163,7 @@ G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
         // if not, create a new hit and push it into the collection
         if (aHit) {
             aHit->AddEdep(Edep);
+            aHit->AddTrackLength(StepLength);
 
             if (aHit->GetTrackID() == TrackID) {
                 if (aHit->GetTime() > Time) aHit->SetTime(Time);
@@ -178,6 +184,7 @@ G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
             aHit->SetOutMom(OutMom);
             aHit->SetTime(Time);
             aHit->SetEdep(Edep);
+            aHit->SetTrackLength(StepLength);
             aHit->SetPhysV(thePhysVol);
             aHit->SetCopyNo(CopyNo);
 
@@ -255,6 +262,7 @@ void StandardDetectorSD::Register(TTree *tree)
     tree->Branch(Form("%s.Phi", abbr), fPhi, Form("%s.Phi[%s.N]/D", abbr, abbr));
     tree->Branch(Form("%s.Time", abbr), fTime, Form("%s.Time[%s.N]/D", abbr, abbr));
     tree->Branch(Form("%s.Edep", abbr), fEdep, Form("%s.Edep[%s.N]/D", abbr, abbr));
+    tree->Branch(Form("%s.TrackL", abbr), fTrackL, Form("%s.TrackL[%s.N]/D", abbr, abbr));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

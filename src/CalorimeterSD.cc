@@ -155,6 +155,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
         // if not, create a new hit and push it into the collection
         if (aHit) {
             aHit->AddEdep(Edep);
+            aHit->AddTrackLength(StepLength);
 
             if (aHit->GetTrackID() == TrackID) {
                 if (aHit->GetTime() > Time) aHit->SetTime(Time);
@@ -175,6 +176,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
             aHit->SetOutMom(OutMom);
             aHit->SetTime(Time);
             aHit->SetEdep(Edep);
+            aHit->SetTrackLength(StepLength);
             aHit->SetPhysV(thePhysVol);
             aHit->SetCopyNo(CopyNo);
 
