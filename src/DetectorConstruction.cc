@@ -350,7 +350,7 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     G4VPhysicalVolume *physiWorld = new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicWorld, "World", 0, false, 0);
 
     // Target
-    G4double TargetCenter = -300.0 * cm + 88.9 * mm;
+    G4double TargetCenter = -300.0 * cm + 89.0 * mm;
 
     // Target Container
     G4VSolid *solidTargetCon = new G4Box("TargetContainerS", 3.5 * cm, 3.5 * cm, 2.1 * cm);
@@ -384,12 +384,12 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
 
     // Target chamber
     // For now, only built the downstream chamber with window
-    // The downstream chamber window should locate at -3000.0 + 88.9 + 74.0  = -2837.1 mm
+    // The downstream chamber window should locate at -3000.0 + 89.0 + 74.0  = -2837.0 mm
     // The length of the downstream chamber is 381.7 mm
     // The total length of the downstream chamber and the tube in total is 710.0 mm
     // Here the downstream chamber and the tube are built together to be the new down stream chamber.
-    // So the center of this geometry should be at -2837.1 + 710.0 / 2 = -2482.1 mm
-    G4double DownChamberCenter = -248.21 * cm;
+    // So the center of this geometry should be at -2837.0 + 710.0 / 2 = -2482.0 mm
+    G4double DownChamberCenter = -248.2 * cm;
     G4double DownChamberHalfL = 71.0 / 2.0 * cm;
     G4double DownChamberUR = 8.00 * cm;
 
@@ -410,8 +410,8 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
 
     // Vacuum box
     // The length of the vacuum box is 4251.7 mm
-    // So the center of this geometry should be at -3000.0 + 88.9 + 74.0 + 710.0 + 2125.85 = -1.25 mm
-    G4double VacBoxCenter = -0.125 * cm;
+    // So the center of this geometry should be at -3000.0 + 89.0 + 74.0 + 710.0 + 2125.85 = -1.15 mm
+    G4double VacBoxCenter = -0.115 * cm;
     G4double VacBoxHalfL = 425.17 * cm / 2.0;
     G4double VacBoxMaxR = 78.11 * cm;
     G4double rInner2[] = {17.30 * cm, 17.30 * cm, 50.17 * cm, 50.17 * cm, 78.11 * cm, 78.11 * cm};
@@ -447,8 +447,8 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     G4LogicalVolume *logicFlange = new G4LogicalVolume(solidFlange, VacuumTubeM, "FlangeLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter + VacBoxHalfL - ArcDistance + FlangeHalfL), logicFlange, "Flange", logicWorld, false, 0);
 
-    // Center of two GEM should be at -3000.0 + 88.9 + (5222.0 + 5183.0) / 2 = 2291.4 mm // (5222.0 + 5183.0) / 2 from Weizhi
-    fGEMCenter[0] = 229.14 * cm;
+    // Center of two GEM should be at -3000.0 + 89.0 + (5222.0 + 5183.0) / 2 = 2291.5 mm // (5222.0 + 5183.0) / 2 from Weizhi
+    fGEMCenter[0] = 229.15 * cm;
     AddGEM(logicWorld, 0, false);
 
     fCrystalSurf = 272.89 * cm; // Surface of the PWO
@@ -816,7 +816,7 @@ void DetectorConstruction::AddHyCal(G4LogicalVolume *mother)
     G4Material *HyCalModuleM = G4Material::GetMaterial("PbWO4");
 
     // HyCal
-    // The crystal surface should be at -3000.0 + 88.9 + 5640.0 = 2728.9 mm // 5640.0 from Weizhi
+    // The crystal surface should be at -3000.0 + 89.0 + 5636.0 = 2725.0 mm // 5636.0 from Weizhi
     G4double PbGlassL = 45.0 * cm;
     //G4double CrystalL = 18.0 * cm;
     G4double CrystalDiffL = 10.12 * cm;
