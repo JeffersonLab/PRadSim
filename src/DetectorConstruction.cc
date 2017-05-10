@@ -451,7 +451,7 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     fGEMCenter[0] = 229.15 * cm;
     AddGEM(logicWorld, 0, false);
 
-    fCrystalSurf = 272.89 * cm; // Surface of the PWO
+    fCrystalSurf = 272.5 * cm; // Surface of the PWO
     AddHyCal(logicWorld);
 
     G4LogicalVolumeStore *pLogicalVolume = G4LogicalVolumeStore::GetInstance();
