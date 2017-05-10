@@ -187,13 +187,13 @@ int main(int argc, char **argv)
                 GEMHit h;
                 h.x = - X_GEM[j]; // Orientation mismatch
                 h.y = Y_GEM[j];
-                h.z = Z_GEM[j] + 3000.0 - 89.0;
+                h.z = Z_GEM[j] + 3000.0; // same referance as PRadAnalyzer (89mm upstream target center)
 
                 if (DID_GEM[j]) gem2_hits.push_back(h);
                 else gem1_hits.push_back(h);
             }
 
-            for (int j = 0; j < (int)hits.size(); ++j) hits[j].z += 5640.0;
+            for (int j = 0; j < (int)hits.size(); ++j) hits[j].z += 5817.0; // increment of HyCal center position (coordinates.dat)
 
             auto matched = det_match->Match(hits, gem1_hits, gem2_hits);
 
@@ -205,7 +205,6 @@ int main(int argc, char **argv)
                 X_HC[j] = matched[j].hycal.x;
                 Y_HC[j] = matched[j].hycal.y;
                 Z_HC[j] = matched[j].hycal.z;
-                //E[j] = matched[j].hycal.E * GetNonlinCorr(matched[j].hycal.E);
 
                 E[j] = ScaleEnergy(matched[j].hycal.E);
 
@@ -235,8 +234,7 @@ int main(int argc, char **argv)
             for (int j = 0; j < (int)hits.size(); ++j) {
                 X_HC[j] = hits[j].x;
                 Y_HC[j] = hits[j].y;
-                Z_HC[j] = 5640.0 - 3000.0 + 89.0 + hits[j].z;
-                //E[j] = hits[j].E * GetNonlinCorr(hits[j].E);
+                Z_HC[j] = hits[j].z;
                 E[j] = ScaleEnergy(hits[j].E);
                 CID[j] = hits[j].cid;
             }
