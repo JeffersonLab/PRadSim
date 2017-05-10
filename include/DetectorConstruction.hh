@@ -77,10 +77,15 @@ public:
 
 private:
     void DefineMaterials();
+
     G4VPhysicalVolume *DefinePRadVolumes();
     void DefinePRadSDs();
+
     G4VPhysicalVolume *DefineDRadVolumes();
     void DefineDRadSDs();
+
+    void AddGEM(G4LogicalVolume *mother, int layerid, bool culess);
+    void AddHyCal(G4LogicalVolume *mother);
 
     G4String fConfig;
 
@@ -97,8 +102,7 @@ private:
     G4double fRecoilDetHalfL;
     G4double fRecoilDetThickness;
 
-    G4double fGEM1Center;
-    G4double fGEM2Center;
+    G4double fGEMCenter[10];
 
     G4double fSciPlaneCenter;
 
@@ -124,9 +128,9 @@ inline void DetectorConstruction::SetRecoilDetectorPos(G4double z)
 
 inline void DetectorConstruction::SetGEMPos(G4double z1, G4double z2)
 {
-    if (z1 > -9999) fGEM1Center = z1;
+    if (z1 > -9999) fGEMCenter[0] = z1;
 
-    if (z2 > -9999) fGEM2Center = z2;
+    if (z2 > -9999) fGEMCenter[1] = z2;
 }
 
 inline void DetectorConstruction::SetScitillatorPlanePos(G4double z)

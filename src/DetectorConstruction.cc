@@ -42,6 +42,10 @@
 #include "StandardDetectorSD.hh"
 #include "TrackingDetectorSD.hh"
 
+#include "TROOT.h"
+#include "TError.h"
+#include "TObject.h"
+
 #include "G4Element.hh"
 #include "G4Isotope.hh"
 #include "G4Material.hh"
@@ -93,8 +97,8 @@ DetectorConstruction::DetectorConstruction(G4String conf) : G4VUserDetectorConst
     fRecoilDetHalfL = 2.0 * cm;
     fRecoilDetThickness = 2.0 * mm;
 
-    fGEM1Center = 160.0 * cm;
-    fGEM2Center = 200.0 * cm;
+    fGEMCenter[0] = 160.0 * cm;
+    fGEMCenter[1] = 200.0 * cm;
 
     fSciPlaneCenter = 240.0 * cm;
 
@@ -215,6 +219,12 @@ void DetectorConstruction::DefineMaterials()
     G4Material *Copper = new G4Material("Copper", density = 8.92 * g / cm3, ncomponents = 1);
     Copper->AddElement(Cu, natoms = 1);
     fVisAtts[Copper->GetName()] = new G4VisAttributes(G4Colour::Brown());
+    G4Material *Copper0d2 = new G4Material("Copper0.2", Copper->GetDensity() * 0.2, Copper);
+    fVisAtts[Copper0d2->GetName()] = new G4VisAttributes(G4Colour::Brown());
+    G4Material *Copper0d75 = new G4Material("Copper0.75", Copper->GetDensity() * 0.75, Copper);
+    fVisAtts[Copper0d75->GetName()] = new G4VisAttributes(G4Colour::Brown());
+    G4Material *Copper0d8 = new G4Material("Copper0.8", Copper->GetDensity() * 0.8, Copper);
+    fVisAtts[Copper0d8->GetName()] = new G4VisAttributes(G4Colour::Brown());
 
     // Kapton
     G4Material *Kapton = new G4Material("Kapton", density = 1.42 * g / cm3, ncomponents = 4);
@@ -223,6 +233,10 @@ void DetectorConstruction::DefineMaterials()
     Kapton->AddElement(N, fractionmass = 0.0765);
     Kapton->AddElement(O, fractionmass = 0.1749);
     fVisAtts[Kapton->GetName()] = new G4VisAttributes(G4Colour::Brown());
+    G4Material *Kapton0d2 = new G4Material("Kapton0.2", Kapton->GetDensity() * 0.2, Kapton);
+    fVisAtts[Kapton0d2->GetName()] = new G4VisAttributes(G4Colour::Brown());
+    G4Material *Kapton0d8 = new G4Material("Kapton0.8", Kapton->GetDensity() * 0.8, Kapton);
+    fVisAtts[Kapton0d8->GetName()] = new G4VisAttributes(G4Colour::Brown());
 
     // Si
     G4Material *Silicon = new G4Material("Silicon", density = 2.329 * g / cm3, ncomponents = 1);
@@ -327,13 +341,6 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     G4Material *ChamberWindowM = G4Material::GetMaterial("Kapton");
     G4Material *VacuumBoxM = G4Material::GetMaterial("Aluminum");
     G4Material *VacuumTubeM = G4Material::GetMaterial("SSteel");
-    G4Material *GEMFrameM = G4Material::GetMaterial("NemaG10");
-    G4Material *GEMGasM = G4Material::GetMaterial("ArCO2");
-    G4Material *GEMFoilM = G4Material::GetMaterial("Kapton");
-    G4Material *GEMCuFoilM = G4Material::GetMaterial("Copper");
-    G4Material *HyCalBoxM = G4Material::GetMaterial("Torlon");
-    G4Material *CollimatorM = G4Material::GetMaterial("Tungsten");
-    G4Material *HyCalModuleM = G4Material::GetMaterial("PbWO4");
 
     // World
     G4double WorldSizeXY = 150.0 * cm;
@@ -440,136 +447,12 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     G4LogicalVolume *logicFlange = new G4LogicalVolume(solidFlange, VacuumTubeM, "FlangeLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter + VacBoxHalfL - ArcDistance + FlangeHalfL), logicFlange, "Flange", logicWorld, false, 0);
 
-    // GEM
     // Center of two GEM should be at -3000.0 + 88.9 + (5222.0 + 5183.0) / 2 = 2291.4 mm // (5222.0 + 5183.0) / 2 from Weizhi
-    G4double GEMCenter = 229.14 * cm;
-    G4double GEMGap = 4.0 * cm; // Gap between two GEM
-    G4double GEMHalfX = 55.04 * cm / 2.0;
-    G4double GEMHalfY = 122.88 * cm / 2.0;
-    G4double GEMHalfThickness = 7.0 * mm;
-    G4double GEMHoleR = 2.2 * cm;
-    G4double GEMCenterHalfXY = 7.4 * cm / 2.0;
-    G4double GEMFrameWidth = 1.5 * cm;
-    G4double GEMCenterOffset = GEMHalfX + GEMFrameWidth - GEMCenterHalfXY;
+    fGEMCenter[0] = 229.14 * cm;
+    AddGEM(logicWorld, 0, false);
 
-    // GEM Container
-    G4Box *GEMConBox = new G4Box("GEMConBox", 1.0 * m, 1.0 * m, (GEMGap + 2.0 * GEMHalfThickness + 1.0 * mm) / 2.0);
-    G4Tubs *GEMConTube = new G4Tubs("GEMConTube", 0, GEMHoleR, (GEMGap + 2.0 * GEMHalfThickness + 1.0 * mm) / 2.0 + 0.1 * mm, 0, twopi);
-    G4SubtractionSolid *solidGEMCon = new G4SubtractionSolid("GEMContainerS", GEMConBox, GEMConTube);
-    G4LogicalVolume *logicGEMCon = new G4LogicalVolume(solidGEMCon, DefaultM, "GEMContainerLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMCenter), logicGEMCon, "GEM Container", logicWorld, false, 0);
-
-    // GEM
-    G4Box *GEMBox = new G4Box("GEMBox", GEMHalfX + GEMFrameWidth, GEMHalfY + GEMFrameWidth * 2.0, GEMHalfThickness);
-    G4Tubs *GEMTube = new G4Tubs("GEMTube", 0, GEMHoleR, GEMHalfThickness + 0.1 * mm, 0, twopi);
-    G4SubtractionSolid *solidGEM = new G4SubtractionSolid("GEMS", GEMBox, GEMTube, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
-    G4LogicalVolume *logicGEM = new G4LogicalVolume(solidGEM, DefaultM, "GEMLV");
-    new G4PVPlacement(0, G4ThreeVector(GEMCenterOffset, 0, GEMGap / 2.0), logicGEM, "GEM L", logicGEMCon, false, 0);
-    G4RotationMatrix rmGEM;
-    rmGEM.rotateZ(180.0 * deg);
-    new G4PVPlacement(G4Transform3D(rmGEM, G4ThreeVector(-GEMCenterOffset, 0, -GEMGap / 2.0)), logicGEM, "GEM R", logicGEMCon, false, 1);
-
-    // GEM Gas
-    G4Box *GEMGasBox1 = new G4Box("GEMGasBox1", GEMHalfX, GEMHalfY, GEMHalfThickness);
-    G4Box *GEMGasBox2 = new G4Box("GEMGasBox2", GEMCenterHalfXY, GEMCenterHalfXY, GEMHalfThickness + 0.1 * mm);
-    G4SubtractionSolid *solidGEMGas = new G4SubtractionSolid("GEMGasS", GEMGasBox1, GEMGasBox2, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
-    G4LogicalVolume *logicGEMGas = new G4LogicalVolume(solidGEMGas, GEMGasM, "GEMGasLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicGEMGas, "GEM Gas", logicGEM, false, 0);
-
-    // GEM Frame
-    G4Box *GEMFrameBox1 = new G4Box("GEMFrameBox1", GEMHalfX + GEMFrameWidth, GEMHalfY + GEMFrameWidth * 2.0, GEMHalfThickness);
-    G4Box *GEMFrameBox2 = new G4Box("GEMFrameBox2", GEMHalfX, GEMHalfY, GEMHalfThickness + 0.1 * mm);
-    G4SubtractionSolid *solidGEMFrame = new G4SubtractionSolid("GEMFrameS", GEMFrameBox1, GEMFrameBox2);
-    G4LogicalVolume *logicGEMFrame = new G4LogicalVolume(solidGEMFrame, GEMFrameM, "GEMFrameLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicGEMFrame, "GEM Frame", logicGEM, false, 0);
-    G4Box *GEMPipeBox = new G4Box("GEMPipeBox", GEMCenterHalfXY - GEMFrameWidth / 2.0, GEMCenterHalfXY, GEMHalfThickness);
-    G4Tubs *GEMPipeTube = new G4Tubs("GEMPipeTube", 0, GEMHoleR, GEMHalfThickness + 0.1 * mm, 0, twopi);
-    G4SubtractionSolid *solidGEMPipe = new G4SubtractionSolid("GEMPipeS", GEMPipeBox, GEMPipeTube, 0, G4ThreeVector(-GEMFrameWidth / 2.0, 0, 0));
-    G4LogicalVolume *logicGEMPipe = new G4LogicalVolume(solidGEMPipe, GEMFrameM, "GEMPipeLV");
-    new G4PVPlacement(0, G4ThreeVector(-GEMCenterOffset + GEMFrameWidth / 2.0, 0, 0), logicGEMPipe, "GEM Pipe", logicGEM, false, 0);
-
-    // GEM Foil
-    G4double GEMFoilThickness = 50.0 * um;
-    G4double GEMCuFoilThickness = 5.0 * um;
-    G4double GEMWinThickness = 25.0 * um;
-    G4Box *GEMWinBox1 = new G4Box("GEMWinBox1", GEMHalfX, GEMHalfY, GEMWinThickness / 2.0);
-    G4Box *GEMWinBox2 = new G4Box("GEMWinBox2", GEMCenterHalfXY, GEMCenterHalfXY, GEMHalfThickness + 0.1 * mm);
-    G4SubtractionSolid *solidGEMWin = new G4SubtractionSolid("GEMWinS", GEMWinBox1, GEMWinBox2, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
-    G4LogicalVolume *logicGEMWin = new G4LogicalVolume(solidGEMWin, GEMFoilM, "GEMWinLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, -GEMHalfThickness + GEMWinThickness / 2.0), logicGEMWin, "GEM Window", logicGEMGas, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - GEMWinThickness / 2.0), logicGEMWin, "GEM Window", logicGEMGas, false, 1);
-
-    G4Box *GEMFoilBox1 = new G4Box("GEMFoilBox1", GEMHalfX, GEMHalfY, GEMFoilThickness / 2.0);
-    G4Box *GEMFoilBox2 = new G4Box("GEMFoilBox2", GEMCenterHalfXY, GEMCenterHalfXY, GEMHalfThickness + 0.1 * mm);
-    G4SubtractionSolid *solidGEMFoil = new G4SubtractionSolid("GEMFoilS", GEMFoilBox1, GEMFoilBox2, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
-    G4LogicalVolume *logicGEMFoil = new G4LogicalVolume(solidGEMFoil, GEMFoilM, "GEMFoilLV");
-    G4LogicalVolume *logicGEMCathode = new G4LogicalVolume(solidGEMFoil, GEMFoilM, "GEMCathodeLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 11.0 * mm), logicGEMCathode, "GEM Cathode", logicGEMGas, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 8.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 6.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 1);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 4.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 2);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 2.0 * mm), logicGEMFoil, "GEM Foil", logicGEMGas, false, 3);
-
-    G4Box *GEMCuFoilBox1 = new G4Box("GEMCuFoilBox1", GEMHalfX, GEMHalfY, GEMCuFoilThickness / 2.0);
-    G4Box *GEMCuFoilBox2 = new G4Box("GEMCuFoilBox2", GEMCenterHalfXY, GEMCenterHalfXY, GEMHalfThickness + 0.1 * mm);
-    G4SubtractionSolid *solidGEMCuFoil = new G4SubtractionSolid("GEMCuFoilS", GEMCuFoilBox1, GEMCuFoilBox2, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
-    G4LogicalVolume *logicGEMCuFoil = new G4LogicalVolume(solidGEMCuFoil, GEMCuFoilM, "GEMCuFoilLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 11.0 * mm + GEMFoilThickness / 2.0 + GEMCuFoilThickness / 2.0), logicGEMCuFoil, "GEM Copper", logicGEMGas, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 8.0 * mm - GEMFoilThickness / 2.0 - GEMCuFoilThickness / 2.0), logicGEMCuFoil, "GEM Copper", logicGEMGas, false, 1);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 8.0 * mm + GEMFoilThickness / 2.0 + GEMCuFoilThickness / 2.0), logicGEMCuFoil, "GEM Copper", logicGEMGas, false, 2);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 6.0 * mm - GEMFoilThickness / 2.0 - GEMCuFoilThickness / 2.0), logicGEMCuFoil, "GEM Copper", logicGEMGas, false, 3);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 6.0 * mm + GEMFoilThickness / 2.0 + GEMCuFoilThickness / 2.0), logicGEMCuFoil, "GEM Copper", logicGEMGas, false, 4);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 4.0 * mm - GEMFoilThickness / 2.0 - GEMCuFoilThickness / 2.0), logicGEMCuFoil, "GEM Copper", logicGEMGas, false, 5);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 4.0 * mm + GEMFoilThickness / 2.0 + GEMCuFoilThickness / 2.0), logicGEMCuFoil, "GEM Copper", logicGEMGas, false, 6);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 2.0 * mm - GEMFoilThickness / 2.0 - GEMCuFoilThickness / 2.0), logicGEMCuFoil, "GEM Copper", logicGEMGas, false, 7);
-
-    // HyCal
-    // The crystal surface should be at -3000.0 + 88.9 + 5640.0 = 2728.9 mm // 5640.0 from Weizhi
-    G4double PbGlassL = 45.0 * cm;
-    //G4double CrystalL = 18.0 * cm;
-    G4double CrystalDiffL = 10.12 * cm;
-    G4double CrystalSurf = 272.89 * cm; // Surface of the PWO
-    G4double HyCalCenter = CrystalSurf - CrystalDiffL + PbGlassL / 2.0;
-
-    // HyCal box
-    G4double HyCalBoxCenter = HyCalCenter - 9.0 * cm + 30.0 * cm; // Check
-    G4Box *HyCalBoxOuter = new G4Box("HyCalBoxOuter", 70.0 * cm, 70.0 * cm, 60.0 * cm);
-    G4Box *HyCalBoxInner = new G4Box("HyCalBoxInner", 66.0 * cm, 66.0 * cm, 59.6 * cm);
-    G4SubtractionSolid *HyCalBoxNoHole = new G4SubtractionSolid("HyCalBoxNoHole", HyCalBoxOuter, HyCalBoxInner);
-    G4Tubs *HyCalBoxHole = new G4Tubs("HyCalBoxHole", 0, 25.0 * mm, 60.5 * cm, 0, twopi);
-    G4SubtractionSolid *solidHyCalBox = new G4SubtractionSolid("HyCalBoxS", HyCalBoxNoHole, HyCalBoxHole);
-    G4LogicalVolume *logicHyCalBox = new G4LogicalVolume(solidHyCalBox, HyCalBoxM, "HyCalBoxLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalBoxCenter), logicHyCalBox, "HyCal Box", logicWorld, false, 0);
-
-    // HyCal container
-    G4Box *HyCalConPiece1 = new G4Box("HyCalConPiece1", 58.21 * cm, 58.17 * cm, PbGlassL / 2.0);
-    G4Box *HyCalConPiece2 = new G4Box("HyCalConPiece2", 35.30 * cm, 35.27 * cm, CrystalDiffL / 2.0 + 0.5 * mm);
-    G4SubtractionSolid *HyCalConBox = new G4SubtractionSolid("HyCalConBox", HyCalConPiece1, HyCalConPiece2, 0, G4ThreeVector(0, 0, (CrystalDiffL - PbGlassL) / 2.0 - 0.5 * mm));
-    G4Box *HyCalConHole = new G4Box("HyCalConHole", 2.0 * cm, 2.0 * cm, PbGlassL / 2.0 + 1.0 * mm);
-    G4SubtractionSolid *solidHyCalCon = new G4SubtractionSolid("HyCalContainerS", HyCalConBox, HyCalConHole);
-    G4LogicalVolume *logicHyCalCon = new G4LogicalVolume(solidHyCalCon, DefaultM, "HyCalContainerLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalCenter), logicHyCalCon, "HyCal Container", logicWorld, false, 0);
-
-    // HyCal modules
-    G4VSolid *solidAbsorber = new G4Box("HyCalModuleS", 1.025 * cm, 1.025 * cm, 90.0 * mm);
-    G4LogicalVolume *logicAbsorber = new G4LogicalVolume(solidAbsorber, HyCalModuleM, "HyCalModuleLV");
-    HyCalParameterisation *param = new HyCalParameterisation("config/hycal.conf");
-    new G4PVParameterised("HyCal Module", logicAbsorber, logicHyCalCon, kUndefined, param->GetNumber(), param, false);
-
-    // Collimator container
-    G4VSolid *CollConBox = new G4Box("CollConBox", 4.1 * cm, 4.1 * cm, 5.0 * cm);
-    G4SubtractionSolid *solidCollCon = new G4SubtractionSolid("CollimatorContainerS", CollConBox, HyCalConHole);
-    G4LogicalVolume *logicCollCon = new G4LogicalVolume(solidCollCon, DefaultM, "CollimatorContainerLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalCenter - PbGlassL / 2.0 + CrystalDiffL - 5.1 * cm), logicCollCon, "Collimator Container", logicWorld, false, 0);
-
-    // Collimators
-    G4VSolid *solidColl = new G4Box("CollimatorS", 1.025 * cm, 1.025 * cm, 5.0 * cm);
-    G4LogicalVolume *logicColl = new G4LogicalVolume(solidColl, CollimatorM, "CollimatorLV");
-    double pos_x[12] = { -3.075, -1.025, 1.025, 3.075, -3.075, 3.075, -3.075, 3.075, -3.075, -1.025, 1.025, 3.075};
-    double pos_y[12] = { -3.075, -3.075, -3.075, -3.075, -1.025, -1.025, 1.025, 1.025, 3.075, 3.075, 3.075, 3.075};
-
-    for (int i = 0; i < 12; ++i)
-        new G4PVPlacement(0, G4ThreeVector(pos_x[i] * cm, pos_y[i] * cm, 0), logicColl, "Collimator", logicCollCon, false, i);
+    fCrystalSurf = 272.89 * cm; // Surface of the PWO
+    AddHyCal(logicWorld);
 
     G4LogicalVolumeStore *pLogicalVolume = G4LogicalVolumeStore::GetInstance();
 
@@ -587,7 +470,7 @@ void DetectorConstruction::DefinePRadSDs()
     if (fGEMSDOn) {
         TrackingDetectorSD *GEMSD = new TrackingDetectorSD("GEMSD", "GEM");
         G4SDManager::GetSDMpointer()->AddNewDetector(GEMSD);
-        SetSensitiveDetector("GEMCathodeLV", GEMSD);
+        SetSensitiveDetector("GEM0CathodeLV", GEMSD);
     }
 
     if (fHyCalSDOn != 0) {
@@ -612,15 +495,8 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
     G4Material *RecoilDetectorM = G4Material::GetMaterial("Silicon");
     G4Material *KaptonWindowM = G4Material::GetMaterial("Kapton");
     G4Material *AluminumWindowM = G4Material::GetMaterial("Aluminum");
-    G4Material *GEMFrameM = G4Material::GetMaterial("NemaG10");
-    G4Material *GEMGasM = G4Material::GetMaterial("ArCO2");
-    G4Material *GEMFoilM = G4Material::GetMaterial("Kapton");
-    G4Material *GEMCuFoilM = G4Material::GetMaterial("Copper");
     G4Material *HeBagM = G4Material::GetMaterial("HeGas");
     G4Material *ScintillatorPlaneM = G4Material::GetMaterial("EJ204");
-    G4Material *HyCalBoxM = G4Material::GetMaterial("Torlon");
-    G4Material *CollimatorM = G4Material::GetMaterial("Tungsten");
-    G4Material *HyCalModuleM = G4Material::GetMaterial("PbWO4");
 
     // World
     G4double WorldSizeXY = 150.0 * cm;
@@ -682,7 +558,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
     new G4PVPlacement(0, G4ThreeVector(0, 0, KaptonWinCenter), logicKaptonWin, "Kapton Window", logicWorld, false, 0);
 
     // Additional window (Vacuum box window)
-    G4double AlWinCenter = fGEM1Center - 10.0 * cm;
+    G4double AlWinCenter = fGEMCenter[0] - 10.0 * cm;
     G4double AlWinMaxR = 78.11 * cm;
     G4double ArcDistance = 5.59 * cm;
     G4double ArcEndR = (ArcDistance * ArcDistance + AlWinMaxR * AlWinMaxR) / (2 * ArcDistance);
@@ -692,110 +568,15 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
     G4LogicalVolume *logicAlWin = new G4LogicalVolume(solidAlWin, AluminumWindowM, "AluminumWindowS");
     new G4PVPlacement(0, G4ThreeVector(0, 0,  AlWinCenter + ArcEndR - ArcDistance), logicAlWin, "Aluminum Window", logicWorld, false, 0);
 
-    // GEM
-    G4double GEMGap = 4.0 * cm; // Gap between two GEM
-    G4double GEMHalfX = 55.04 * cm / 2.0;
-    G4double GEMHalfY = 122.88 * cm / 2.0;
-    G4double GEMHalfThickness = 7.0 * mm;
-    G4double GEMHoleR = 2.2 * cm;
-    G4double GEMCenterHalfXY = 7.4 * cm / 2.0;
-    G4double GEMFrameWidth = 1.5 * cm;
-    G4double GEMCenterOffset = GEMHalfX + GEMFrameWidth - GEMCenterHalfXY;
-
-    // GEM Container
-    G4Box *GEMConBox = new G4Box("GEMConBox", 1.0 * m, 1.0 * m, (GEMGap + 2.0 * GEMHalfThickness + 1.0 * mm) / 2.0);
-    G4Tubs *GEMConTube = new G4Tubs("GEMConTube", 0, GEMHoleR, (GEMGap + 2.0 * GEMHalfThickness + 1.0 * mm) / 2.0 + 0.1 * mm, 0, twopi);
-    G4SubtractionSolid *solidGEMCon = new G4SubtractionSolid("GEMContainerS", GEMConBox, GEMConTube);
-    G4LogicalVolume *logicGEM1Con = new G4LogicalVolume(solidGEMCon, DefaultM, "GEM1ContainerLV");
-    G4LogicalVolume *logicGEM2Con = new G4LogicalVolume(solidGEMCon, DefaultM, "GEM2ContainerLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, fGEM1Center), logicGEM1Con, "GEM 1 Container", logicWorld, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, fGEM2Center), logicGEM2Con, "GEM 2 Container", logicWorld, false, 2);
-
-    // GEM
-    G4Box *GEMBox = new G4Box("GEMBox", GEMHalfX + GEMFrameWidth, GEMHalfY + GEMFrameWidth * 2.0, GEMHalfThickness);
-    G4Tubs *GEMTube = new G4Tubs("GEMTube", 0, GEMHoleR, GEMHalfThickness + 0.1 * mm, 0, twopi);
-    G4SubtractionSolid *solidGEM = new G4SubtractionSolid("GEMS", GEMBox, GEMTube, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
-    G4LogicalVolume *logicGEM1 = new G4LogicalVolume(solidGEM, DefaultM, "GEM1LV");
-    G4LogicalVolume *logicGEM2 = new G4LogicalVolume(solidGEM, DefaultM, "GEM2LV");
-    new G4PVPlacement(0, G4ThreeVector(GEMCenterOffset, 0, GEMGap / 2.0), logicGEM1, "GEM 1 L", logicGEM1Con, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(GEMCenterOffset, 0, GEMGap / 2.0), logicGEM2, "GEM 2 L", logicGEM2Con, false, 0);
-    G4RotationMatrix rmGEM;
-    rmGEM.rotateZ(180.0 * deg);
-    new G4PVPlacement(G4Transform3D(rmGEM, G4ThreeVector(-GEMCenterOffset, 0, -GEMGap / 2.0)), logicGEM1, "GEM 1 R", logicGEM1Con, false, 1);
-    new G4PVPlacement(G4Transform3D(rmGEM, G4ThreeVector(-GEMCenterOffset, 0, -GEMGap / 2.0)), logicGEM2, "GEM 2 R", logicGEM2Con, false, 1);
-
-    // GEM Gas
-    G4Box *GEMGasBox1 = new G4Box("GEMGasBox1", GEMHalfX, GEMHalfY, GEMHalfThickness);
-    G4Box *GEMGasBox2 = new G4Box("GEMGasBox2", GEMCenterHalfXY, GEMCenterHalfXY, GEMHalfThickness + 0.1 * mm);
-    G4SubtractionSolid *solidGEMGas = new G4SubtractionSolid("GEMGasS", GEMGasBox1, GEMGasBox2, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
-    G4LogicalVolume *logicGEM1Gas = new G4LogicalVolume(solidGEMGas, GEMGasM, "GEM1GasLV");
-    G4LogicalVolume *logicGEM2Gas = new G4LogicalVolume(solidGEMGas, GEMGasM, "GEM2GasLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicGEM1Gas, "GEM 1 Gas", logicGEM1, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicGEM2Gas, "GEM 2 Gas", logicGEM2, false, 0);
-
-    // GEM Frame
-    G4Box *GEMFrameBox1 = new G4Box("GEMFrameBox1", GEMHalfX + GEMFrameWidth, GEMHalfY + GEMFrameWidth * 2.0, GEMHalfThickness);
-    G4Box *GEMFrameBox2 = new G4Box("GEMFrameBox2", GEMHalfX, GEMHalfY, GEMHalfThickness + 0.1 * mm);
-    G4SubtractionSolid *solidGEMFrame = new G4SubtractionSolid("GEMFrameS", GEMFrameBox1, GEMFrameBox2);
-    G4LogicalVolume *logicGEMFrame = new G4LogicalVolume(solidGEMFrame, GEMFrameM, "GEMFrameLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicGEMFrame, "GEM 1 Frame", logicGEM1, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicGEMFrame, "GEM 1 Frame", logicGEM2, false, 0);
-
-    G4Box *GEMPipeBox = new G4Box("GEMPipeBox", GEMCenterHalfXY - GEMFrameWidth / 2.0, GEMCenterHalfXY, GEMHalfThickness);
-    G4Tubs *GEMPipeTube = new G4Tubs("GEMPipeTube", 0, GEMHoleR, GEMHalfThickness + 0.1 * mm, 0, twopi);
-    G4SubtractionSolid *solidGEMPipe = new G4SubtractionSolid("GEMPipeS", GEMPipeBox, GEMPipeTube, 0, G4ThreeVector(-GEMFrameWidth / 2.0, 0, 0));
-    G4LogicalVolume *logicGEMPipe = new G4LogicalVolume(solidGEMPipe, GEMFrameM, "GEMPipeLV");
-    new G4PVPlacement(0, G4ThreeVector(-GEMCenterOffset + GEMFrameWidth / 2.0, 0, 0), logicGEMPipe, "GEM 2 Pipe", logicGEM1, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(-GEMCenterOffset + GEMFrameWidth / 2.0, 0, 0), logicGEMPipe, "GEM 2 Pipe", logicGEM2, false, 0);
-
-    // GEM Foil
-    G4double GEMFoilThickness = 50.0 * um;
-    G4double GEMCuFoilThickness = 5.0 * um;
-    G4double GEMWinThickness = 25.0 * um;
-    G4Box *GEMWinBox1 = new G4Box("GEMWinBox1", GEMHalfX, GEMHalfY, GEMWinThickness / 2.0);
-    G4Box *GEMWinBox2 = new G4Box("GEMWinBox2", GEMCenterHalfXY, GEMCenterHalfXY, GEMHalfThickness + 0.1 * mm);
-    G4SubtractionSolid *solidGEMWin = new G4SubtractionSolid("GEMWinS", GEMWinBox1, GEMWinBox2, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
-    G4LogicalVolume *logicGEMWin = new G4LogicalVolume(solidGEMWin, GEMFoilM, "GEMWinLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, -GEMHalfThickness + GEMWinThickness / 2.0), logicGEMWin, "GEM 1 Window", logicGEM1Gas, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - GEMWinThickness / 2.0), logicGEMWin, "GEM 1 Window", logicGEM1Gas, false, 1);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, -GEMHalfThickness + GEMWinThickness / 2.0), logicGEMWin, "GEM 2 Window", logicGEM2Gas, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - GEMWinThickness / 2.0), logicGEMWin, "GEM 2 Window", logicGEM2Gas, false, 1);
-
-    G4Box *GEMFoilBox1 = new G4Box("GEMFoilBox1", GEMHalfX, GEMHalfY, GEMFoilThickness / 2.0);
-    G4Box *GEMFoilBox2 = new G4Box("GEMFoilBox2", GEMCenterHalfXY, GEMCenterHalfXY, GEMHalfThickness + 0.1 * mm);
-    G4SubtractionSolid *solidGEMFoil = new G4SubtractionSolid("GEMFoilS", GEMFoilBox1, GEMFoilBox2, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
-    G4LogicalVolume *logicGEMFoil = new G4LogicalVolume(solidGEMFoil, GEMFoilM, "GEMFoilLV");
-    G4LogicalVolume *logicGEMCathode = new G4LogicalVolume(solidGEMFoil, GEMFoilM, "GEMCathodeLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 11.0 * mm), logicGEMCathode, "GEM 1 Cathode", logicGEM1Gas, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 8.0 * mm), logicGEMFoil, "GEM 1 Foil", logicGEM1Gas, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 6.0 * mm), logicGEMFoil, "GEM 1 Foil", logicGEM1Gas, false, 1);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 4.0 * mm), logicGEMFoil, "GEM 1 Foil", logicGEM1Gas, false, 2);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 2.0 * mm), logicGEMFoil, "GEM 1 Foil", logicGEM1Gas, false, 3);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 11.0 * mm), logicGEMCathode, "GEM 2 Cathode", logicGEM2Gas, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 8.0 * mm), logicGEMFoil, "GEM 2 Foil", logicGEM2Gas, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 6.0 * mm), logicGEMFoil, "GEM 2 Foil", logicGEM2Gas, false, 1);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 4.0 * mm), logicGEMFoil, "GEM 2 Foil", logicGEM2Gas, false, 2);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 2.0 * mm), logicGEMFoil, "GEM 2 Foil", logicGEM2Gas, false, 3);
-
-    G4Box *GEMCuFoilBox1 = new G4Box("GEMCuFoilBox1", GEMHalfX, GEMHalfY, GEMCuFoilThickness / 2.0);
-    G4Box *GEMCuFoilBox2 = new G4Box("GEMCuFoilBox2", GEMCenterHalfXY, GEMCenterHalfXY, GEMHalfThickness + 0.1 * mm);
-    G4SubtractionSolid *solidGEMCuFoil = new G4SubtractionSolid("GEMCuFoilS", GEMCuFoilBox1, GEMCuFoilBox2, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
-    G4LogicalVolume *logicGEMCuFoil = new G4LogicalVolume(solidGEMCuFoil, GEMCuFoilM, "GEMCuFoilLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 11.0 * mm + GEMFoilThickness / 2.0 + GEMCuFoilThickness / 2.0), logicGEMCuFoil, "GEM Copper", logicGEM2Gas, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 8.0 * mm - GEMFoilThickness / 2.0 - GEMCuFoilThickness / 2.0), logicGEMCuFoil, "GEM Copper", logicGEM2Gas, false, 1);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 8.0 * mm + GEMFoilThickness / 2.0 + GEMCuFoilThickness / 2.0), logicGEMCuFoil, "GEM Copper", logicGEM2Gas, false, 2);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 6.0 * mm - GEMFoilThickness / 2.0 - GEMCuFoilThickness / 2.0), logicGEMCuFoil, "GEM Copper", logicGEM2Gas, false, 3);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 6.0 * mm + GEMFoilThickness / 2.0 + GEMCuFoilThickness / 2.0), logicGEMCuFoil, "GEM Copper", logicGEM2Gas, false, 4);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 4.0 * mm - GEMFoilThickness / 2.0 - GEMCuFoilThickness / 2.0), logicGEMCuFoil, "GEM Copper", logicGEM2Gas, false, 5);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 4.0 * mm + GEMFoilThickness / 2.0 + GEMCuFoilThickness / 2.0), logicGEMCuFoil, "GEM Copper", logicGEM2Gas, false, 6);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfThickness - 2.0 * mm - GEMFoilThickness / 2.0 - GEMCuFoilThickness / 2.0), logicGEMCuFoil, "GEM Copper", logicGEM2Gas, false, 7);
+    AddGEM(logicWorld, 0, true);
+    AddGEM(logicWorld, 1, false);
 
     // He bag (Only He gas for now)
-    G4Box *HeBagBox = new G4Box("HeBagBox", 1.0 * m, 1.0 * m, (fGEM2Center - fGEM1Center - 5.6 * cm) / 2.0);
-    G4Tubs *HeBagTube = new G4Tubs("HeBagTube", 0, 22.0 * mm, (fGEM2Center - fGEM1Center - 5.6 * cm + 1.0 * mm) / 2.0, 0, twopi);
+    G4Box *HeBagBox = new G4Box("HeBagBox", 1.0 * m, 1.0 * m, (fGEMCenter[1] - fGEMCenter[0] - 5.65 * cm) / 2.0);
+    G4Tubs *HeBagTube = new G4Tubs("HeBagTube", 0, 22.0 * mm, (fGEMCenter[1] - fGEMCenter[0] - 5.65 * cm + 1.0 * mm) / 2.0, 0, twopi);
     G4SubtractionSolid *solidHeBag = new G4SubtractionSolid("HeBagS", HeBagBox, HeBagTube);
     G4LogicalVolume *logicHeBag = new G4LogicalVolume(solidHeBag, HeBagM, "HeBagLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, (fGEM1Center + fGEM2Center) / 2.0), logicHeBag, "He Bag", logicWorld, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, (fGEMCenter[0] + fGEMCenter[1]) / 2.0), logicHeBag, "He Bag", logicWorld, false, 0);
 
     // Scintillator plane
     G4double SciPlaneThickness = 5.0 * mm;
@@ -805,51 +586,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
     G4LogicalVolume *logicSciPlane = new G4LogicalVolume(solidSciPlane, ScintillatorPlaneM, "ScintillatorPlaneLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, fSciPlaneCenter), logicSciPlane, "Scintillator Plane", logicWorld, false, 0);
 
-    // HyCal
-    G4double PbGlassL = 45.0 * cm;
-    //G4double CrystalL = 18.0 * cm;
-    G4double CrystalDiffL = 10.12 * cm;
-    G4double HyCalCenter = fCrystalSurf - CrystalDiffL + PbGlassL / 2.0;
-
-    // HyCal box
-    G4double HyCalBoxCenter = HyCalCenter - 9.0 * cm + 30.0 * cm; // Check
-    G4Box *HyCalBoxOuter = new G4Box("HyCalBoxOuter", 70.0 * cm, 70.0 * cm, 60.0 * cm);
-    G4Box *HyCalBoxInner = new G4Box("HyCalBoxInner", 66.0 * cm, 66.0 * cm, 59.6 * cm);
-    G4SubtractionSolid *HyCalBoxNoHole = new G4SubtractionSolid("HyCalBoxNoHole", HyCalBoxOuter, HyCalBoxInner);
-    G4Tubs *HyCalBoxHole = new G4Tubs("HyCalBoxHole", 0, 25.0 * mm, 60.5 * cm, 0, twopi);
-    G4SubtractionSolid *solidHyCalBox = new G4SubtractionSolid("HyCalBoxS", HyCalBoxNoHole, HyCalBoxHole);
-    G4LogicalVolume *logicHyCalBox = new G4LogicalVolume(solidHyCalBox, HyCalBoxM, "HyCalBoxLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalBoxCenter), logicHyCalBox, "HyCal Box", logicWorld, false, 0);
-
-    // HyCal container
-    G4Box *HyCalConPiece1 = new G4Box("HyCalConPiece1", 58.21 * cm, 58.17 * cm, PbGlassL / 2.0);
-    G4Box *HyCalConPiece2 = new G4Box("HyCalConPiece2", 35.30 * cm, 35.27 * cm, CrystalDiffL / 2.0 + 0.5 * mm);
-    G4SubtractionSolid *HyCalConBox = new G4SubtractionSolid("HyCalConBox", HyCalConPiece1, HyCalConPiece2, 0, G4ThreeVector(0, 0, (CrystalDiffL - PbGlassL) / 2.0 - 0.5 * mm));
-    G4Box *HyCalConHole = new G4Box("HyCalConHole", 2.0 * cm, 2.0 * cm, PbGlassL / 2.0 + 1.0 * mm);
-    G4SubtractionSolid *solidHyCalCon = new G4SubtractionSolid("HyCalContainerS", HyCalConBox, HyCalConHole);
-    G4LogicalVolume *logicHyCalCon = new G4LogicalVolume(solidHyCalCon, DefaultM, "HyCalContainerLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalCenter), logicHyCalCon, "HyCal Container", logicWorld, false, 0);
-
-    // HyCal modules
-    G4VSolid *solidAbsorber = new G4Box("HyCalModuleS", 1.025 * cm, 1.025 * cm, 90.0 * mm);
-    G4LogicalVolume *logicAbsorber = new G4LogicalVolume(solidAbsorber, HyCalModuleM, "HyCalModuleLV");
-    HyCalParameterisation *param = new HyCalParameterisation("config/hycal.conf");
-    new G4PVParameterised("HyCal Module", logicAbsorber, logicHyCalCon, kUndefined, param->GetNumber(), param, false);
-
-    // Collimator container
-    G4VSolid *CollConBox = new G4Box("CollConBox", 4.1 * cm, 4.1 * cm, 5.0 * cm);
-    G4SubtractionSolid *solidCollCon = new G4SubtractionSolid("CollimatorContainerS", CollConBox, HyCalConHole);
-    G4LogicalVolume *logicCollCon = new G4LogicalVolume(solidCollCon, DefaultM, "CollimatorContainerLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalCenter - PbGlassL / 2.0 + CrystalDiffL - 5.1 * cm), logicCollCon, "Collimator Container", logicWorld, false, 0);
-
-    // Collimators
-    G4VSolid *solidColl = new G4Box("CollimatorS", 1.025 * cm, 1.025 * cm, 5.0 * cm);
-    G4LogicalVolume *logicColl = new G4LogicalVolume(solidColl, CollimatorM, "CollimatorLV");
-    double pos_x[12] = { -3.075, -1.025, 1.025, 3.075, -3.075, 3.075, -3.075, 3.075, -3.075, -1.025, 1.025, 3.075};
-    double pos_y[12] = { -3.075, -3.075, -3.075, -3.075, -1.025, -1.025, 1.025, 1.025, 3.075, 3.075, 3.075, 3.075};
-
-    for (int i = 0; i < 12; ++i)
-        new G4PVPlacement(0, G4ThreeVector(pos_x[i] * cm, pos_y[i] * cm, 0), logicColl, "Collimator", logicCollCon, false, i);
+    AddHyCal(logicWorld);
 
     G4LogicalVolumeStore *pLogicalVolume = G4LogicalVolumeStore::GetInstance();
 
@@ -874,7 +611,8 @@ void DetectorConstruction::DefineDRadSDs()
     if (fGEMSDOn) {
         TrackingDetectorSD *GEMSD = new TrackingDetectorSD("GEMSD", "GEM");
         G4SDManager::GetSDMpointer()->AddNewDetector(GEMSD);
-        SetSensitiveDetector("GEMCathodeLV", GEMSD);
+        SetSensitiveDetector("GEM0CathodeLV", GEMSD);
+        SetSensitiveDetector("GEM1CathodeLV", GEMSD);
     }
 
     if (fSciPlaneSDOn) {
@@ -892,6 +630,237 @@ void DetectorConstruction::DefineDRadSDs()
         G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
         SetSensitiveDetector("HyCalModuleLV", HyCalSD);
     }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::AddGEM(G4LogicalVolume *mother, int layerid, bool culess)
+{
+    G4Material *DefaultM = G4Material::GetMaterial("Galaxy");
+    G4Material *GEMFrameM = G4Material::GetMaterial("NemaG10");
+    G4Material *GEMGasM = G4Material::GetMaterial("ArCO2");
+    G4Material *GEMFoilM = G4Material::GetMaterial("Kapton");
+    G4Material *GEMFoil0d2M = G4Material::GetMaterial("Kapton0.2");
+    G4Material *GEMFoil0d8M = G4Material::GetMaterial("Kapton0.8");
+    G4Material *GEMCuM = G4Material::GetMaterial("Copper");
+    G4Material *GEMCu0d2M = G4Material::GetMaterial("Copper0.2");
+    G4Material *GEMCu0d75M = G4Material::GetMaterial("Copper0.75");
+    G4Material *GEMCu0d8M = G4Material::GetMaterial("Copper0.8");
+    G4Material *GEMGlueM = G4Material::GetMaterial("Kapton"); // TODO: Add actual Glue material
+
+    // GEM
+    G4double GEMCenter = fGEMCenter[layerid];
+    G4double GEMGap = 4.0 * cm; // Gap between two GEM
+    G4double GEMHalfX = 55.04 * cm / 2.0;
+    G4double GEMHalfY = 122.88 * cm / 2.0;
+    G4double GEMHalfT = (15.0 * mm + 455.0 * um) / 2.0; // 2 * 25 + 5 + 50 (win) + 6 * 5 + 3 * 50 (foil) + 5 + 5 + 50 + 50 + 60 (readout)
+
+    if (culess) GEMHalfT = (15.0 * mm + 410.0 * um) / 2.0; // 2 * 25 + 50 (win) + 3 * 50 (foil) + 50 + 50 + 60 (readout)
+
+    G4double GEMHoleR = 2.2 * cm;
+    G4double GEMCenterHalfXY = 7.4 * cm / 2.0;
+    G4double GEMFrameWidth = 1.5 * cm;
+    G4double GEMCenterOffset = GEMHalfX + GEMFrameWidth - GEMCenterHalfXY;
+
+    // GEM Container
+    G4Box *GEMConBox = new G4Box(Form("GEM%dConBox", layerid), 1.0 * m, 1.0 * m, (GEMGap + 2.0 * GEMHalfT + 1.0 * mm) / 2.0);
+    G4Tubs *GEMConTube = new G4Tubs(Form("GEM%dConTube", layerid), 0, GEMHoleR, (GEMGap + 2.0 * GEMHalfT + 1.0 * mm) / 2.0 + 0.1 * mm, 0, twopi);
+    G4SubtractionSolid *solidGEMCon = new G4SubtractionSolid(Form("GEM%dContainerS", layerid), GEMConBox, GEMConTube);
+    G4LogicalVolume *logicGEMCon = new G4LogicalVolume(solidGEMCon, DefaultM, Form("GEM%dContainerLV", layerid));
+    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMCenter), logicGEMCon, Form("GEM %d Container", layerid), mother, false, 2 * layerid);
+
+    // GEM
+    G4Box *GEMBox = new G4Box(Form("GEM%dBox", layerid), GEMHalfX + GEMFrameWidth, GEMHalfY + GEMFrameWidth * 2.0, GEMHalfT);
+    G4Tubs *GEMTube = new G4Tubs(Form("GEM%dTube", layerid), 0, GEMHoleR, GEMHalfT + 0.1 * mm, 0, twopi);
+    G4SubtractionSolid *solidGEM = new G4SubtractionSolid(Form("GEM%dS", layerid), GEMBox, GEMTube, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
+    G4LogicalVolume *logicGEM = new G4LogicalVolume(solidGEM, DefaultM, Form("GEM%dLV", layerid));
+    new G4PVPlacement(0, G4ThreeVector(GEMCenterOffset, 0, GEMGap / 2.0), logicGEM, Form("GEM %d L", layerid), logicGEMCon, false, 0);
+    G4RotationMatrix rmGEM;
+    rmGEM.rotateZ(180.0 * deg);
+    new G4PVPlacement(G4Transform3D(rmGEM, G4ThreeVector(-GEMCenterOffset, 0, -GEMGap / 2.0)), logicGEM, Form("GEM %d R", layerid), logicGEMCon, false, 1);
+
+    // GEM Gas
+    G4Box *GEMGasBox = new G4Box(Form("GEM%dGasBox", layerid), GEMHalfX, GEMHalfY, GEMHalfT);
+    G4Box *GEMSubBox = new G4Box(Form("GEM%dSubBox", layerid), GEMCenterHalfXY, GEMCenterHalfXY, GEMHalfT + 0.1 * mm);
+    G4SubtractionSolid *solidGEMGas = new G4SubtractionSolid(Form("GEM%dGasS", layerid), GEMGasBox, GEMSubBox, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
+    G4LogicalVolume *logicGEMGas = new G4LogicalVolume(solidGEMGas, GEMGasM, Form("GEM%dGasLV", layerid));
+    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicGEMGas, Form("GEM %d Gas", layerid), logicGEM, false, 0);
+
+    // GEM Frame
+    G4Box *GEMFrameBox1 = new G4Box(Form("GEM%dFrameBox1", layerid), GEMHalfX + GEMFrameWidth, GEMHalfY + GEMFrameWidth * 2.0, GEMHalfT);
+    G4Box *GEMFrameBox2 = new G4Box(Form("GEM%dFrameBox2", layerid), GEMHalfX, GEMHalfY, GEMHalfT + 0.1 * mm);
+    G4SubtractionSolid *solidGEMFrame = new G4SubtractionSolid(Form("GEM%dFrameS", layerid), GEMFrameBox1, GEMFrameBox2);
+    G4LogicalVolume *logicGEMFrame = new G4LogicalVolume(solidGEMFrame, GEMFrameM, Form("GEM%dFrameLV", layerid));
+    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicGEMFrame, Form("GEM %d Frame", layerid), logicGEM, false, 0);
+
+    G4Box *GEMPipeBox = new G4Box(Form("GEM%dPipeBox", layerid), GEMCenterHalfXY - GEMFrameWidth / 2.0, GEMCenterHalfXY, GEMHalfT);
+    G4SubtractionSolid *solidGEMPipe = new G4SubtractionSolid(Form("GEM%dPipeS", layerid), GEMPipeBox, GEMTube, 0, G4ThreeVector(-GEMFrameWidth / 2.0, 0, 0));
+    G4LogicalVolume *logicGEMPipe = new G4LogicalVolume(solidGEMPipe, GEMFrameM, Form("GEM%dPipeLV", layerid));
+    new G4PVPlacement(0, G4ThreeVector(-GEMCenterOffset + GEMFrameWidth / 2.0, 0, 0), logicGEMPipe, Form("GEM %d Pipe", layerid), logicGEM, false, 0);
+
+    // GEM Foil
+    G4double GEMWinT = 25.0 * um;
+    G4double GEMFoilT = 50.0 * um;
+    G4double GEMCuT = 5.0 * um;
+    G4double GEMGlueT = 60.0 * um;
+
+    G4Box *GEMWinBox = new G4Box(Form("GEM%dWinBox", layerid), GEMHalfX, GEMHalfY, GEMWinT / 2.0);
+    G4SubtractionSolid *solidGEMWin = new G4SubtractionSolid(Form("GEM%dWinS", layerid), GEMWinBox, GEMSubBox, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
+    G4LogicalVolume *logicGEMWin = new G4LogicalVolume(solidGEMWin, GEMFoilM, Form("GEM%dWinLV", layerid));
+
+    G4Box *GEMFoilBox = new G4Box(Form("GEM%dFoilBox", layerid), GEMHalfX, GEMHalfY, GEMFoilT / 2.0);
+    G4SubtractionSolid *solidGEMFoil = new G4SubtractionSolid(Form("GEM%dFoilS", layerid), GEMFoilBox, GEMSubBox, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
+    G4LogicalVolume *logicGEMFoil = new G4LogicalVolume(solidGEMFoil, GEMFoil0d8M, Form("GEM%dFoilLV", layerid));
+    G4LogicalVolume *logicGEMFoil80 = new G4LogicalVolume(solidGEMFoil, GEMFoil0d2M, Form("GEM%dFoil80LV", layerid));
+    G4LogicalVolume *logicGEMFoil350 = new G4LogicalVolume(solidGEMFoil, GEMFoilM, Form("GEM%dFoil350LV", layerid));
+    G4LogicalVolume *logicGEMCathode = new G4LogicalVolume(solidGEMFoil, GEMFoilM, Form("GEM%dCathodeLV", layerid));
+
+    G4Box *GEMCuBox = new G4Box(Form("GEM%dCuBox", layerid), GEMHalfX, GEMHalfY, GEMCuT / 2.0);
+    G4SubtractionSolid *solidGEMCu = new G4SubtractionSolid(Form("GEM%dCuS", layerid), GEMCuBox, GEMSubBox, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
+    G4LogicalVolume *logicGEMCu = new G4LogicalVolume(solidGEMCu, GEMCu0d8M, Form("GEM%dCuLV", layerid));
+    G4LogicalVolume *logicGEMCu80 = new G4LogicalVolume(solidGEMCu, GEMCu0d2M, Form("GEM%dCu80LV", layerid));
+    G4LogicalVolume *logicGEMCu350 = new G4LogicalVolume(solidGEMCu, GEMCu0d75M, Form("GEM%dCu350LV", layerid));
+    G4LogicalVolume *logicGEMCathodeCu = new G4LogicalVolume(solidGEMCu, GEMCuM, Form("GEM%dCathodeCuLV", layerid));
+
+    G4Box *GEMGlueBox = new G4Box(Form("GEM%dGlueBox", layerid), GEMHalfX, GEMHalfY, GEMGlueT / 2.0);
+    G4SubtractionSolid *solidGEMGlue = new G4SubtractionSolid(Form("GEM%dGlueS", layerid), GEMGlueBox, GEMSubBox, 0, G4ThreeVector(-GEMCenterOffset, 0, 0));
+    G4LogicalVolume *logicGEMGlue = new G4LogicalVolume(solidGEMGlue, GEMGlueM, Form("GEM%dGlueLV", layerid));
+
+    G4double zoff = -GEMHalfT;
+
+    new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMWinT / 2.0), logicGEMWin, Form("GEM %d Window", layerid), logicGEMGas, false, 0);
+    zoff += GEMWinT;
+
+    zoff += 3.0 * mm;
+    new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMFoilT / 2.0), logicGEMCathode, Form("GEM %d Cathode", layerid), logicGEMGas, false, 0);
+    zoff += GEMFoilT;
+
+    if (!culess) {
+        new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMCuT / 2.0), logicGEMCathodeCu, Form("GEM %d Copper", layerid), logicGEMGas, false, 0);
+        zoff += GEMCuT;
+    }
+
+    zoff += 3.0 * mm;
+
+    if (!culess) {
+        new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMCuT / 2.0), logicGEMCu, Form("GEM %d Copper", layerid), logicGEMGas, false, 1);
+        zoff += GEMCuT;
+    }
+
+    new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMFoilT / 2.0), logicGEMFoil, Form("GEM %d Foil", layerid), logicGEMGas, false, 0);
+    zoff += GEMFoilT;
+
+    if (!culess) {
+        new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMCuT / 2.0), logicGEMCu, Form("GEM %d Copper", layerid), logicGEMGas, false, 2);
+        zoff += GEMCuT;
+    }
+
+    zoff += 2.0 * mm;
+
+    if (!culess) {
+        new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMCuT / 2.0), logicGEMCu, Form("GEM %d Copper", layerid), logicGEMGas, false, 3);
+        zoff += GEMCuT;
+    }
+
+    new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMFoilT / 2.0), logicGEMFoil, Form("GEM %d Foil", layerid), logicGEMGas, false, 1);
+    zoff += GEMFoilT;
+
+    if (!culess) {
+        new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMCuT / 2.0), logicGEMCu, Form("GEM %d Copper", layerid), logicGEMGas, false, 4);
+        zoff += GEMCuT;
+    }
+
+    zoff += 2.0 * mm;
+
+    if (!culess) {
+        new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMCuT / 2.0), logicGEMCu, Form("GEM %d Copper", layerid), logicGEMGas, false, 5);
+        zoff += GEMCuT;
+    }
+
+    new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMFoilT / 2.0), logicGEMFoil, Form("GEM %d Foil", layerid), logicGEMGas, false, 2);
+    zoff += GEMFoilT;
+
+    if (!culess) {
+        new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMCuT / 2.0), logicGEMCu, Form("GEM %d Copper", layerid), logicGEMGas, false, 6);
+        zoff += GEMCuT;
+    }
+
+    zoff += 2.0 * mm;
+
+    if (!culess) {
+        new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMCuT / 2.0), logicGEMCu80, Form("GEM %d Copper", layerid), logicGEMGas, false, 7);
+        zoff += GEMCuT;
+    }
+
+    new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMFoilT / 2.0), logicGEMFoil80, Form("GEM %d Foil", layerid), logicGEMGas, false, 3);
+    zoff += GEMFoilT;
+    new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMGlueT / 2.0), logicGEMGlue, Form("GEM %d Glue", layerid), logicGEMGas, false, 0);
+    zoff += GEMGlueT;
+
+    if (!culess) {
+        new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMCuT / 2.0), logicGEMCu350, Form("GEM %d Copper", layerid), logicGEMGas, false, 8);
+        zoff += GEMCuT;
+    }
+
+    new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMFoilT / 2.0), logicGEMFoil350, Form("GEM %d Foil", layerid), logicGEMGas, false, 4);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, GEMHalfT - GEMWinT / 2.0), logicGEMWin, Form("GEM %d Window", layerid), logicGEMGas, false, 1);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::AddHyCal(G4LogicalVolume *mother)
+{
+    G4Material *DefaultM = G4Material::GetMaterial("Galaxy");
+    G4Material *HyCalBoxM = G4Material::GetMaterial("Torlon");
+    G4Material *CollimatorM = G4Material::GetMaterial("Tungsten");
+    G4Material *HyCalModuleM = G4Material::GetMaterial("PbWO4");
+
+    // HyCal
+    // The crystal surface should be at -3000.0 + 88.9 + 5640.0 = 2728.9 mm // 5640.0 from Weizhi
+    G4double PbGlassL = 45.0 * cm;
+    //G4double CrystalL = 18.0 * cm;
+    G4double CrystalDiffL = 10.12 * cm;
+    G4double HyCalCenter = fCrystalSurf - CrystalDiffL + PbGlassL / 2.0;
+
+    // HyCal box
+    G4double HyCalBoxCenter = HyCalCenter - 9.0 * cm + 30.0 * cm; // Check
+    G4Box *HyCalBoxOuter = new G4Box("HyCalBoxOuter", 70.0 * cm, 70.0 * cm, 60.0 * cm);
+    G4Box *HyCalBoxInner = new G4Box("HyCalBoxInner", 66.0 * cm, 66.0 * cm, 59.6 * cm);
+    G4SubtractionSolid *HyCalBoxNoHole = new G4SubtractionSolid("HyCalBoxNoHole", HyCalBoxOuter, HyCalBoxInner);
+    G4Tubs *HyCalBoxHole = new G4Tubs("HyCalBoxHole", 0, 25.0 * mm, 60.5 * cm, 0, twopi);
+    G4SubtractionSolid *solidHyCalBox = new G4SubtractionSolid("HyCalBoxS", HyCalBoxNoHole, HyCalBoxHole);
+    G4LogicalVolume *logicHyCalBox = new G4LogicalVolume(solidHyCalBox, HyCalBoxM, "HyCalBoxLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalBoxCenter), logicHyCalBox, "HyCal Box", mother, false, 0);
+
+    // HyCal container
+    G4Box *HyCalConPiece1 = new G4Box("HyCalConPiece1", 58.21 * cm, 58.17 * cm, PbGlassL / 2.0);
+    G4Box *HyCalConPiece2 = new G4Box("HyCalConPiece2", 35.30 * cm, 35.27 * cm, CrystalDiffL / 2.0 + 0.5 * mm);
+    G4SubtractionSolid *HyCalConBox = new G4SubtractionSolid("HyCalConBox", HyCalConPiece1, HyCalConPiece2, 0, G4ThreeVector(0, 0, (CrystalDiffL - PbGlassL) / 2.0 - 0.5 * mm));
+    G4Box *HyCalConHole = new G4Box("HyCalConHole", 2.0 * cm, 2.0 * cm, PbGlassL / 2.0 + 1.0 * mm);
+    G4SubtractionSolid *solidHyCalCon = new G4SubtractionSolid("HyCalContainerS", HyCalConBox, HyCalConHole);
+    G4LogicalVolume *logicHyCalCon = new G4LogicalVolume(solidHyCalCon, DefaultM, "HyCalContainerLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalCenter), logicHyCalCon, "HyCal Container", mother, false, 0);
+
+    // HyCal modules
+    G4VSolid *solidAbsorber = new G4Box("HyCalModuleS", 1.025 * cm, 1.025 * cm, 90.0 * mm);
+    G4LogicalVolume *logicAbsorber = new G4LogicalVolume(solidAbsorber, HyCalModuleM, "HyCalModuleLV");
+    HyCalParameterisation *param = new HyCalParameterisation("config/hycal.conf");
+    new G4PVParameterised("HyCal Module", logicAbsorber, logicHyCalCon, kUndefined, param->GetNumber(), param, false);
+
+    // Collimator container
+    G4VSolid *CollConBox = new G4Box("CollConBox", 4.1 * cm, 4.1 * cm, 5.0 * cm);
+    G4SubtractionSolid *solidCollCon = new G4SubtractionSolid("CollimatorContainerS", CollConBox, HyCalConHole);
+    G4LogicalVolume *logicCollCon = new G4LogicalVolume(solidCollCon, DefaultM, "CollimatorContainerLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalCenter - PbGlassL / 2.0 + CrystalDiffL - 5.1 * cm), logicCollCon, "Collimator Container", mother, false, 0);
+
+    // Collimators
+    G4VSolid *solidColl = new G4Box("CollimatorS", 1.025 * cm, 1.025 * cm, 5.0 * cm);
+    G4LogicalVolume *logicColl = new G4LogicalVolume(solidColl, CollimatorM, "CollimatorLV");
+    double pos_x[12] = { -3.075, -1.025, 1.025, 3.075, -3.075, 3.075, -3.075, 3.075, -3.075, -1.025, 1.025, 3.075};
+    double pos_y[12] = { -3.075, -3.075, -3.075, -3.075, -1.025, -1.025, 1.025, 1.025, 3.075, 3.075, 3.075, 3.075};
+
+    for (int i = 0; i < 12; ++i)
+        new G4PVPlacement(0, G4ThreeVector(pos_x[i] * cm, pos_y[i] * cm, 0), logicColl, "Collimator", logicCollCon, false, i);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
