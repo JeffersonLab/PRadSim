@@ -185,7 +185,7 @@ int main(int argc, char **argv)
 
             for (int j = 0; j < N_GEM; j++) {
                 GEMHit h;
-                h.x = X_GEM[j];
+                h.x = - X_GEM[j]; // Orientation mismatch
                 h.y = Y_GEM[j];
                 h.z = Z_GEM[j] + 3000.0 - 89.0;
 
