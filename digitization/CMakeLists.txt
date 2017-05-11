@@ -13,9 +13,9 @@ find_package(ROOT REQUIRED)
 #---------------------------------------------------------------------------
 # Locate EVIO library and headers
 #
-if(DEFINED ENV{EVIODIR})
-  set(EVIO_INCLUDE_DIR $ENV{EVIODIR}/include CACHE PATH "Path to evio headers")
-  set(EVIO_LIBRARY_DIR $ENV{EVIODIR}/lib CACHE PATH "Path to evio libraries")
+if(DEFINED ENV{ET_INC} AND DEFINED ENV{ET_LIB})
+  set(EVIO_INCLUDE_DIR $ENV{ET_INC} CACHE PATH "Path to evio headers")
+  set(EVIO_LIBRARY_DIR $ENV{ET_LIB} CACHE PATH "Path to evio libraries")
 else()
   set(EVIO_INCLUDE_DIR EVIO_INCLUDE_DIR_NOT_FOUND CACHE PATH "Path to evio headers")
   set(EVIO_LIBRARY_DIR EVIO_INCLUDE_DIR_NOT_FOUND CACHE PATH "Path to evio libraries")
@@ -25,9 +25,9 @@ set(EVIO_LIBRARIES evio)
 #---------------------------------------------------------------------------
 # Locate pradanalyzer library and headers
 #
-if(DEFINED ENV{PRADANADIR})
-  set(PRADANA_INCLUDE_DIR $ENV{PRADANADIR}/include CACHE PATH "Path to prad analyzer headers")
-  set(PRADANA_LIBRARY_DIR $ENV{PRADANADIR}/lib CACHE PATH "Path to prad analyzer libraries")
+if(DEFINED ENV{PRAD_PATH} AND DEFINED ENV{PRAD_LIB})
+  set(PRADANA_INCLUDE_DIR $ENV{PRAD_LIB}/include CACHE PATH "Path to prad analyzer headers")
+  set(PRADANA_LIBRARY_DIR $ENV{PRAD_LIB} CACHE PATH "Path to prad analyzer libraries")
 else()
   set(PRADANA_INCLUDE_DIR PRADANA_INCLUDE_DIR_NOT_FOUND CACHE PATH "Path to prad analyzer headers")
   set(PRADANA_LIBRARY_DIR PRADANA_INCLUDE_DIR_NOT_FOUND CACHE PATH "Path to prad analyzer libraries")
@@ -37,7 +37,7 @@ set(PRADANA_LIBRARIES prana)
 #----------------------------------------------------------------------------
 # Setup include and lib directory for this project
 #
-include_directories(${ROOT_INCLUDE_DIR})
+include_directories(${ROOT_INCLUDE_DIRS})
 if(NOT ${EVIO_INCLUDE_DIR} STREQUAL "EVIO_INCLUDE_DIR_NOT_FOUND" OR ${EVIO_LIBRARY_DIR} STREQUAL "EVIO_LIBRARY_DIR_NOT_FOUND")
   include_directories(${EVIO_INCLUDE_DIR})
   link_directories(${EVIO_LIBRARY_DIR})
