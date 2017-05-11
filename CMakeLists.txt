@@ -25,7 +25,7 @@ find_package(ROOT REQUIRED COMPONENTS MathMore Foam)
 # Setup include and lib directory for this project
 #
 include(${Geant4_USE_FILE})
-include_directories(${ROOT_INCLUDE_DIR})
+include_directories(${ROOT_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 #----------------------------------------------------------------------------
