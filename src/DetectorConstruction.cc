@@ -447,8 +447,8 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     G4LogicalVolume *logicFlange = new G4LogicalVolume(solidFlange, VacuumTubeM, "FlangeLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, VacBoxCenter + VacBoxHalfL - ArcDistance + FlangeHalfL), logicFlange, "Flange", logicWorld, false, 0);
 
-    // Center of two GEM should be at -3000.0 + 89.0 + (5222.0 + 5183.0) / 2 = 2291.5 mm // (5222.0 + 5183.0) / 2 from Weizhi
-    fGEMCenter[0] = 229.15 * cm;
+    // Center of two GEM should be at -3000.0 + 89.0 + (5219.0 + 5179.0) / 2 + 4 = 2292 mm // (5219.0 + 5179.0) / 2 from Weizhi
+    fGEMCenter[0] = 229.2 * cm;
     AddGEM(logicWorld, 0, false);
 
     fCrystalSurf = 272.5 * cm; // Surface of the PWO
