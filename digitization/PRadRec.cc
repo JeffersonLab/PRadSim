@@ -44,9 +44,9 @@ double GetNonlinCorr(Double_t reconE)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-double ScaleEnergy(double e)
+double ScaleEnergy(double e, const double & e_beam)
 {
-    if (e < 1600) {
+    if (e_beam < 1600) {
         double p3 = 0.539865;
         double p2 = -0.271654;
         double p1 =  6.43518e-05;
@@ -206,7 +206,7 @@ int main(int argc, char **argv)
                 Y_HC[j] = matched[j].hycal.y;
                 Z_HC[j] = matched[j].hycal.z;
 
-                E[j] = ScaleEnergy(matched[j].hycal.E);
+                E[j] = ScaleEnergy(matched[j].hycal.E, ei);
 
                 CID[j] = matched[j].hycal.cid;
 
@@ -235,7 +235,7 @@ int main(int argc, char **argv)
                 X_HC[j] = hits[j].x;
                 Y_HC[j] = hits[j].y;
                 Z_HC[j] = hits[j].z;
-                E[j] = ScaleEnergy(hits[j].E);
+                E[j] = ScaleEnergy(hits[j].E, ei);
                 CID[j] = hits[j].cid;
             }
         }

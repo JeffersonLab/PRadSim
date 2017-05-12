@@ -267,6 +267,10 @@ void DetectorConstruction::DefineMaterials()
     SSteel->AddElement(Fe, fractionmass = 0.6976);
     fVisAtts[SSteel->GetName()] = new G4VisAttributes(G4Colour::Grey());
 
+    // Nickel material for upstream collimator
+    G4Material *NickelMaterial = new G4Material("NickelMaterial", density=8.908*g/cm3, ncomponents=1);
+    NickelMaterial->AddElement(Ni, natoms = 1);
+
     // GEM Frame G10
     G4Material *NemaG10 = new G4Material("NemaG10", density = 1.700 * g / cm3, ncomponents = 4);
     NemaG10->AddElement(Si, natoms = 1);
@@ -341,6 +345,7 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     G4Material *ChamberWindowM = G4Material::GetMaterial("Kapton");
     G4Material *VacuumBoxM = G4Material::GetMaterial("Aluminum");
     G4Material *VacuumTubeM = G4Material::GetMaterial("SSteel");
+    G4Material *NickelM = G4Material::GetMaterial("NickelMaterial");
 
     // World
     G4double WorldSizeXY = 150.0 * cm;
@@ -381,6 +386,30 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     G4LogicalVolume *logicCellWin = new G4LogicalVolume(solidCellWin, TargetWindowM, "TargetWindowLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, -TargetHalfL - CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 0);
     new G4PVPlacement(0, G4ThreeVector(0, 0, +TargetHalfL + CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 1);
+
+    // Upstream collimator
+    // dimension refer to PRad beam line drawing [from JLab drawing database, search PRad]
+    G4double collimator_half_length = 11.8*2.54/2.0*cm;
+    G4double collimator_outter_r = 3.9*2.54/2.0*cm;
+    G4double collimator_inner_r = 12.7*mm/2.0;
+    G4double collimator_pos_z = TargetCenter - 2.03*m + collimator_half_length;
+    G4Tubs *solidCollimator = new G4Tubs("solidCollimator", collimator_inner_r, collimator_outter_r, collimator_half_length, 0, 2*pi);
+    G4LogicalVolume *logicCollimator = new G4LogicalVolume(solidCollimator, NickelM, "logicCollimator");
+    G4VisAttributes *collimatorVisAtt = new G4VisAttributes(G4Colour(0.0, 1.0, 0.0));
+    logicCollimator -> SetVisAttributes(collimatorVisAtt);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, collimator_pos_z), logicCollimator, "CollimatorPV", logicWorld, false, 0);
+
+    // upstream beam pipe
+    // dimension refer to PRad Target drawing and PRad beam line drawing
+    G4double inner_r = 1.87*2.54/2.0*cm;
+    G4double outer_r = 2.0*2.54/2.0*cm;
+    G4double length_pipe_up = 0.79*m;
+    G4double beam_pipe_upstream_offset = 0.105*m;
+    G4double upstream_beam_pipe_z = TargetCenter - beam_pipe_upstream_offset - length_pipe_up - 4*cm; /*4cm, target length itself*/
+    G4Tubs *beamPipeUpStream = new G4Tubs("beamPipeUpStream", inner_r, outer_r, length_pipe_up, 0, 2*pi);
+    G4LogicalVolume *logicBeamPipeUpStream = new G4LogicalVolume(beamPipeUpStream, VacuumTubeM, "BeamPipeUpStreamLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, upstream_beam_pipe_z), logicBeamPipeUpStream, "BeamPipeUpStream", logicWorld, false, 0);
+
 
     // Target chamber
     // For now, only built the downstream chamber with window
@@ -655,6 +684,9 @@ void DetectorConstruction::AddGEM(G4LogicalVolume *mother, int layerid, bool cul
     G4double GEMHalfX = 55.04 * cm / 2.0;
     G4double GEMHalfY = 122.88 * cm / 2.0;
     G4double GEMHalfT = (15.0 * mm + 455.0 * um) / 2.0; // 2 * 25 + 5 + 50 (win) + 6 * 5 + 3 * 50 (foil) + 5 + 5 + 50 + 50 + 60 (readout)
+    G4double GEMSpacerWh = 0.3*mm/2.0;
+    G4double GEMSpacerWv = 0.5*mm/2.0;
+    G4double GEMSpacerT = (2.0 - 0.1)*mm/2.0;
 
     if (culess) GEMHalfT = (15.0 * mm + 410.0 * um) / 2.0; // 2 * 25 + 50 (win) + 3 * 50 (foil) + 50 + 50 + 60 (readout)
 
@@ -699,6 +731,19 @@ void DetectorConstruction::AddGEM(G4LogicalVolume *mother, int layerid, bool cul
     G4LogicalVolume *logicGEMPipe = new G4LogicalVolume(solidGEMPipe, GEMFrameM, Form("GEM%dPipeLV", layerid));
     new G4PVPlacement(0, G4ThreeVector(-GEMCenterOffset + GEMFrameWidth / 2.0, 0, 0), logicGEMPipe, Form("GEM %d Pipe", layerid), logicGEM, false, 0);
 
+    // GEM Spacer
+    G4Box *GEMhSpacer1 = new G4Box(Form("GEM%dhSpacer1", layerid), GEMHalfX, GEMSpacerWh, GEMSpacerT);
+    G4Box *GEMhSpacer2 = new G4Box(Form("GEM%dhSpacer2", layerid), (2*GEMHalfX - 2*GEMCenterHalfXY + 15*mm)/2, GEMSpacerWh, GEMSpacerT);
+    G4Box *GEMvSpacer = new G4Box(Form("GEM%dvSpacer", layerid), GEMSpacerWv, GEMHalfY, GEMSpacerT);
+    G4double shift1 = 91.3*mm;
+    G4UnionSolid * solidSpacer1 = new G4UnionSolid(Form("GEM%dsolidSpacer1", layerid), GEMvSpacer, GEMhSpacer1, new G4RotationMatrix(), G4ThreeVector(shift1, 204, 0));
+    G4UnionSolid * solidSpacer2 = new G4UnionSolid(Form("GEM%dsolidSpacer2", layerid), solidSpacer1, GEMhSpacer1, new G4RotationMatrix(), G4ThreeVector(shift1, 409.3, 0));
+    G4UnionSolid * solidSpacer3 = new G4UnionSolid(Form("GEM%dsolidSpacer3", layerid), solidSpacer2, GEMhSpacer2, new G4RotationMatrix(), G4ThreeVector(shift1 + (74*mm-15*mm)/2, 0, 0));
+    G4UnionSolid * solidSpacer4 = new G4UnionSolid(Form("GEM%dsolidSpacer4", layerid), solidSpacer3, GEMhSpacer1, new G4RotationMatrix(), G4ThreeVector(shift1, -204, 0));
+    G4UnionSolid * solidSpacer5 = new G4UnionSolid(Form("GEM%dsolidSpacer5", layerid), solidSpacer4, GEMhSpacer1, new G4RotationMatrix(), G4ThreeVector(shift1, -409.3, 0));
+    G4UnionSolid * solidSpacer = new G4UnionSolid(Form("GEM%dsolidSpacer", layerid), solidSpacer5, GEMvSpacer, new G4RotationMatrix(), G4ThreeVector(182.6, 0, 0));
+    G4LogicalVolume *logicSpacer = new G4LogicalVolume(solidSpacer, GEMFrameM, Form("GEM%dSpacerLV", layerid));
+
     // GEM Foil
     G4double GEMWinT = 25.0 * um;
     G4double GEMFoilT = 50.0 * um;
@@ -732,6 +777,9 @@ void DetectorConstruction::AddGEM(G4LogicalVolume *mother, int layerid, bool cul
     new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMWinT / 2.0), logicGEMWin, Form("GEM %d Window", layerid), logicGEMGas, false, 0);
     zoff += GEMWinT;
 
+    // spacer
+    new G4PVPlacement(0, G4ThreeVector(-shift1, 0, zoff + GEMSpacerT/2.0), logicSpacer, Form("GEM %d Spacer", layerid), logicGEMGas, false, 0);
+
     zoff += 3.0 * mm;
     new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMFoilT / 2.0), logicGEMCathode, Form("GEM %d Cathode", layerid), logicGEMGas, false, 0);
     zoff += GEMFoilT;
@@ -740,6 +788,9 @@ void DetectorConstruction::AddGEM(G4LogicalVolume *mother, int layerid, bool cul
         new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMCuT / 2.0), logicGEMCathodeCu, Form("GEM %d Copper", layerid), logicGEMGas, false, 0);
         zoff += GEMCuT;
     }
+
+    // spacer
+    new G4PVPlacement(0, G4ThreeVector(-shift1, 0, zoff + GEMSpacerT/2.0), logicSpacer, Form("GEM %d Spacer", layerid), logicGEMGas, false, 0);
 
     zoff += 3.0 * mm;
 
@@ -756,6 +807,9 @@ void DetectorConstruction::AddGEM(G4LogicalVolume *mother, int layerid, bool cul
         zoff += GEMCuT;
     }
 
+    // spacer
+    new G4PVPlacement(0, G4ThreeVector(-shift1, 0, zoff + GEMSpacerT/2.0), logicSpacer, Form("GEM %d Spacer", layerid), logicGEMGas, false, 0);
+
     zoff += 2.0 * mm;
 
     if (!culess) {
@@ -771,6 +825,9 @@ void DetectorConstruction::AddGEM(G4LogicalVolume *mother, int layerid, bool cul
         zoff += GEMCuT;
     }
 
+    // spacer
+    new G4PVPlacement(0, G4ThreeVector(-shift1, 0, zoff + GEMSpacerT/2.0), logicSpacer, Form("GEM %d Spacer", layerid), logicGEMGas, false, 0);
+
     zoff += 2.0 * mm;
 
     if (!culess) {
@@ -785,6 +842,9 @@ void DetectorConstruction::AddGEM(G4LogicalVolume *mother, int layerid, bool cul
         new G4PVPlacement(0, G4ThreeVector(0, 0, zoff + GEMCuT / 2.0), logicGEMCu, Form("GEM %d Copper", layerid), logicGEMGas, false, 6);
         zoff += GEMCuT;
     }
+
+    // spacer
+    new G4PVPlacement(0, G4ThreeVector(-shift1, 0, zoff + GEMSpacerT/2.0), logicSpacer, Form("GEM %d Spacer", layerid), logicGEMGas, false, 0);
 
     zoff += 2.0 * mm;
 
