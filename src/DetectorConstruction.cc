@@ -684,8 +684,8 @@ void DetectorConstruction::AddGEM(G4LogicalVolume *mother, int layerid, bool cul
     G4double GEMHalfX = 55.04 * cm / 2.0;
     G4double GEMHalfY = 122.88 * cm / 2.0;
     G4double GEMHalfT = (15.0 * mm + 455.0 * um) / 2.0; // 2 * 25 + 5 + 50 (win) + 6 * 5 + 3 * 50 (foil) + 5 + 5 + 50 + 50 + 60 (readout)
-    G4double GEMSpacerWh = 3*mm/2.0;
-    G4double GEMSpacerWv = 5*mm/2.0;
+    G4double GEMSpacerWh = 0.3*mm/2.0;
+    G4double GEMSpacerWv = 0.5*mm/2.0;
     G4double GEMSpacerT = (2.0 - 0.1)*mm/2.0;
 
     if (culess) GEMHalfT = (15.0 * mm + 410.0 * um) / 2.0; // 2 * 25 + 50 (win) + 3 * 50 (foil) + 50 + 50 + 60 (readout)
@@ -743,7 +743,6 @@ void DetectorConstruction::AddGEM(G4LogicalVolume *mother, int layerid, bool cul
     G4UnionSolid * solidSpacer5 = new G4UnionSolid(Form("GEM%dsolidSpacer5", layerid), solidSpacer4, GEMhSpacer1, new G4RotationMatrix(), G4ThreeVector(shift1, -409.3, 0));
     G4UnionSolid * solidSpacer = new G4UnionSolid(Form("GEM%dsolidSpacer", layerid), solidSpacer5, GEMvSpacer, new G4RotationMatrix(), G4ThreeVector(182.6, 0, 0));
     G4LogicalVolume *logicSpacer = new G4LogicalVolume(solidSpacer, GEMFrameM, Form("GEM%dSpacerLV", layerid));
-    //new G4PVPlacement(0, G4ThreeVector(-shift1, 0, 0), logicSpacer, Form("GEM %d Spacer", layerid), logicGEMGas, false, 0);
 
     // GEM Foil
     G4double GEMWinT = 25.0 * um;
