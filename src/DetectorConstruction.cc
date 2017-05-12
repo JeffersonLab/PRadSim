@@ -451,6 +451,7 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     fGEMCenter[0] = 229.2 * cm;
     AddGEM(logicWorld, 0, false);
 
+    // The crystal surface should be at -3000.0 + 89.0 + 5636.0 = 2725.0 mm // 5636.0 from Weizhi
     fCrystalSurf = 272.5 * cm; // Surface of the PWO
     AddHyCal(logicWorld);
 
@@ -816,7 +817,6 @@ void DetectorConstruction::AddHyCal(G4LogicalVolume *mother)
     G4Material *HyCalModuleM = G4Material::GetMaterial("PbWO4");
 
     // HyCal
-    // The crystal surface should be at -3000.0 + 89.0 + 5636.0 = 2725.0 mm // 5636.0 from Weizhi
     G4double PbGlassL = 45.0 * cm;
     //G4double CrystalL = 18.0 * cm;
     G4double CrystalDiffL = 10.12 * cm;
