@@ -899,20 +899,14 @@ void DetectorConstruction::AddHyCal(G4LogicalVolume *mother)
     HyCalParameterisation *param = new HyCalParameterisation("config/hycal.conf");
     new G4PVParameterised("HyCal Module", logicAbsorber, logicHyCalCon, kUndefined, param->GetNumber(), param, false);
 
-    // Collimator container
-    G4VSolid *CollConBox = new G4Box("CollConBox", 4.1 * cm, 4.1 * cm, 5.0 * cm);
-    G4SubtractionSolid *solidCollCon = new G4SubtractionSolid("CollimatorContainerS", CollConBox, HyCalConHole);
-    G4LogicalVolume *logicCollCon = new G4LogicalVolume(solidCollCon, DefaultM, "CollimatorContainerLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalCenter - PbGlassL / 2.0 + CrystalDiffL - 5.1 * cm), logicCollCon, "Collimator Container", mother, false, 0);
-
-    // Collimators
-    G4VSolid *solidColl = new G4Box("CollimatorS", 1.025 * cm, 1.025 * cm, 5.0 * cm);
-    G4LogicalVolume *logicColl = new G4LogicalVolume(solidColl, CollimatorM, "CollimatorLV");
-    double pos_x[12] = { -3.075, -1.025, 1.025, 3.075, -3.075, 3.075, -3.075, 3.075, -3.075, -1.025, 1.025, 3.075};
-    double pos_y[12] = { -3.075, -3.075, -3.075, -3.075, -1.025, -1.025, 1.025, 1.025, 3.075, 3.075, 3.075, 3.075};
-
-    for (int i = 0; i < 12; ++i)
-        new G4PVPlacement(0, G4ThreeVector(pos_x[i] * cm, pos_y[i] * cm, 0), logicColl, "Collimator", logicCollCon, false, i);
+    // Collimator
+    G4Box *CollimatorBox = new G4Box("CollimatorBox", 4.07 * cm, 4.07 * cm, 3.02 * cm);
+    G4Tubs *CollimatorTube = new G4Tubs("VacuumTubeS", 0, 1.95 * cm, 3.1 * cm, 0, twopi);
+    G4SubtractionSolid *solidCollimator = new G4SubtractionSolid("CollimatorS", CollimatorBox, CollimatorTube);
+    G4LogicalVolume *logicCollimator = new G4LogicalVolume(solidCollimator, CollimatorM, "CollimatorLV");
+    G4RotationMatrix rmColl;
+    rmColl.rotateZ(-8.8 * deg);
+    new G4PVPlacement(G4Transform3D(rmColl, G4ThreeVector(0, 0, HyCalCenter - PbGlassL / 2.0 + CrystalDiffL - 3.1 * cm)), logicCollimator, "Collimator", mother, false, 0);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

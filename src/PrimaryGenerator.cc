@@ -775,30 +775,30 @@ void DeuteronDisintegration::GeneratePrimaryVertex(G4Event *anEvent)
     fN++;
 
     /* Neutron
-        G4ThreeVector vf_n = vq - vf_p;
+    G4ThreeVector vf_n = vq - vf_p;
 
-        double p_n = vf_n.mag();
-        double theta_n = vf_n.theta();
-        double phi_n = vf_n.phi();
-        double e_n = sqrt(Mn * Mn + vf_n.mag2());
+    double p_n = vf_n.mag();
+    double theta_n = vf_n.theta();
+    double phi_n = vf_n.phi();
+    double e_n = sqrt(Mn * Mn + vf_n.mag2());
 
-        G4PrimaryVertex *vertexN = new G4PrimaryVertex(x, y, z, 0);
-        G4PrimaryParticle *particleN = new G4PrimaryParticle(particleTable->FindParticle("neutron"));
-        particleN->SetMomentumDirection(vf_n.unit());
-        particleN->SetTotalEnergy(e_n);
-        vertexN->SetPrimary(particleN);
+    G4PrimaryVertex *vertexN = new G4PrimaryVertex(x, y, z, 0);
+    G4PrimaryParticle *particleN = new G4PrimaryParticle(particleTable->FindParticle("neutron"));
+    particleN->SetMomentumDirection(vf_n.unit());
+    particleN->SetTotalEnergy(e_n);
+    vertexN->SetPrimary(particleN);
 
-        anEvent->AddPrimaryVertex(vertexN);
+    anEvent->AddPrimaryVertex(vertexN);
 
-        fPID[fN] = particleN->GetPDGcode();
-        fX[fN] = x;
-        fY[fN] = y;
-        fZ[fN] = z;
-        fE[fN] = e_n;
-        fMomentum[fN] = p_n;
-        fTheta[fN] = theta_n;
-        fPhi[fN] = phi_n;
-        fN++;
+    fPID[fN] = particleN->GetPDGcode();
+    fX[fN] = x;
+    fY[fN] = y;
+    fZ[fN] = z;
+    fE[fN] = e_n;
+    fMomentum[fN] = p_n;
+    fTheta[fN] = theta_n;
+    fPhi[fN] = phi_n;
+    fN++;
     */
 }
 
