@@ -44,7 +44,7 @@ double GetNonlinCorr(Double_t reconE)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-double ScaleEnergy(double e, const double & e_beam)
+double ScaleEnergy(double e, const double &e_beam)
 {
     if (e_beam < 1600) {
         double p3 = 0.539865;
