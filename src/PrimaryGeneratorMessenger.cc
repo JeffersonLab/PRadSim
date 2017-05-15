@@ -56,9 +56,9 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act
 
     GunTypeCmd = new G4UIcmdWithAString("/pradsim/gun/type", this);
     GunTypeCmd->SetGuidance("Choose a type of event generator.");
-    GunTypeCmd->SetGuidance("  Choice : point, ring, file");
+    GunTypeCmd->SetGuidance("  Choice : point, ring, disintegration, file");
     GunTypeCmd->SetParameterName("guntype", false);
-    GunTypeCmd->SetCandidates("point ring file");
+    GunTypeCmd->SetCandidates("point ring disintegration file");
 
     EventTypeCmd = new G4UIcmdWithAString("/pradsim/gun/evtype", this);
     EventTypeCmd->SetGuidance("Choose a type of model.");
@@ -102,6 +102,16 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act
     ThetaHighCmd->SetParameterName("thetahi", false);
     ThetaHighCmd->SetDefaultUnit("deg");
 
+    EnpLowCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/enplow", this);
+    EnpLowCmd->SetGuidance("Set fEnpLo");
+    EnpLowCmd->SetParameterName("enplo", false);
+    EnpLowCmd->SetDefaultUnit("MeV");
+
+    EnpHighCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/gun/enphigh", this);
+    EnpHighCmd->SetGuidance("Set fEnpHi");
+    EnpHighCmd->SetParameterName("enphi", false);
+    EnpHighCmd->SetDefaultUnit("MeV");
+
     EventFileCmd = new G4UIcmdWithAString("/pradsim/gun/path", this);
     EventFileCmd->SetGuidance("Choose path of event file");
     EventFileCmd->SetParameterName("path", false);
@@ -115,8 +125,6 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act
 
 PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
 {
-    delete ThetaLowCmd;
-    delete ThetaHighCmd;
     delete GunTypeCmd;
     delete EventTypeCmd;
     delete RecoilCmd;
@@ -124,6 +132,10 @@ PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
     delete PosCmd;
     delete ThetaCmd;
     delete PhiCmd;
+    delete ThetaLowCmd;
+    delete ThetaHighCmd;
+    delete EnpLowCmd;
+    delete EnpHighCmd;
     delete EventFileCmd;
     delete TargetProfileCmd;
     delete GunDir;
@@ -159,6 +171,12 @@ void PrimaryGeneratorMessenger::SetNewValue(G4UIcommand *command, G4String newVa
 
     if (command == ThetaHighCmd)
         Action->SetThetaRange(-10000, ThetaHighCmd->GetNewDoubleValue(newValue));
+
+    if (command == EnpLowCmd)
+        Action->SetEnpRange(EnpLowCmd->GetNewDoubleValue(newValue), -10000);
+
+    if (command == EnpHighCmd)
+        Action->SetEnpRange(-10000, EnpHighCmd->GetNewDoubleValue(newValue));
 
     if (command == EventFileCmd)
         Action->SetEventFile(newValue);

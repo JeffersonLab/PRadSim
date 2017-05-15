@@ -28,6 +28,7 @@
 // History:
 //   Mar 2017, C. Gu, Add for DRad configuration.
 //   Apr 2017, W. Xiong, Add target thickness profile.
+//   May 2017, C. Gu, Add Deuteron disintegration.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -58,6 +59,7 @@ class TRandom2;
 class PrimaryGenerator : public G4VPrimaryGenerator
 {
 public:
+    PrimaryGenerator();
     PrimaryGenerator(G4String type, G4double e, G4double x, G4double y, G4double z, G4double theta, G4double phi, G4bool rec, G4String par);
     PrimaryGenerator(G4String type, G4double e, G4double thlo, G4double thhi, G4bool rec, G4String par);
     virtual ~PrimaryGenerator();
@@ -72,11 +74,6 @@ protected:
 
     bool fRegistered;
 
-    G4String fEventType;
-
-    G4bool fRecoilOn;
-    G4String fRecoilParticle;
-
     int fN;
     int fPID[MaxN];
     double fX[MaxN], fY[MaxN], fZ[MaxN];
@@ -87,15 +84,22 @@ protected:
     G4double fTargetCenter, fTargetHalfL;
 
 private:
+    G4String fEventType;
+
+    G4bool fRecoilOn;
+    G4String fRecoilParticle;
+
     G4double fEBeam;
-    G4double fBeamX, fBeamY, fBeamZ;
-    G4double fBeamTheta, fBeamPhi;
-    G4double fBeamThetaLo, fBeamThetaHi;
+
+    G4double fReactX, fReactY, fReactZ;
+    G4double fReactTheta, fReactPhi;
+    G4double fReactThetaLo, fReactThetaHi;
 
     G4double fTargetMass;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 class PRadPrimaryGenerator;
 
 class TargetProfileIntegrand : public TFoamIntegrand
@@ -109,8 +113,6 @@ public:
     double fZMin, fZMax;
 };
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 class PRadPrimaryGenerator : public PrimaryGenerator
 {
     friend class TargetProfileIntegrand;
@@ -123,12 +125,14 @@ public:
     virtual void GeneratePrimaryVertex(G4Event *);
 
 protected:
+    void LoadTargetProfile(const std::string &path);
+
     virtual double GenerateZ();
 
-    ConfigParser fParser;
+    G4String fEventType;
 
-private:
-    void LoadTargetProfile(const std::string &path);
+    G4bool fRecoilOn;
+    G4String fRecoilParticle;
 
     ROOT::Math::Interpolator *fTargetProfile;
     double fZMin, fZMax;
@@ -136,6 +140,8 @@ private:
     TFoam *fZGenerator;
     TRandom2 *fPseRan;
     TargetProfileIntegrand *fFoamI;
+
+    ConfigParser fParser;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -148,6 +154,24 @@ public:
 
 protected:
     virtual double GenerateZ();
+};
+
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+class DeuteronDisintegration : public PrimaryGenerator
+{
+public:
+    DeuteronDisintegration(G4double e, G4double enplo, G4double enphi, G4double thlo, G4double thhi);
+    virtual ~DeuteronDisintegration();
+
+    virtual void GeneratePrimaryVertex(G4Event *);
+
+private:
+    G4double fEBeam;
+
+    G4double fEnpLo, fEnpHi;
+    G4double fReactThetaLo, fReactThetaHi;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

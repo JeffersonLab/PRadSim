@@ -47,7 +47,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf) : G4VUserPrimaryGeneratorAction(), fConfig(conf), fGunType("ring"), fEventType("elastic"), fE(1100 * MeV), fX(0), fY(0), fZ(-300.0 * cm), fTheta(0), fPhi(0), fThetaLo(0.5 * deg), fThetaHi(6.5 * deg), fPrimaryGenerator(NULL)
+PrimaryGeneratorAction::PrimaryGeneratorAction(G4String conf) : G4VUserPrimaryGeneratorAction(), fConfig(conf), fGunType("ring"), fEventType("elastic"), fE(1100 * MeV), fX(0), fY(0), fZ(-300.0 * cm), fTheta(0), fPhi(0), fThetaLo(0.5 * deg), fThetaHi(6.5 * deg), fEnpLo(1e-4), fEnpHi(1), fPrimaryGenerator(NULL)
 {
     if (fConfig != "prad" && fConfig != "drad")
         fConfig = "prad";
@@ -93,6 +93,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
                 fPrimaryGenerator = new PrimaryGenerator("point", fE, fX, fY, fZ, fTheta, fPhi, false, "proton");
             else if (fGunType == "ring")
                 fPrimaryGenerator = new PrimaryGenerator(fEventType, fE, fThetaLo, fThetaHi, recoilon, fRecoilParticle);
+            else if (fGunType == "disintegration")
+                fPrimaryGenerator = new DeuteronDisintegration(fE, fEnpLo, fEnpHi, fThetaLo, fThetaHi);
             else
                 fPrimaryGenerator = new DRadPrimaryGenerator(fEventType, recoilon, fRecoilParticle, fEventFile);
         }
