@@ -301,14 +301,12 @@ void DetectorConstruction::DefineMaterials()
     EJ204->AddElement(C, natoms = 474);
     fVisAtts[EJ204->GetName()] = new G4VisAttributes(G4Colour::Green());
 
-    // Torlon4203L
-    G4Material *Torlon = new G4Material("Torlon", density = 1.412 * g / cm3, ncomponents = 5);
-    Torlon->AddElement(C, natoms = 9);
-    Torlon->AddElement(H, natoms = 4);
-    Torlon->AddElement(N, natoms = 2);
-    Torlon->AddElement(O, natoms = 3);
-    Torlon->AddElement(Ar, natoms = 1);
-    fVisAtts[Torlon->GetName()] = new G4VisAttributes(G4Colour::Grey());
+    // Rohacell 31 IG
+    G4Material *Rohacell = new G4Material("Rohacell", density = 0.023 * g / cm3, ncomponents = 3);
+    Rohacell->AddElement(C, natoms = 5);
+    Rohacell->AddElement(H, natoms = 8);
+    Rohacell->AddElement(O, natoms = 2);
+    fVisAtts[Rohacell->GetName()] = new G4VisAttributes(G4Colour::Grey());
 
     // Tungsten
     G4Material *Tungsten = new G4Material("Tungsten", density = 19.25 * g / cm3, ncomponents = 1);
@@ -415,7 +413,7 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     // The downstream chamber window should locate at -3000.0 + 89.0 + 74.0  = -2837.0 mm
     // The length of the downstream chamber is 381.7 mm
     // The total length of the downstream chamber and the tube in total is 710.0 mm
-    // Here the downstream chamber and the tube are built together to be the new down stream chamber.
+    // Here the downstream chamber and the tube are built together to be the new downstream chamber.
     // So the center of this geometry should be at -2837.0 + 710.0 / 2 = -2482.0 mm
     G4double DownChamberCenter = -248.2 * cm;
     G4double DownChamberHalfL = 71.0 / 2.0 * cm;
@@ -864,7 +862,8 @@ void DetectorConstruction::AddGEM(G4LogicalVolume *mother, int layerid, bool cul
 void DetectorConstruction::AddHyCal(G4LogicalVolume *mother)
 {
     G4Material *DefaultM = G4Material::GetMaterial("Galaxy");
-    G4Material *HyCalBoxM = G4Material::GetMaterial("Torlon");
+    G4Material *HyCalBoxM = G4Material::GetMaterial("Rohacell");
+    G4Material *HyCalBoxWinM = G4Material::GetMaterial("Tedlar");
     G4Material *CollimatorM = G4Material::GetMaterial("Tungsten");
     G4Material *HyCalModuleM = G4Material::GetMaterial("PbWO4");
 
@@ -876,13 +875,19 @@ void DetectorConstruction::AddHyCal(G4LogicalVolume *mother)
 
     // HyCal box
     G4double HyCalBoxCenter = HyCalCenter - 9.0 * cm + 30.0 * cm; // Check
-    G4Box *HyCalBoxOuter = new G4Box("HyCalBoxOuter", 70.0 * cm, 70.0 * cm, 60.0 * cm);
-    G4Box *HyCalBoxInner = new G4Box("HyCalBoxInner", 66.0 * cm, 66.0 * cm, 59.6 * cm);
+    G4Box *HyCalBoxOuter = new G4Box("HyCalBoxOuter", 72.54 * cm, 72.54 * cm, 62.54 * cm);
+    G4Box *HyCalBoxInner = new G4Box("HyCalBoxInner", 70.0 * cm, 70.0 * cm, 60.0 * cm);
     G4SubtractionSolid *HyCalBoxNoHole = new G4SubtractionSolid("HyCalBoxNoHole", HyCalBoxOuter, HyCalBoxInner);
-    G4Tubs *HyCalBoxHole = new G4Tubs("HyCalBoxHole", 0, 25.0 * mm, 60.5 * cm, 0, twopi);
+    G4Tubs *HyCalBoxHole = new G4Tubs("HyCalBoxHole", 0, 31.75 * mm, 65.0 * cm, 0, twopi);
     G4SubtractionSolid *solidHyCalBox = new G4SubtractionSolid("HyCalBoxS", HyCalBoxNoHole, HyCalBoxHole);
     G4LogicalVolume *logicHyCalBox = new G4LogicalVolume(solidHyCalBox, HyCalBoxM, "HyCalBoxLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalBoxCenter), logicHyCalBox, "HyCal Box", mother, false, 0);
+
+    // HyCal box window
+    G4VSolid *solidHyCalBoxWin = new G4Tubs("HyCalBoxWinS", 1.90 * cm, 5.08 * cm, 19.0 * um, 0, twopi);
+    G4LogicalVolume *logicHyCalBoxWin = new G4LogicalVolume(solidHyCalBoxWin, HyCalBoxWinM, "HyCalBoxWinLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalBoxCenter - 62.54 * cm - 19.0 * um), logicHyCalBoxWin, "HyCal Box Window", mother, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalBoxCenter - 60.00 * cm + 19.0 * um), logicHyCalBoxWin, "HyCal Box Window", mother, false, 1);
 
     // HyCal container
     G4Box *HyCalConPiece1 = new G4Box("HyCalConPiece1", 58.21 * cm, 58.17 * cm, PbGlassL / 2.0);

@@ -733,7 +733,8 @@ void DeuteronDisintegration::GeneratePrimaryVertex(G4Event *anEvent)
     double gamma = ee / w;
     double v = pp / ee;
 
-    double theta_cm = pi * G4UniformRand();
+    double theta_cm = acos(-1.0 + 2.0 * G4UniformRand());
+    //double theta_cm = pi * G4UniformRand();
 
     G4ThreeVector vf_p(pcm_p * sin(theta_cm), 0, gamma * (pcm_p * cos(theta_cm) + v * ecm_p)); // NOTE: not lab system
     double dtheta = vf_p.theta(); // angle between proton momentum and virtual photon momentum
