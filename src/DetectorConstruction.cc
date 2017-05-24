@@ -870,7 +870,7 @@ void DetectorConstruction::AddHyCal(G4LogicalVolume *mother)
     // HyCal
     G4double PbGlassL = 45.0 * cm;
     //G4double CrystalL = 18.0 * cm;
-    G4double CrystalDiffL = 10.12 * cm;
+    G4double CrystalDiffL = 9.73 * cm; // according to last survey (april 2017)
     G4double HyCalCenter = fCrystalSurf - CrystalDiffL + PbGlassL / 2.0;
 
     // HyCal box

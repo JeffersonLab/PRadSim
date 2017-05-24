@@ -11,6 +11,7 @@
 #include "PRadDataHandler.h"
 #include "PRadHyCalSystem.h"
 #include "PRadDetMatch.h"
+#include "PRadCoordSystem.h"
 
 #include "TROOT.h"
 #include "TError.h"
@@ -18,6 +19,7 @@
 #include "TFile.h"
 #include "TMath.h"
 #include "TTree.h"
+#include "TRandom2.h"
 
 #include <getopt.h>
 #include <iostream>
@@ -32,7 +34,12 @@ void usage(int, char **argv)
     printf("  -e, --energy=1100          Set beam energy (MeV)\n");
     printf("  -h, --help                 Print usage\n");
     printf("  -g, --gem_match=1          Do GEM matching\n");
+    printf("  -t, --trg_eff=1            Do HyCal trigger efficiency\n");
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+static TRandom2 *RandGen = new TRandom2();
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -69,6 +76,7 @@ int main(int argc, char **argv)
 {
     std::string filename;
     bool gem_match = false;
+    bool trg_eff = false;
     double ei = 1100.0;
 
     while (1) {
@@ -76,11 +84,12 @@ int main(int argc, char **argv)
             {"help",  no_argument, 0, 'h'},
             {"energy",  required_argument, 0, 'e'},
             {"gem_match",  no_argument, 0, 'g'},
+	    {"trg_eff", no_argument, 0, 't'},
             {0, 0, 0, 0}
         };
 
         int option_index = 0;
-        int c = getopt_long(argc, argv, "e:gh", long_options, &option_index);
+        int c = getopt_long(argc, argv, "e:ght", long_options, &option_index);
 
         if (c == -1)
             break;
@@ -105,6 +114,10 @@ int main(int argc, char **argv)
             gem_match = true;
             break;
 
+	case 't':
+            trg_eff = true;
+            break;
+
         case '?':
             // getopt_long already printed an error message
             break;
@@ -122,11 +135,15 @@ int main(int argc, char **argv)
         exit(1);
     }
 
+    // initiate random generator seed
+    RandGen->SetSeed((UInt_t)time(NULL));
+
     // simulation data is more like raw evio data with HyCal information only,
     // so we only need hycal system to connected to the handler
     PRadDataHandler *handler = new PRadDataHandler();
     PRadHyCalSystem *hycal = new PRadHyCalSystem("config/hycal.conf");
     PRadDetMatch *det_match = new PRadDetMatch("config/det_match.conf");
+    PRadCoordSystem *coord_sys = new PRadCoordSystem("database/coordinates.dat",2000);
 
     handler->SetHyCalSystem(hycal);
     handler->ReadFromEvio(filename);
@@ -175,6 +192,7 @@ int main(int argc, char **argv)
 
         hycal->Reconstruct(event);
         auto &hits = hycal->GetDetector()->GetHits();
+	coord_sys->Transform(PRadDetector::HyCal, hits.begin(), hits.end());
 
         tgem->GetEntry(i);
 
@@ -187,20 +205,22 @@ int main(int argc, char **argv)
                 GEMHit h;
                 h.x = - X_GEM[j]; // Orientation mismatch
                 h.y = Y_GEM[j];
-                h.z = Z_GEM[j] + 3000.0; // same referance as PRadAnalyzer (89mm upstream target center)
+                h.z = 0;
 
                 if (DID_GEM[j]) gem2_hits.push_back(h);
                 else gem1_hits.push_back(h);
             }
 
-            for (int j = 0; j < (int)hits.size(); ++j) hits[j].z += 5817.0; // increment of HyCal center position (coordinates.dat)
-
+	    coord_sys->Transform(PRadDetector::PRadGEM1, gem1_hits.begin(), gem1_hits.end());
+	    coord_sys->Transform(PRadDetector::PRadGEM2, gem2_hits.begin(), gem2_hits.end());
             auto matched = det_match->Match(hits, gem1_hits, gem2_hits);
 
             N_HC = (int)matched.size();
             N_GEM = (int)matched.size();
 
             for (int j = 0; j < N_HC; ++j) {
+
+	        if (trg_eff && (RandGen->Uniform() > hycal->GetModule(matched[j].hycal.cid)->GetTriggerEfficiency())) continue;
 
                 X_HC[j] = matched[j].hycal.x;
                 Y_HC[j] = matched[j].hycal.y;
@@ -232,6 +252,9 @@ int main(int argc, char **argv)
             N_HC = (int)hits.size();
 
             for (int j = 0; j < (int)hits.size(); ++j) {
+
+	        if (trg_eff && (RandGen->Uniform() > hycal->GetModule(hits[j].cid)->GetTriggerEfficiency())) continue;
+
                 X_HC[j] = hits[j].x;
                 Y_HC[j] = hits[j].y;
                 Z_HC[j] = hits[j].z;
