@@ -50,4 +50,5 @@ PRadSim
 !evgen/esepp/Makefile
 !evgen/moller/Makefile
 !evgen/newep/Makefile
+!evgen/newee/Makefile
 !evgen/norc/Makefile

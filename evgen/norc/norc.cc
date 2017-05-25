@@ -34,7 +34,7 @@ int main()
 
     std::cout << "Full energy of the incident lepton (MeV): " << std::flush;
     std::cin.getline(mychar, 64);
-    Ei_1 = 0.001 * atof(mychar); // MeV
+    Ei_1 = 0.001 * atof(mychar); // GeV
 
     std::cout << "Minimum polar angle of the electron (degree): " << std::flush;
     std::cin.getline(mychar, 64);
@@ -51,12 +51,6 @@ int main()
     std::cout << "Number of events to generate: " << std::flush;
     std::cin.getline(mychar, 64);
     int N = atoi(mychar);
-
-    //Ei_1 = 1.1;
-    //theta_min = 0.6 * deg;
-    //theta_max = 6.0 * deg;
-    //select = 1;
-    //int N = 100000;
 
     TRandom2 *PseRan = new TRandom2();
     PseRan->SetSeed((int)(time(NULL)));
@@ -96,6 +90,8 @@ int main()
     FILE *fp = fopen(filename, "w");
 
     for (int i = 0; i < N; ++i) {
+        if (i % 10000 == 0 && i != 0) std::cout << i << std::endl;
+
         FoamX->MakeEvent();
 
         phi_1 = phi_min + (phi_max - phi_min) * (PseRan->Rndm());
@@ -103,19 +99,31 @@ int main()
         if (phi_1 < 0.) phi_2 = phi_1 + Pi;
         else phi_2 = phi_1 - Pi;
 
-        fprintf(fp, "%9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf\n", 1000. * Ef_1, theta_1, phi_1, 1000. * Ef_2, theta_2, phi_2, 0., 0., 0.);
-        //printf("%9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf %9.3lf %8.6lf %8.5lf\n", 1000. * Ef_1, theta_1, phi_1, 1000. * Ef_2, theta_2, phi_2, 0., 0., 0.);
+        fprintf(fp, "%11.5lf %10.8lf %11.8lf %11.5lf %10.8lf %11.8lf %11.5lf %10.8lf %11.8lf\n", 1000. * Ef_1, theta_1, phi_1, 1000. * Ef_2, theta_2, phi_2, 0., 0., 0.);
+        //printf("%11.5lf %10.8lf %11.8lf %11.5lf %10.8lf %11.8lf %11.5lf %10.8lf %11.8lf\n", 1000. * Ef_1, theta_1, phi_1, 1000. * Ef_2, theta_2, phi_2, 0., 0., 0.);
     }
 
     fclose(fp);
 
     fp = fopen(ifilename, "w");
 
+    fprintf(fp, "beam energy:\n");
+    fprintf(fp, "%lf MeV\n", Ei_1 * 1000);
+    fprintf(fp, "polar angle range:\n");
+    fprintf(fp, "%lf ~ %lf deg\n", theta_min / deg, theta_max / deg);
+    fprintf(fp, "angle acceptance (the solid angle):\n");
+    fprintf(fp, "%lf steradian\n", omega);
     fprintf(fp, "cross section (averaged over the solid angle):\n");
     fprintf(fp, "%lf microbarn / steradian\n", xsint / omega);
     fprintf(fp, "integrated luminosity:\n");
     fprintf(fp, "%lf inverse microbarn\n", N / xsint);
 
+    printf("beam energy:\n");
+    printf("%lf MeV\n", Ei_1 * 1000);
+    printf("polar angle range:\n");
+    printf("%lf ~ %lf deg\n", theta_min / deg, theta_max / deg);
+    printf("angle acceptance (the solid angle):\n");
+    printf("%lf steradian\n", omega);
     printf("cross section (averaged over the solid angle):\n");
     printf("%lf microbarn / steradian\n", xsint / omega);
     printf("integrated luminosity:\n");
