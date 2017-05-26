@@ -84,7 +84,7 @@ int main(int argc, char **argv)
             {"help",  no_argument, 0, 'h'},
             {"energy",  required_argument, 0, 'e'},
             {"gem_match",  no_argument, 0, 'g'},
-	    {"trg_eff", no_argument, 0, 't'},
+            {"trg_eff", no_argument, 0, 't'},
             {0, 0, 0, 0}
         };
 
@@ -114,7 +114,7 @@ int main(int argc, char **argv)
             gem_match = true;
             break;
 
-	case 't':
+        case 't':
             trg_eff = true;
             break;
 
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
     PRadDataHandler *handler = new PRadDataHandler();
     PRadHyCalSystem *hycal = new PRadHyCalSystem("config/hycal.conf");
     PRadDetMatch *det_match = new PRadDetMatch("config/det_match.conf");
-    PRadCoordSystem *coord_sys = new PRadCoordSystem("database/coordinates.dat",2000);
+    PRadCoordSystem *coord_sys = new PRadCoordSystem("database/coordinates.dat", 2000);
 
     handler->SetHyCalSystem(hycal);
     handler->ReadFromEvio(filename);
@@ -192,7 +192,7 @@ int main(int argc, char **argv)
 
         hycal->Reconstruct(event);
         auto &hits = hycal->GetDetector()->GetHits();
-	coord_sys->Transform(PRadDetector::HyCal, hits.begin(), hits.end());
+        coord_sys->Transform(PRadDetector::HyCal, hits.begin(), hits.end());
 
         tgem->GetEntry(i);
 
@@ -211,8 +211,8 @@ int main(int argc, char **argv)
                 else gem1_hits.push_back(h);
             }
 
-	    coord_sys->Transform(PRadDetector::PRadGEM1, gem1_hits.begin(), gem1_hits.end());
-	    coord_sys->Transform(PRadDetector::PRadGEM2, gem2_hits.begin(), gem2_hits.end());
+            coord_sys->Transform(PRadDetector::PRadGEM1, gem1_hits.begin(), gem1_hits.end());
+            coord_sys->Transform(PRadDetector::PRadGEM2, gem2_hits.begin(), gem2_hits.end());
             auto matched = det_match->Match(hits, gem1_hits, gem2_hits);
 
             N_HC = (int)matched.size();
@@ -220,7 +220,7 @@ int main(int argc, char **argv)
 
             for (int j = 0; j < N_HC; ++j) {
 
-	        if (trg_eff && (RandGen->Uniform() > hycal->GetModule(matched[j].hycal.cid)->GetTriggerEfficiency())) continue;
+                if (trg_eff && (RandGen->Uniform() > hycal->GetModule(matched[j].hycal.cid)->GetTriggerEfficiency())) continue;
 
                 X_HC[j] = matched[j].hycal.x;
                 Y_HC[j] = matched[j].hycal.y;
@@ -253,7 +253,7 @@ int main(int argc, char **argv)
 
             for (int j = 0; j < (int)hits.size(); ++j) {
 
-	        if (trg_eff && (RandGen->Uniform() > hycal->GetModule(hits[j].cid)->GetTriggerEfficiency())) continue;
+                if (trg_eff && (RandGen->Uniform() > hycal->GetModule(hits[j].cid)->GetTriggerEfficiency())) continue;
 
                 X_HC[j] = hits[j].x;
                 Y_HC[j] = hits[j].y;

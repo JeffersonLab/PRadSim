@@ -746,3 +746,8 @@
   1516    PRadGEM2    -1.43425     0.49041        5267        0        0        0
   1516       HyCal    0.905171     1.43542        5725        0        0        0
 
+# simulation configuration
+
+  2000    PRadGEM1	     0	         0        5307        0        0        0
+  2000    PRadGEM2           0           0        5267        0        0        0
+  2000       HyCal    	     0           0        5725        0        0        0
