@@ -23,7 +23,9 @@
 
 #define NModules 1728
 #define TRIGGER_THRESHOLD 500 // MeV
-
+//***** MC calibration****//
+#define T_BLOCKS 2156
+//************************//
 class PRadClusterProfile;
 class PRadHyCalModule;
 class PRadHyCalSystem;
@@ -65,6 +67,12 @@ private:
 
     PRadHyCalSystem *fHyCal;
     PRadClusterProfile *fProfile;
+    
+//******* MC calibration********//
+    void LoadMCCaliConst();
+    double fMCCaliConst[T_BLOCKS];
+    double fMCCaliSigma[T_BLOCKS];
+//******************************//
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

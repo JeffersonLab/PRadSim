@@ -15,6 +15,7 @@
 #include "PRadEventStruct.h"
 #include "PRadHyCalSystem.h"
 #include "PRadHyCalModule.h"
+#include "ConfigParser.h"
 
 #include "TROOT.h"
 #include "TError.h"
@@ -57,6 +58,9 @@ HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::strin
         fModuleEdep[i] = 0;
         fModuleTrackL[i] = 0;
     }
+    //****MC calibration*****//
+    LoadMCCaliConst();
+    //***********************//
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -226,19 +230,20 @@ void HyCalDigitization::FillBuffer(uint32_t *buffer, const PRadHyCalModule &modu
     double ped = RandGen->Gaus(module.GetChannel()->GetPedestal().mean, module.GetChannel()->GetPedestal().sigma);
     unsigned short val = 0;
 
+    double mcConst = fMCCaliConst[module.GetID()-1];
+    double mcSigma = fMCCaliSigma[module.GetID()-1];
+
     if (!module.GetChannel()->IsDead()) {
         if (module.IsLeadTungstate()) {
-            if (fBeamEnergy > 1600) // 2 GeV
-                val = ped + (RandGen->Gaus(edep, edep * 0.026 / TMath::Sqrt(2.14))) / module.GetCalibrationFactor();
-
-            else   // 1 GeV
-                val = ped + (RandGen->Gaus(edep, edep * 0.026 / TMath::Sqrt(1.1))) / module.GetCalibrationFactor();
+            double reso = (0.026*TMath::Sqrt(0.73)/TMath::Sqrt(edep/1000.)+mcSigma);
+            if (reso < 0.) reso = 0.;
+            
+            val = ped + (RandGen->Gaus(edep,  edep * reso )) *  (mcConst / module.GetCalibrationFactor());
         } else if (module.IsLeadGlass()) {
-            if (fBeamEnergy > 1600) // 2 GeV
-                val = ped + (RandGen->Gaus(edep, edep * 0.065 / TMath::Sqrt(2.14))) / module.GetCalibrationFactor();
-
-            else   // 1 GeV
-                val = ped + (RandGen->Gaus(edep, edep * 0.065 / TMath::Sqrt(1.1))) / module.GetCalibrationFactor();
+            double reso = (0.053*TMath::Sqrt(0.73)/TMath::Sqrt(edep/1000.)+mcSigma);
+            if (reso < 0.) reso = 0.;
+            
+            val = ped + (RandGen->Gaus(edep,  edep * reso )) *  (mcConst / module.GetCalibrationFactor());
         }
     } else
         val = ped;
@@ -247,3 +252,25 @@ void HyCalDigitization::FillBuffer(uint32_t *buffer, const PRadHyCalModule &modu
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+//***************MC calibration************************//
+void HyCalDigitization::LoadMCCaliConst()
+{
+    ConfigParser parser;
+    if (!parser.OpenFile("./database/calibration/2GeV_mc_cali_const.dat")){
+        std::cout<<"cannot find mc calibration file, using default value 1 and sigma 0"<<std::endl;
+        for (int i=0; i<T_BLOCKS; i++){
+            fMCCaliConst[i] = 1.;
+            fMCCaliSigma[i] = 0.;
+        }
+        return;
+    }
+    int count = 0;
+    while (parser.ParseLine()){
+        fMCCaliConst[count] = parser.TakeFirst().Double();
+        fMCCaliSigma[count] = parser.TakeFirst().Double();
+        count++;
+    }
+    parser.CloseFile();
+}
+//*****************************************************//
