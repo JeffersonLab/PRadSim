@@ -34,7 +34,7 @@ static TRandom2 *RandGen = new TRandom2();
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::string &path, double ebeam) : StandardDigiBase(abbrev), fDMethod(0), fBeamEnergy(ebeam)
+HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::string &path) : StandardDigiBase(abbrev), fDMethod(0)
 {
     RandGen->SetSeed((UInt_t)time(NULL));
 
@@ -58,9 +58,8 @@ HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::strin
         fModuleEdep[i] = 0;
         fModuleTrackL[i] = 0;
     }
-    //****MC calibration*****//
+
     LoadMCCaliConst();
-    //***********************//
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -100,10 +99,10 @@ int HyCalDigitization::PreStart(uint32_t *buffer, int base_index)
 
 bool HyCalDigitization::ProcessEvent(uint32_t *buffer)
 {
-    if (fTotalEdep < TRIGGER_THRESHOLD) {
-        Clear();
-        return false;
-    }
+    //if (fTotalEdep < TRIGGER_THRESHOLD) {
+    //    Clear();
+    //    return false;
+    //}
 
     if (fDMethod == 1) UpdateEnergy();
 
@@ -129,6 +128,7 @@ void HyCalDigitization::Clear()
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 void HyCalDigitization::UpdateEnergy()
 {
     for (int i = 0; i < fN; i++) {
@@ -230,20 +230,22 @@ void HyCalDigitization::FillBuffer(uint32_t *buffer, const PRadHyCalModule &modu
     double ped = RandGen->Gaus(module.GetChannel()->GetPedestal().mean, module.GetChannel()->GetPedestal().sigma);
     unsigned short val = 0;
 
-    double mcConst = fMCCaliConst[module.GetID()-1];
-    double mcSigma = fMCCaliSigma[module.GetID()-1];
+    double mcConst = fMCCaliConst[module.GetID() - 1];
+    double mcSigma = fMCCaliSigma[module.GetID() - 1];
 
     if (!module.GetChannel()->IsDead()) {
         if (module.IsLeadTungstate()) {
-            double reso = (0.026*TMath::Sqrt(0.73)/TMath::Sqrt(edep/1000.)+mcSigma);
+            double reso = (0.026 * TMath::Sqrt(0.73) / TMath::Sqrt(edep / 1000.) + mcSigma);
+
             if (reso < 0.) reso = 0.;
-            
-            val = ped + (RandGen->Gaus(edep,  edep * reso )) *  (mcConst / module.GetCalibrationFactor());
+
+            val = ped + (RandGen->Gaus(edep,  edep * reso)) * (mcConst / module.GetCalibrationFactor());
         } else if (module.IsLeadGlass()) {
-            double reso = (0.053*TMath::Sqrt(0.73)/TMath::Sqrt(edep/1000.)+mcSigma);
+            double reso = (0.053 * TMath::Sqrt(0.73) / TMath::Sqrt(edep / 1000.) + mcSigma);
+
             if (reso < 0.) reso = 0.;
-            
-            val = ped + (RandGen->Gaus(edep,  edep * reso )) *  (mcConst / module.GetCalibrationFactor());
+
+            val = ped + (RandGen->Gaus(edep,  edep * reso)) * (mcConst / module.GetCalibrationFactor());
         }
     } else
         val = ped;
@@ -253,24 +255,30 @@ void HyCalDigitization::FillBuffer(uint32_t *buffer, const PRadHyCalModule &modu
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-//***************MC calibration************************//
 void HyCalDigitization::LoadMCCaliConst()
 {
     ConfigParser parser;
-    if (!parser.OpenFile("./database/calibration/2GeV_mc_cali_const.dat")){
-        std::cout<<"cannot find mc calibration file, using default value 1 and sigma 0"<<std::endl;
-        for (int i=0; i<T_BLOCKS; i++){
+
+    if (!parser.OpenFile("./database/calibration/2GeV_mc_cali_const.dat")) {
+        std::cout << "cannot find mc calibration file, using default value 1 and sigma 0" << std::endl;
+
+        for (int i = 0; i < T_BLOCKS; i++) {
             fMCCaliConst[i] = 1.;
             fMCCaliSigma[i] = 0.;
         }
+
         return;
     }
+
     int count = 0;
-    while (parser.ParseLine()){
+
+    while (parser.ParseLine()) {
         fMCCaliConst[count] = parser.TakeFirst().Double();
         fMCCaliSigma[count] = parser.TakeFirst().Double();
         count++;
     }
+
     parser.CloseFile();
 }
-//*****************************************************//
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

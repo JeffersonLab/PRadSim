@@ -295,32 +295,36 @@ int main(int argc, char **argv)
 void LoadConst()
 {
     ConfigParser parser;
-    if (!parser.OpenFile("./database/calibration/2GeV_mc_cali_const.dat")){
-        std::cout<<"cannot find mc calibration file"<<std::endl;
+
+    if (!parser.OpenFile("./database/calibration/2GeV_mc_cali_const.dat")) {
+        std::cout << "cannot find mc calibration file" << std::endl;
         exit(0);
     }
-    
+
     int count = 0;
-    while(parser.ParseLine()){
+
+    while (parser.ParseLine()) {
         double input[4];
-        for (int i=0; i<4; i++) input[i] = parser.TakeFirst().Double();
-        
+
+        for (int i = 0; i < 4; i++) input[i] = parser.TakeFirst().Double();
+
         ECali[count] = input[2];
         nonlinConst[count] = input[3];
         count++;
     }
+
     parser.CloseFile();
 }
 
 double EnergyCorrect(Double_t energy, Short_t cid)
 {
     if (cid <= 0) return energy;
-    
-    float ecorr = 1. + nonlinConst[cid-1]*(energy-ECali[cid-1])/1000.;
-    
-    if(fabs(ecorr-1.) < 0.6) energy /= ecorr;
-    
-    return energy; 
+
+    float ecorr = 1. + nonlinConst[cid - 1] * (energy - ECali[cid - 1]) / 1000.;
+
+    if (fabs(ecorr - 1.) < 0.6) energy /= ecorr;
+
+    return energy;
 }
 //***************************************//
 
