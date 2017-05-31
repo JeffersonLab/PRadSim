@@ -52,7 +52,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-HyCalParameterisation::HyCalParameterisation(const std::string &path) : G4VPVParameterisation(), ConfigObject()
+HyCalParameterisation::HyCalParameterisation(const std::string &path, G4int conf) : G4VPVParameterisation(), ConfigObject(), fConfig(conf)
 {
     if (!path.empty())
         Configure(path);
@@ -101,14 +101,34 @@ void HyCalParameterisation::LoadModuleList(const std::string &path)
 
         if (type.compare("PbGlass") == 0) {
             t = Lead_Glass;
-            z = 0.;
+            if (fConfig == 1) {
+                sizex = 38.00 * mm;
+                sizey = 38.00 * mm;
+            }
+            else {
+                sizex = sizex * mm - 1.0 * nm;
+                sizey = sizey * mm - 1.0 * nm;
+            }
+            z = 0.0 * mm;
         } else if (type.compare("PbWO4") == 0) {
             t = Lead_Tungstate;
-            z = 101.2 - (450. - 180.) / 2.;
+            if (fConfig == 1) {
+                sizex = 20.50 * mm;
+                sizey = 20.50 * mm;
+            }
+            else {
+                sizex = sizex * mm - 1.0 * nm;
+                sizey = sizey * mm - 1.0 * nm;
+            }
+            z = (97.3 - (450.0 - 180.0) / 2.0) * mm;
         } else
             continue;
+        
+        length = length * mm;
+        x = x * mm;
+        y = y * mm;
 
-        moduleList.push_back(HyCal_Module(name, t, sizex - 0.5 * nm, sizey - 0.5 * nm, length, -1.0 * x, y, z));
+        moduleList.push_back(HyCal_Module(name, t, sizex, sizey, length, -1.0 * x, y, z));
     }
 }
 
@@ -121,7 +141,7 @@ void HyCalParameterisation::ComputeTransformation(const G4int copyNo, G4VPhysica
         exit(1);
     }
 
-    G4ThreeVector origin(moduleList[copyNo].x * mm, moduleList[copyNo].y * mm, moduleList[copyNo].z * mm);
+    G4ThreeVector origin(moduleList[copyNo].x, moduleList[copyNo].y, moduleList[copyNo].z);
     physVol->SetTranslation(G4ThreeVector(origin));
     physVol->SetRotation(0);
 }
@@ -135,9 +155,9 @@ void HyCalParameterisation::ComputeDimensions(G4Box &CalBlock, const G4int copyN
         exit(1);
     }
 
-    CalBlock.SetXHalfLength(moduleList[copyNo].sizex / 2. * mm);
-    CalBlock.SetYHalfLength(moduleList[copyNo].sizey / 2. * mm);
-    CalBlock.SetZHalfLength(moduleList[copyNo].length / 2. * mm);
+    CalBlock.SetXHalfLength(moduleList[copyNo].sizex / 2.0);
+    CalBlock.SetYHalfLength(moduleList[copyNo].sizey / 2.0);
+    CalBlock.SetZHalfLength(moduleList[copyNo].length / 2.0);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

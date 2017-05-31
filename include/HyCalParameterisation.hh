@@ -85,7 +85,7 @@ public:
     };
 
 public:
-    HyCalParameterisation(const std::string &path = "");
+    HyCalParameterisation(const std::string &path = "", G4int conf = 0);
     virtual ~HyCalParameterisation();
 
     void Configure(const std::string &path);
@@ -113,6 +113,8 @@ private: // Dummy declarations to get rid of warnings ...
 
 private:
     std::vector<HyCal_Module> moduleList;
+    
+    G4int fConfig;
 };
 
 inline size_t HyCalParameterisation::GetNumber()

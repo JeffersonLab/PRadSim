@@ -85,6 +85,7 @@ private:
     G4UIcmdWithABool          *GEMSDCmd;
     G4UIcmdWithABool          *SciPlaneSDCmd;
     G4UIcmdWithAString        *HyCalSDCmd;
+    G4UIcmdWithAString        *HyCalWrapCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

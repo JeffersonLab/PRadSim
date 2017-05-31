@@ -102,6 +102,7 @@ DetectorConstruction::DetectorConstruction(G4String conf) : G4VUserDetectorConst
 
     fSciPlaneCenter = 240.0 * cm;
 
+    fHyCalConfig = 0;
     fCrystalSurf = 270.0 * cm;
 
     if (fConfig == "drad") {
@@ -312,6 +313,18 @@ void DetectorConstruction::DefineMaterials()
     G4Material *Tungsten = new G4Material("Tungsten", density = 19.25 * g / cm3, ncomponents = 1);
     Tungsten->AddElement(W, natoms = 1);
     fVisAtts[Tungsten->GetName()] = new G4VisAttributes(G4Colour::Black());
+    
+    // Polyester (3M VM-2000 reflector)
+    G4Material *Polyester = new G4Material("Polyester", density = 1.37 * g / cm3, ncomponents = 3);
+    Polyester->AddElement(C, natoms = 10);
+    Polyester->AddElement(H, natoms = 8);
+    Polyester->AddElement(O, natoms = 4);
+    
+    // Wrap material (63 um Polyester, 38.1 um Tedlar, the total thickness is 260 um / 2 = 130 um)
+    G4Material *WrapMaterial = new G4Material("WrapMaterial", density = (1.37 * 63.0 + 1.545 * 38.1) / 130.0 * g / cm3, ncomponents = 2);
+    WrapMaterial->AddMaterial(Polyester, 63.0 / (63.0 + 38.1));
+    WrapMaterial->AddMaterial(Tedlar, 38.1 / (63.0 + 38.1));
+    fVisAtts[WrapMaterial->GetName()] = new G4VisAttributes(G4VisAttributes::Invisible);
 
     // PbWO4 Crystal
     G4Material *PbWO4 = new G4Material("PbWO4", density = 8.300 * g / cm3, ncomponents = 3);
@@ -861,11 +874,14 @@ void DetectorConstruction::AddGEM(G4LogicalVolume *mother, int layerid, bool cul
 
 void DetectorConstruction::AddHyCal(G4LogicalVolume *mother)
 {
-    G4Material *DefaultM = G4Material::GetMaterial("Galaxy");
     G4Material *HyCalBoxM = G4Material::GetMaterial("Rohacell");
     G4Material *HyCalBoxWinM = G4Material::GetMaterial("Tedlar");
     G4Material *CollimatorM = G4Material::GetMaterial("Tungsten");
     G4Material *HyCalModuleM = G4Material::GetMaterial("PbWO4");
+    G4Material *HyCalModuleWrapM = G4Material::GetMaterial("Galaxy");
+    
+    if (fHyCalConfig == 1)
+        HyCalModuleWrapM = G4Material::GetMaterial("WrapMaterial");
 
     // HyCal
     G4double PbGlassL = 45.0 * cm;
@@ -895,13 +911,13 @@ void DetectorConstruction::AddHyCal(G4LogicalVolume *mother)
     G4SubtractionSolid *HyCalConBox = new G4SubtractionSolid("HyCalConBox", HyCalConPiece1, HyCalConPiece2, 0, G4ThreeVector(0, 0, (CrystalDiffL - PbGlassL) / 2.0 - 0.5 * mm));
     G4Box *HyCalConHole = new G4Box("HyCalConHole", 2.0 * cm, 2.0 * cm, PbGlassL / 2.0 + 1.0 * mm);
     G4SubtractionSolid *solidHyCalCon = new G4SubtractionSolid("HyCalContainerS", HyCalConBox, HyCalConHole);
-    G4LogicalVolume *logicHyCalCon = new G4LogicalVolume(solidHyCalCon, DefaultM, "HyCalContainerLV");
+    G4LogicalVolume *logicHyCalCon = new G4LogicalVolume(solidHyCalCon, HyCalModuleWrapM, "HyCalContainerLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalCenter), logicHyCalCon, "HyCal Container", mother, false, 0);
 
     // HyCal modules
     G4VSolid *solidAbsorber = new G4Box("HyCalModuleS", 1.025 * cm, 1.025 * cm, 90.0 * mm);
     G4LogicalVolume *logicAbsorber = new G4LogicalVolume(solidAbsorber, HyCalModuleM, "HyCalModuleLV");
-    HyCalParameterisation *param = new HyCalParameterisation("config/hycal.conf");
+    HyCalParameterisation *param = new HyCalParameterisation("config/hycal.conf", fHyCalConfig);
     new G4PVParameterised("HyCal Module", logicAbsorber, logicHyCalCon, kUndefined, param->GetNumber(), param, false);
 
     // Collimator
