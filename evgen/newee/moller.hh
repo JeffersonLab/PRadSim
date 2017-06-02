@@ -174,7 +174,7 @@ double BornXS(double s, double t, double u0)
     // u0 channel
     BornLevel(s, u0, t, sig_0u);
 
-    return sig_0t + sig_0u;
+    return (sig_0t + sig_0u) * (s - 2.0 * m2);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -198,8 +198,8 @@ double NonRadXS(double s, double t, double u0)
     // below v_min, photon emission is not detectable
     double sig_Fs = merad_sigfs(v_min, t, 0.0);
 
-    //return (1.0 + alp_pi * (delta_1H + delta_1S)) * Exp(alp_pi * delta_1inf) * (sig_0t + sig_0u) + sig_St + sig_Su + sig_vertt + sig_vertu + sig_Bt + sig_Bu + sig_Fs;
-    return (1.0 + alp_pi * (delta_1H + delta_1S + delta_1inf)) * (sig_0t + sig_0u) + sig_St + sig_Su + sig_vertt + sig_vertu + sig_Bt + sig_Bu + sig_Fs;
+    double result = (1.0 + alp_pi * (delta_1H + delta_1S + delta_1inf)) * (sig_0t + sig_0u) + sig_St + sig_Su + sig_vertt + sig_vertu + sig_Bt + sig_Bu;
+    return result * (s - 2.0 * m2) + sig_Fs;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -239,12 +239,7 @@ void BornLevel(double s, double t, double u0, double &sig_0)
     double xi_u02 = xi_u0 * xi_u0, xi_u04 = xi_u02 * xi_u02;
 
     // equation (49), Born Level
-    // we found that the equation in the paper is wrong in dimension
-    // By comparing with the equation (8) in Ref.
-    // N.M. Shumeiko and J.G. Suarez,
-    // Journal of Physics G: Nuclear and Particle Physics 26, 2, 113 (2000).
-    // There is a factor of (s - 2.0*m^2) missing
-    sig_0 = (u0 * u0 / xi_s2 / 4.0 / s * (4.0 * xi_u04 - Pow2(1.0 - xi_u02) * (2.0 + t / u0)) - s * s * xi_s4 / u0) * 2.0 * pi * alp2 / t / t / s * (s - 2.0 * m2);
+    sig_0 = (u0 * u0 / xi_s2 / 4.0 / s * (4.0 * xi_u04 - Pow2(1.0 - xi_u02) * (2.0 + t / u0)) - s * s * xi_s4 / u0) * 2.0 * pi * alp2 / t / t / s;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -315,7 +310,7 @@ void VirtualPhoton(double s, double t, double u0, double &sig_0, double &sig_S, 
 
     // vertex correction, non-factorized part, anomalous magnetic moment
     // euqation (52)
-    double sig_AMM = 4.0 * alp3 / st2 / xi_t * m2 * log_t * (3.0 * (s - 2.0 * m2) / u0 + (10.0 * m2 - 3.0 * u0) / (s - 4.0 * m2));
+    double sig_AMM = - 4.0 * alp3 / st2 / xi_t * m2 * log_t * (3.0 * (s - 2.0 * m2) / u0 + (10.0 * m2 - 3.0 * u0) / (s - 4.0 * m2));
 
     // equation (51)
     sig_vert = 2.0 * alp_pi * delta_vert * sig_0 + sig_AMM;
@@ -332,12 +327,11 @@ void VirtualPhoton(double s, double t, double u0, double &sig_0, double &sig_S, 
     double sig_B1_t4 = log_4t * (2.0 * t * t - (xi_s4 + xi_s2) * s * s + (3.0 * xi_s2 - 1.0) * s * t - 2.0 * s * (t + 2.0 * u0) / xi_t2);
     double sig_B1 = sig_B1_t1 + sig_B1_t2 + sig_B1_t3 + sig_B1_t4;
 
-    double sig_B2_t1 = 1.0 / 12.0 / xi_u0 / t * (4.0 * t3 - 2.0 * u0t2 * (xi_u04 - 6.0 * xi_u02 - 1.0) + u02t * (-Pow6(xi_u0) + xi_u04 + 9.0 * xi_u02 + 7.0) + 2.0 * Pow3(xi_u02 + 1.0) * u03);
-    double sig_B2_t2 = (3.0 * log_u0 * log_u0 - 6.0 * log_2u0 * log_2u0 - 12.0 * Li2_u0 + 6.0 * log_u0 * Log(xi_u02 * u0 / t) + pi2);
-    double sig_B2_t3 = 1.0 / 12.0 / xi_t2 / xi_t / t * (xi_t2 * (-xi_t4 + 2.0 * xi_t2 + 3.0) * t3 + 2.0 * (Pow6(xi_t2) - 4.0 * xi_t4 + 8.0 * xi_t2 + 1.0) * u0t2 + 4.0 * (3.0 * xi_t4 + 1.0) * u02t + 16.0 * xi_t2 * u03) * (-6.0 * log_2t * log_2t + 3.0 * log_t * log_t - 12.0 * Li2_t + 4.0 * pi2);
-    double sig_B2_t4 = log_4t * (2.0 * u0 / xi_t2 * (xi_t2 * t + t + 2.0 * u0) + (t - u0) * (2.0 * t + xi_u02 * u0 + u0));
-    double sig_B2_t5 = - 1.0 / xi_u0 * log_u0 * (xi_u02 * (t - u0) - 2.0 * t) * (2.0 * t + xi_u02 * u0 + u0);
-    double sig_B2 = sig_B2_t1 + sig_B2_t2 + sig_B2_t3 + sig_B2_t4 + sig_B2_t5;
+    double sig_B2_t1 = 1.0 / 12.0 / xi_u0 / t * (4.0 * t3 - 2.0 * u0t2 * (xi_u04 - 6.0 * xi_u02 - 1.0) + u02t * (-Pow6(xi_u0) + xi_u04 + 9.0 * xi_u02 + 7.0) + 2.0 * Pow3(xi_u02 + 1.0) * u03) * (3.0 * log_u0 * log_u0 - 6.0 * log_2u0 * log_2u0 - 12.0 * Li2_u0 + 6.0 * log_u0 * Log(xi_u02 * u0 / t) + pi2);
+    double sig_B2_t2 = 1.0 / 12.0 / xi_t2 / xi_t / t * (xi_t2 * (-xi_t4 + 2.0 * xi_t2 + 3.0) * t3 + 2.0 * (Pow6(xi_t2) - 4.0 * xi_t4 + 8.0 * xi_t2 + 1.0) * u0t2 + 4.0 * (3.0 * xi_t4 + 1.0) * u02t + 16.0 * xi_t2 * u03) * (-6.0 * log_2t * log_2t + 3.0 * log_t * log_t - 12.0 * Li2_t + 4.0 * pi2);
+    double sig_B2_t3 = log_4t * (2.0 * u0 / xi_t2 * (xi_t2 * t + t + 2.0 * u0) + (t - u0) * (2.0 * t + xi_u02 * u0 + u0));
+    double sig_B2_t4 = - 1.0 / xi_u0 * log_u0 * (xi_u02 * (t - u0) - 2.0 * t) * (2.0 * t + xi_u02 * u0 + u0);
+    double sig_B2 = sig_B2_t1 + sig_B2_t2 + sig_B2_t3 + sig_B2_t4;
 
     // equation (53)
     sig_B = alp_pi / 2.0 * delta_box * sig_0 + alp3 / xi_s2 / s2t / u0 * (sig_B1 + sig_B2);

@@ -16,7 +16,7 @@
       data pi/3.14159265359d0/, alfa/.7297352568d-2/,
      .     m/0.510998918d0/
 
-      m2 = m*m
+      m2 = m * m
       En = elab
       s = 2d0 * (En * m + m2)
       als = s * (s - 4d0 * m2)

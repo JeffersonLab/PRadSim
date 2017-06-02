@@ -60,14 +60,13 @@ int main()
     std::cout << "Number of events to generate: " << std::flush;
     std::cin.getline(mychar, 64);
     int N = atoi(mychar);
-    /*
-        Ei_1 = 1100;
-        theta_min = 0.7 * deg;
-        theta_max = 3.8 * deg;
-        int N = 100;
-        v_min = 4.69;
-        v_cut = 100;
-    */
+
+    //Ei_1 = 1100;
+    //theta_min = 0.7 * deg;
+    //theta_max = 3.8 * deg;
+    //int N = 100;
+    //v_min = 4.69;
+    //v_cut = 100;
 
     PseRan = new TRandom2();
     PseRan->SetSeed((int)(time(NULL)));
