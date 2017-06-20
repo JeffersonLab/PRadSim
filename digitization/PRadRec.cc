@@ -241,7 +241,7 @@ int main(int argc, char **argv)
                 Y_HC[j] = matched[j].hycal.y;
                 Z_HC[j] = matched[j].hycal.z;
 
-                E[j] = EnergyCorrect(matched[j].hycal.E, hits[j].cid);
+                E[j] = EnergyCorrect(matched[j].hycal.E, matched[j].hycal.cid);
 
                 CID[j] = matched[j].hycal.cid;
 
