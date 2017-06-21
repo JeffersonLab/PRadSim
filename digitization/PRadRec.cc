@@ -8,6 +8,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+#include "ConfigParser.h"
 #include "PRadDataHandler.h"
 #include "PRadHyCalSystem.h"
 #include "PRadDetMatch.h"
@@ -26,6 +27,20 @@
 #include <string>
 #include <vector>
 
+#define T_BLOCKS 2156
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+static TRandom2 *RandGen = new TRandom2();
+
+double ECali[T_BLOCKS];
+double nonlinConst[T_BLOCKS];
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void LoadConst(double beam_energy);
+Double_t EnergyCorrect(Double_t energy, Short_t cid);
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void usage(int, char **argv)
@@ -36,51 +51,6 @@ void usage(int, char **argv)
     printf("  -g, --gem_match=1          Do GEM matching\n");
     printf("  -t, --trg_eff=1            Do HyCal trigger efficiency\n");
 }
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-static TRandom2 *RandGen = new TRandom2();
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-// deprecated
-// double GetNonlinCorr(Double_t reconE)
-// {
-//     // reconE in MeV
-//     return exp(-1.0 * reconE * 1.53438e-04) + 1.11330e-04 * reconE + 7.17932e-02;
-// }
-
-// //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-// double ScaleEnergy(double e, const double &e_beam)
-// {
-//     if (e_beam < 1600) {
-//         double p3 = 0.539865;
-//         double p2 = -0.271654;
-//         double p1 =  6.43518e-05;
-//         double p0 =  0.546174;
-
-//         return (p3 * TMath::Exp(p2 * TMath::Sqrt(e / 1100.0)) + p1 * e + p0) * e;
-//     } else {
-//         double p3 = 0.557136;
-//         double p2 = -0.351049;
-//         double p1 = 3.5904e-05;
-//         double p0 = 0.549588;
-
-//         return (p3 * TMath::Exp(p2 * TMath::Sqrt(e / 2141.0)) + p1 * e + p0) * e;
-//     }
-// }
-
-//**********MC calibration***********//
-#include "ConfigParser.h"
-#define T_BLOCKS 2156
-double ECali[T_BLOCKS];
-double nonlinConst[T_BLOCKS];
-
-void LoadConst(double beam_energy);
-Double_t EnergyCorrect(Double_t energy, Short_t cid);
-//**************************************//
-
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -202,8 +172,7 @@ int main(int argc, char **argv)
     int i = 0;
 
     for (auto &event : handler->GetEventData()) {
-        if (i % 1000 == 0 && i != 0)
-            std::cout << i << " events processed" << std::endl;
+        if (i % 1000 == 0 && i != 0) std::cout << i << " events processed" << std::endl;
 
         hycal->Reconstruct(event);
         auto &hits = hycal->GetDetector()->GetHits();
@@ -292,9 +261,8 @@ int main(int argc, char **argv)
     return 0;
 }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-//**********MC calibration***********//
 void LoadConst(double beam_energy)
 {
     ConfigParser parser;
@@ -323,6 +291,8 @@ void LoadConst(double beam_energy)
     parser.CloseFile();
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 double EnergyCorrect(Double_t energy, Short_t cid)
 {
     if (cid <= 0) return energy;
@@ -333,6 +303,5 @@ double EnergyCorrect(Double_t energy, Short_t cid)
 
     return energy;
 }
-//***************************************//
 
-
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
