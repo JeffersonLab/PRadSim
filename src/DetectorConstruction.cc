@@ -333,10 +333,12 @@ void DetectorConstruction::DefineMaterials()
     PbWO4->AddElement(O, natoms = 4);
     fVisAtts[PbWO4->GetName()] = new G4VisAttributes(G4Colour::Blue());
 
-    // Lead Glass
+    // Silica
     G4Material *SiO2 = new G4Material("SiO2", density = 2.200 * g / cm3, ncomponents = 2);
     SiO2->AddElement(Si, natoms = 1);
     SiO2->AddElement(O, natoms = 2);
+    fVisAtts[SiO2->GetName()] = new G4VisAttributes(G4Colour::Green());
+    
     G4Material *PbGlass = new G4Material("PbGlass", density = 3.85 * g / cm3, ncomponents = 2);
     PbGlass->AddElement(Pb, fractionmass = 0.5316);
     PbGlass->AddMaterial(SiO2, fractionmass = 0.4684);
@@ -533,6 +535,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
     G4Material *TargetCellM = G4Material::GetMaterial("Kapton");
     G4Material *TargetWindowM = G4Material::GetMaterial("Kapton");
     G4Material *RecoilDetectorM = G4Material::GetMaterial("Silicon");
+    G4Material *RecoilDetCoverM = G4Material::GetMaterial("SiO2");
     G4Material *KaptonWindowM = G4Material::GetMaterial("Kapton");
     G4Material *AluminumWindowM = G4Material::GetMaterial("Aluminum");
     G4Material *HeBagM = G4Material::GetMaterial("HeGas");
@@ -581,10 +584,14 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
     G4double zPlaneRD[] = { -fRecoilDetHalfL, fRecoilDetHalfL};
     G4VSolid *solidRecoilDet = new G4Polyhedra("RecoilDetectorS", 0, twopi, fRecoilDetNSeg, 2, zPlaneRD, rInnerRD, rOuterRD);
     */
-    G4VSolid *solidRecoilDet1 = new G4Tubs("RecoilDet1S", fRecoilDetR, fRecoilDetR + 250.0 * um, fRecoilDetHalfL, 0, twopi);
-    G4VSolid *solidRecoilDet2 = new G4Tubs("RecoilDet2S", fRecoilDetR + 250.0 * um, fRecoilDetR + 625.0 * um, fRecoilDetHalfL, 0, twopi);
+    G4double CoverThickness = 2.0 * um;
+    G4VSolid *solidRecoilDetCover = new G4Tubs("RecoilDetCoverS", fRecoilDetR, fRecoilDetR + CoverThickness, fRecoilDetHalfL, 0, twopi);
+    G4VSolid *solidRecoilDet1 = new G4Tubs("RecoilDet1S", fRecoilDetR + CoverThickness, fRecoilDetR + CoverThickness + 250.0 * um, fRecoilDetHalfL, 0, twopi);
+    G4VSolid *solidRecoilDet2 = new G4Tubs("RecoilDet2S", fRecoilDetR + CoverThickness + 250.0 * um, fRecoilDetR + CoverThickness + (250.0 + 375.0) * um, fRecoilDetHalfL, 0, twopi);
+    G4LogicalVolume *logicRecoilDetCover = new G4LogicalVolume(solidRecoilDetCover, RecoilDetCoverM, "RecoilDetCoverLV");
     G4LogicalVolume *logicRecoilDet1 = new G4LogicalVolume(solidRecoilDet1, RecoilDetectorM, "RecoilDet1LV");
     G4LogicalVolume *logicRecoilDet2 = new G4LogicalVolume(solidRecoilDet2, RecoilDetectorM, "RecoilDet2LV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, RecoilDetCenter), logicRecoilDetCover, "Recoil Detector Cover", logicTarget, false, 0);
     new G4PVPlacement(0, G4ThreeVector(0, 0, RecoilDetCenter), logicRecoilDet1, "Recoil Detector 1", logicTarget, false, 0);
     new G4PVPlacement(0, G4ThreeVector(0, 0, RecoilDetCenter), logicRecoilDet2, "Recoil Detector 2", logicTarget, false, 1);
 
