@@ -135,7 +135,7 @@ int main(int argc, char **argv)
     std::string outf = tf + ".evio";
 
     PRadDigitization *prad_digi = new PRadDigitization(t, outf);
-    prad_digi->RegisterDet(new HyCalDigitization("HC", "config/hycal.conf"));
+    prad_digi->RegisterDet(new HyCalDigitization("HC", "config/hycal.conf", ei));
 
     int N = t->GetEntries();
 

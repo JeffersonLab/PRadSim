@@ -37,7 +37,7 @@ class TChain;
 class HyCalDigitization : public StandardDigiBase
 {
 public:
-    HyCalDigitization(const std::string &abbrev, const std::string &path);
+    HyCalDigitization(const std::string &abbrev, const std::string &path, double energy);
     virtual ~HyCalDigitization();
 
     void RegisterData(TChain *t);
@@ -53,7 +53,7 @@ private:
     int addRocData(uint32_t *buffer, int roc_id, int base_index);
     void FillBuffer(uint32_t *buffer, const PRadHyCalModule &module, double edep);
     
-    void LoadMCCaliConst();
+    void LoadMCCaliConst(double energy);
 
     int fDMethod;
 

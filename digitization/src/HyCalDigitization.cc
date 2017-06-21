@@ -34,7 +34,7 @@ static TRandom2 *RandGen = new TRandom2();
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::string &path) : StandardDigiBase(abbrev), fDMethod(0)
+HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::string &path, double energy) : StandardDigiBase(abbrev), fDMethod(0)
 {
     RandGen->SetSeed((UInt_t)time(NULL));
 
@@ -59,7 +59,7 @@ HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::strin
         fModuleTrackL[i] = 0;
     }
 
-    LoadMCCaliConst();
+    LoadMCCaliConst(energy);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -255,11 +255,15 @@ void HyCalDigitization::FillBuffer(uint32_t *buffer, const PRadHyCalModule &modu
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void HyCalDigitization::LoadMCCaliConst()
+void HyCalDigitization::LoadMCCaliConst(double energy)
 {
     ConfigParser parser;
 
-    if (!parser.OpenFile("./database/calibration/2GeV_mc_cali_const.dat")) {
+    std::string path;
+    if (energy<2000.) path = "./database/calibration/1GeV_mc_cali_const.dat";
+    else path = "./database/calibration/2GeV_mc_cali_const.dat";
+
+    if (!parser.OpenFile(path)) {
         std::cout << "cannot find mc calibration file, using default value 1 and sigma 0" << std::endl;
 
         for (int i = 0; i < T_BLOCKS; i++) {
