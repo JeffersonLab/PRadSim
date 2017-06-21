@@ -43,32 +43,33 @@ static TRandom2 *RandGen = new TRandom2();
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-double GetNonlinCorr(Double_t reconE)
-{
-    // reconE in MeV
-    return exp(-1.0 * reconE * 1.53438e-04) + 1.11330e-04 * reconE + 7.17932e-02;
-}
+// deprecated
+// double GetNonlinCorr(Double_t reconE)
+// {
+//     // reconE in MeV
+//     return exp(-1.0 * reconE * 1.53438e-04) + 1.11330e-04 * reconE + 7.17932e-02;
+// }
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+// //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-double ScaleEnergy(double e, const double &e_beam)
-{
-    if (e_beam < 1600) {
-        double p3 = 0.539865;
-        double p2 = -0.271654;
-        double p1 =  6.43518e-05;
-        double p0 =  0.546174;
+// double ScaleEnergy(double e, const double &e_beam)
+// {
+//     if (e_beam < 1600) {
+//         double p3 = 0.539865;
+//         double p2 = -0.271654;
+//         double p1 =  6.43518e-05;
+//         double p0 =  0.546174;
 
-        return (p3 * TMath::Exp(p2 * TMath::Sqrt(e / 1100.0)) + p1 * e + p0) * e;
-    } else {
-        double p3 = 0.557136;
-        double p2 = -0.351049;
-        double p1 = 3.5904e-05;
-        double p0 = 0.549588;
+//         return (p3 * TMath::Exp(p2 * TMath::Sqrt(e / 1100.0)) + p1 * e + p0) * e;
+//     } else {
+//         double p3 = 0.557136;
+//         double p2 = -0.351049;
+//         double p1 = 3.5904e-05;
+//         double p0 = 0.549588;
 
-        return (p3 * TMath::Exp(p2 * TMath::Sqrt(e / 2141.0)) + p1 * e + p0) * e;
-    }
-}
+//         return (p3 * TMath::Exp(p2 * TMath::Sqrt(e / 2141.0)) + p1 * e + p0) * e;
+//     }
+// }
 
 //**********MC calibration***********//
 #include "ConfigParser.h"
@@ -76,7 +77,7 @@ double ScaleEnergy(double e, const double &e_beam)
 double ECali[T_BLOCKS];
 double nonlinConst[T_BLOCKS];
 
-void LoadConst();
+void LoadConst(double beam_energy);
 Double_t EnergyCorrect(Double_t energy, Short_t cid);
 //**************************************//
 
@@ -148,6 +149,9 @@ int main(int argc, char **argv)
 
     // initiate random generator seed
     RandGen->SetSeed((UInt_t)time(NULL));
+
+    // initiate calibration constants
+    LoadConst(ei);
 
     // simulation data is more like raw evio data with HyCal information only,
     // so we only need hycal system to connected to the handler
@@ -237,7 +241,7 @@ int main(int argc, char **argv)
                 Y_HC[j] = matched[j].hycal.y;
                 Z_HC[j] = matched[j].hycal.z;
 
-                E[j] = ScaleEnergy(matched[j].hycal.E, ei);
+                E[j] = EnergyCorrect(matched[j].hycal.E, matched[j].hycal.cid);
 
                 CID[j] = matched[j].hycal.cid;
 
@@ -269,7 +273,6 @@ int main(int argc, char **argv)
                 X_HC[j] = hits[j].x;
                 Y_HC[j] = hits[j].y;
                 Z_HC[j] = hits[j].z;
-                //E[j] = ScaleEnergy(hits[j].E, ei);
                 E[j] = EnergyCorrect(hits[j].E, hits[j].cid);
                 CID[j] = hits[j].cid;
             }
@@ -292,11 +295,15 @@ int main(int argc, char **argv)
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
 
 //**********MC calibration***********//
-void LoadConst()
+void LoadConst(double beam_energy)
 {
     ConfigParser parser;
 
-    if (!parser.OpenFile("./database/calibration/2GeV_mc_cali_const.dat")) {
+    std::string path;
+    if (beam_energy<2000.) path = "./database/calibration/1GeV_mc_cali_const.dat";
+    else path = "./database/calibration/2GeV_mc_cali_const.dat";
+    
+    if (!parser.OpenFile(path)) {
         std::cout << "cannot find mc calibration file" << std::endl;
         exit(0);
     }
