@@ -56,15 +56,15 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act
 
     GunTypeCmd = new G4UIcmdWithAString("/pradsim/gun/type", this);
     GunTypeCmd->SetGuidance("Choose a type of event generator.");
-    GunTypeCmd->SetGuidance("  Choice : point, ring, disintegration, file");
+    GunTypeCmd->SetGuidance("  Choice : point, ring, file");
     GunTypeCmd->SetParameterName("guntype", false);
-    GunTypeCmd->SetCandidates("point ring disintegration file");
+    GunTypeCmd->SetCandidates("point ring file");
 
     EventTypeCmd = new G4UIcmdWithAString("/pradsim/gun/evtype", this);
     EventTypeCmd->SetGuidance("Choose a type of model.");
-    EventTypeCmd->SetGuidance("  Choice : elastic, moller");
+    EventTypeCmd->SetGuidance("  Choice : elastic, disintegration, moller");
     EventTypeCmd->SetParameterName("evtype", false);
-    EventTypeCmd->SetCandidates("elastic moller");
+    EventTypeCmd->SetCandidates("elastic disintegration moller");
 
     RecoilCmd = new G4UIcmdWithAString("/pradsim/gun/recoil", this);
     RecoilCmd->SetGuidance("Choose a type of recoil particle.");

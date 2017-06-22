@@ -151,11 +151,12 @@ class DRadPrimaryGenerator : public PRadPrimaryGenerator
 public:
     DRadPrimaryGenerator(G4String type, G4bool rec, G4String par, G4String path);
     virtual ~DRadPrimaryGenerator();
+    
+    virtual void GeneratePrimaryVertex(G4Event *);
 
 protected:
     virtual double GenerateZ();
 };
-
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

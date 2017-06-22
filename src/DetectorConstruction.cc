@@ -584,7 +584,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
     G4double zPlaneRD[] = { -fRecoilDetHalfL, fRecoilDetHalfL};
     G4VSolid *solidRecoilDet = new G4Polyhedra("RecoilDetectorS", 0, twopi, fRecoilDetNSeg, 2, zPlaneRD, rInnerRD, rOuterRD);
     */
-    G4double CoverThickness = 2.0 * um;
+    G4double CoverThickness = 0.0001 * um;
     G4VSolid *solidRecoilDetCover = new G4Tubs("RecoilDetCoverS", fRecoilDetR, fRecoilDetR + CoverThickness, fRecoilDetHalfL, 0, twopi);
     G4VSolid *solidRecoilDet1 = new G4Tubs("RecoilDet1S", fRecoilDetR + CoverThickness, fRecoilDetR + CoverThickness + 250.0 * um, fRecoilDetHalfL, 0, twopi);
     G4VSolid *solidRecoilDet2 = new G4Tubs("RecoilDet2S", fRecoilDetR + CoverThickness + 250.0 * um, fRecoilDetR + CoverThickness + (250.0 + 375.0) * um, fRecoilDetHalfL, 0, twopi);

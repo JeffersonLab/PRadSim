@@ -91,10 +91,12 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
 
             if (fGunType == "point")
                 fPrimaryGenerator = new PrimaryGenerator("point", fE, fX, fY, fZ, fTheta, fPhi, false, "proton");
-            else if (fGunType == "ring")
-                fPrimaryGenerator = new PrimaryGenerator(fEventType, fE, fThetaLo, fThetaHi, recoilon, fRecoilParticle);
-            else if (fGunType == "disintegration")
-                fPrimaryGenerator = new DeuteronDisintegration(fE, fEnpLo, fEnpHi, fThetaLo, fThetaHi);
+            else if (fGunType == "ring") {
+                if (fEventType == "disintegration")
+                    fPrimaryGenerator = new DeuteronDisintegration(fE, fEnpLo, fEnpHi, fThetaLo, fThetaHi);
+                else
+                    fPrimaryGenerator = new PrimaryGenerator(fEventType, fE, fThetaLo, fThetaHi, recoilon, fRecoilParticle);
+            }
             else
                 fPrimaryGenerator = new DRadPrimaryGenerator(fEventType, recoilon, fRecoilParticle, fEventFile);
         }

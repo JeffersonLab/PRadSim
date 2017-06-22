@@ -79,6 +79,12 @@ static double me = 0.510998928 * MeV;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 PrimaryGenerator::PrimaryGenerator() : G4VPrimaryGenerator(), fRegistered(false), fTargetInfo(false), fTargetCenter(0), fTargetHalfL(0), fEventType(""), fRecoilOn(false), fRecoilParticle(""), fEBeam(0), fReactX(0), fReactY(0), fReactZ(0), fReactTheta(0), fReactPhi(0), fReactThetaLo(0), fReactThetaHi(0), fTargetMass(0)
 {
     fN = 0;
@@ -355,6 +361,12 @@ void PrimaryGenerator::Clear()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 PRadPrimaryGenerator::PRadPrimaryGenerator(G4String type, G4bool rec, G4String par) : PrimaryGenerator(), fEventType(type), fRecoilOn(rec), fRecoilParticle(par), fTargetProfile(NULL), fZGenerator(NULL), fPseRan(NULL), fFoamI(NULL)
 {
     //
@@ -395,6 +407,7 @@ PRadPrimaryGenerator::~PRadPrimaryGenerator()
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
 {
     if (!fRegistered) {
@@ -580,14 +593,39 @@ double PRadPrimaryGenerator::GenerateZ()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+TargetProfileIntegrand::TargetProfileIntegrand(PRadPrimaryGenerator *gen)
+{
+    fTargetProfile = gen->fTargetProfile;
+    fZMin = gen->fZMin;
+    fZMax = gen->fZMax;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+double TargetProfileIntegrand::Density(int, double *arg)
+{
+    double z = fZMin + (fZMax - fZMin) * arg[0];
+
+    return fTargetProfile->Eval(z);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 DRadPrimaryGenerator::DRadPrimaryGenerator(G4String type, G4bool rec, G4String par, G4String path) : PRadPrimaryGenerator(type, rec, par)
 {
     if (path.empty()) {
         if (fEventType == "elastic")
             path = "edelastic.dat";
-
         else if (fEventType == "moller")
             path = "moller.dat";
+        else if (fEventType == "disintegration")
+            path = "edepn.dat";
     }
 
     if (!fParser.ReadFile(path)) {
@@ -605,29 +643,149 @@ DRadPrimaryGenerator::~DRadPrimaryGenerator()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+void DRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
+{
+    if (!fRegistered) {
+        Register(gRootTree->GetTree());
+        fRegistered = true;
+    }
+
+    Clear();
+
+    G4ParticleTable *particleTable = G4ParticleTable::GetParticleTable();
+
+    if (!fTargetInfo) {
+        G4VPhysicalVolume *physiTargetCon = G4PhysicalVolumeStore::GetInstance()->GetVolume("Target Container");
+        G4LogicalVolume *logicTarget = G4LogicalVolumeStore::GetInstance()->GetVolume("TargetLV");
+
+        if (physiTargetCon) fTargetCenter = physiTargetCon->GetObjectTranslation().z();
+
+        G4Tubs *solidTarget = NULL;
+
+        if (logicTarget)
+            solidTarget = dynamic_cast<G4Tubs *>(logicTarget->GetSolid());
+
+        if (solidTarget)
+            fTargetHalfL = solidTarget->GetZHalfLength();
+        else
+            G4cout << "WARNING: target volume not found" << G4endl;
+
+        fTargetInfo = true;
+    }
+
+    double e_l = 0, theta_l = 0, phi_l = 0;
+    double e_h = 0, theta_h = 0, phi_h = 0;
+    double e_p = 0, theta_p = 0, phi_p = 0;
+
+    while (fParser.ParseLine()) {
+        if (!fParser.CheckElements(9))
+            continue;
+        else {
+            fParser >> e_l >> theta_l >> phi_l >> e_h >> theta_h >> phi_h >> e_p >> theta_p >> phi_p;
+            break;
+        }
+    }
+
+    double x = G4RandGauss::shoot(0, 0.08) * mm;
+    double y = G4RandGauss::shoot(0, 0.08) * mm;
+    double z = GenerateZ();
+
+    G4PrimaryVertex *vertexL = new G4PrimaryVertex(x, y, z, 0);
+    G4PrimaryParticle *particleL = new G4PrimaryParticle(particleTable->FindParticle("e-"));
+    double m_l = particleL->GetParticleDefinition()->GetPDGMass();
+    double p_l = sqrt(e_l * e_l - m_l * m_l);
+    double kx_l = sin(theta_l) * cos(phi_l);
+    double ky_l = sin(theta_l) * sin(phi_l);
+    double kz_l = cos(theta_l);
+    particleL->SetMomentumDirection(G4ThreeVector(kx_l, ky_l, kz_l));
+    particleL->SetTotalEnergy(e_l);
+    vertexL->SetPrimary(particleL);
+
+    anEvent->AddPrimaryVertex(vertexL);
+
+    fPID[fN] = particleL->GetPDGcode();
+    fX[fN] = x;
+    fY[fN] = y;
+    fZ[fN] = z;
+    fE[fN] = e_l;
+    fMomentum[fN] = p_l;
+    fTheta[fN] = theta_l;
+    fPhi[fN] = phi_l;
+    fN++;
+
+    if (fRecoilOn || fEventType == "moller" || fEventType == "disintegration") {
+        G4PrimaryVertex *vertexH = new G4PrimaryVertex(x, y, z, 0);
+        G4PrimaryParticle *particleH = NULL;
+
+        if (fEventType == "moller")
+            particleH = new G4PrimaryParticle(particleTable->FindParticle("e-"));
+        else if (fEventType == "disintegration")
+            particleH = new G4PrimaryParticle(particleTable->FindParticle("proton"));
+        else
+            particleH = new G4PrimaryParticle(particleTable->FindParticle(fRecoilParticle));
+
+        double m_h = particleH->GetParticleDefinition()->GetPDGMass();
+        double p_h = sqrt(e_h * e_h - m_h * m_h);
+        double kx_h = sin(theta_h) * cos(phi_h);
+        double ky_h = sin(theta_h) * sin(phi_h);
+        double kz_h = cos(theta_h);
+        particleH->SetMomentumDirection(G4ThreeVector(kx_h, ky_h, kz_h));
+        particleH->SetTotalEnergy(e_h);
+        vertexH->SetPrimary(particleH);
+
+        anEvent->AddPrimaryVertex(vertexH);
+
+        fPID[fN] = particleH->GetPDGcode();
+        fX[fN] = x;
+        fY[fN] = y;
+        fZ[fN] = z;
+        fE[fN] = e_h;
+        fMomentum[fN] = p_h;
+        fTheta[fN] = theta_h;
+        fPhi[fN] = phi_h;
+        fN++;
+    }
+
+    if (e_p > 0) {
+        G4PrimaryVertex *vertexP = new G4PrimaryVertex(x, y, z, 0);
+        G4PrimaryParticle *particleP = NULL;
+        
+        if (fEventType == "disintegration")
+            //particleP = new G4PrimaryParticle(particleTable->FindParticle("neutron"));
+            return;
+        else
+            particleP = new G4PrimaryParticle(particleTable->FindParticle("gamma"));
+        
+        double kx_p = sin(theta_p) * cos(phi_p);
+        double ky_p = sin(theta_p) * sin(phi_p);
+        double kz_p = cos(theta_p);
+        particleP->SetMomentumDirection(G4ThreeVector(kx_p, ky_p, kz_p));
+        particleP->SetTotalEnergy(e_p);
+        vertexP->SetPrimary(particleP);
+
+        anEvent->AddPrimaryVertex(vertexP);
+
+        fPID[fN] = particleP->GetPDGcode();
+        fX[fN] = x;
+        fY[fN] = y;
+        fZ[fN] = z;
+        fE[fN] = e_p;
+        fMomentum[fN] = e_p;
+        fTheta[fN] = theta_p;
+        fPhi[fN] = phi_p;
+        fN++;
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 double DRadPrimaryGenerator::GenerateZ()
 {
     return fTargetCenter + fTargetHalfL * 2 * (0.5 - G4UniformRand());
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-TargetProfileIntegrand::TargetProfileIntegrand(PRadPrimaryGenerator *gen)
-{
-    fTargetProfile = gen->fTargetProfile;
-    fZMin = gen->fZMin;
-    fZMax = gen->fZMax;
-}
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-double TargetProfileIntegrand::Density(int, double *arg)
-{
-    double z = fZMin + (fZMax - fZMin) * arg[0];
-
-    return fTargetProfile->Eval(z);
-}
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DeuteronDisintegration::DeuteronDisintegration(G4double e, G4double eflo, G4double efhi, G4double thlo, G4double thhi) : PrimaryGenerator(), fEBeam(e), fEnpLo(eflo), fEnpHi(efhi), fReactThetaLo(thlo), fReactThetaHi(thhi)
