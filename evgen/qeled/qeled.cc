@@ -231,9 +231,9 @@ double hulthen(double p_fermi)
 double calc_rest_frame_energy(double mmn)
 {
     TLorentzVector v_fermi_temp(p_fermi * Sin(theta_fermi), 0.0, p_fermi * Cos(theta_fermi), Sqrt(Pow2(p_fermi) + Pow2(mmn)));
-    TLorentzVector vi_e_temp(0, 0, ei_e, ei_e);
-
     TVector3 b = -v_fermi_temp.BoostVector();
+
+    TLorentzVector vi_e_temp(0, 0, ei_e, ei_e);
     vi_e_temp.Boost(b);
 
     return vi_e_temp.E();
@@ -271,14 +271,11 @@ double calc_theta_lab(double theta_rf, double mmn)
 
     while (Abs(epsilon) > epsilon_min) {
         theta_mid = 0.5 * (theta_min + theta_max);
-        //std::cout << theta_mid << std::endl;
+
         epsilon = calc_theta_rf(theta_mid, mmn) - theta_rf;
 
-        if (epsilon < 0)
-            theta_min = theta_mid;
-
-        else if (epsilon > 0)
-            theta_max = theta_mid;
+        if (epsilon < 0) theta_min = theta_mid;
+        else if (epsilon > 0) theta_max = theta_mid;
 
         iter++;
 
@@ -426,7 +423,7 @@ void fill_xs_table_neutron(TH2D *xs_table_neutron)
 
 int main()
 {
-/*    char mychar[64];
+    char mychar[64];
 
     std::cout << "Full energy of the incident lepton (MeV): " << std::flush;
     std::cin.getline(mychar, 64);
@@ -442,12 +439,12 @@ int main()
 
     std::cout << "Number of events to generate: " << std::flush;
     std::cin.getline(mychar, 64);
-    int nevents = atoi(mychar); */
+    int nevents = atoi(mychar);
 
-    ei_e = 1.1;
-    theta_e_min = 0.7 * deg;
-    theta_e_max = 6.0 * deg;
-    int nevents = 100000;
+    //ei_e = 1.1;
+    //theta_e_min = 0.7 * deg;
+    //theta_e_max = 6.0 * deg;
+    //int nevents = 100;
 
     PseRan->SetSeed(0);
 
@@ -470,6 +467,14 @@ int main()
 
     fill_weight_table_proton(weight_table_proton, hulthen_table_proton);
     fill_weight_table_neutron(weight_table_neutron, hulthen_table_neutron);
+
+    TCanvas *c1 = new TCanvas("weight_table_proton", "weight_table_proton", 800, 600);
+    weight_table_proton->Draw("COLZ");
+    c1->Print("weight_table_proton.root");
+
+    TCanvas *c2 = new TCanvas("weight_table_neutron", "weight_table_neutron", 800, 600);
+    weight_table_neutron->Draw("COLZ");
+    c2->Print("weight_table_neutron.root");  
 
     p_fermi = 0.7;
     theta_fermi = pi;
