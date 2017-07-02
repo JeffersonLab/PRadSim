@@ -68,7 +68,7 @@ public:
     inline void SetHyCalPos(G4double z);
 
     inline void SetTarget(G4double ir, G4double l);
-    inline void SetRecoilDetector(G4int n, G4double ir, G4double l, G4double t);
+    inline void SetRecoilDetector(G4int n, G4double ir, G4double l, G4double t1, G4double t2);
 
     inline void SetTargetMaterial(G4String val);
     
@@ -102,7 +102,8 @@ private:
     G4double fRecoilDetCenter;
     G4double fRecoilDetR;
     G4double fRecoilDetHalfL;
-    G4double fRecoilDetThickness;
+    G4double fRecoilDetL1Thickness;
+    G4double fRecoilDetL2Thickness;
 
     G4double fGEMCenter[10];
 
@@ -153,7 +154,7 @@ inline void DetectorConstruction::SetTarget(G4double ir, G4double l)
     if (l > -9999) fTargetHalfL = l;
 }
 
-inline void DetectorConstruction::SetRecoilDetector(G4int n, G4double ir, G4double l, G4double t)
+inline void DetectorConstruction::SetRecoilDetector(G4int n, G4double ir, G4double l, G4double t1, G4double t2)
 {
     if (n > -9999) fRecoilDetNSeg = n;
 
@@ -161,7 +162,9 @@ inline void DetectorConstruction::SetRecoilDetector(G4int n, G4double ir, G4doub
 
     if (l > -9999) fRecoilDetHalfL = l;
 
-    if (t > -9999) fRecoilDetThickness = t;
+    if (t1 > -9999) fRecoilDetL1Thickness = t1;
+    
+    if (t2 > -9999) fRecoilDetL2Thickness = t2;
 }
 
 inline void DetectorConstruction::SetTargetMaterial(G4String val)

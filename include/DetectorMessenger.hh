@@ -79,7 +79,8 @@ private:
     G4UIcmdWithAnInteger      *RecoilDetNSegCmd;
     G4UIcmdWithADoubleAndUnit *RecoilDetRCmd;
     G4UIcmdWithADoubleAndUnit *RecoilDetHalfLCmd;
-    G4UIcmdWithADoubleAndUnit *RecoilDetThicknessCmd;
+    G4UIcmdWithADoubleAndUnit *RecoilDetL1ThicknessCmd;
+    G4UIcmdWithADoubleAndUnit *RecoilDetL2ThicknessCmd;
     G4UIdirectory             *SDDir;
     G4UIcmdWithABool          *RecoilDetSDCmd;
     G4UIcmdWithABool          *GEMSDCmd;

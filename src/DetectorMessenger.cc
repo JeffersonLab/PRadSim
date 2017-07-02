@@ -126,10 +126,15 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
     RecoilDetHalfLCmd->SetParameterName("recoill", false);
     RecoilDetHalfLCmd->SetDefaultUnit("mm");
 
-    RecoilDetThicknessCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/recoil/thick", this);
-    RecoilDetThicknessCmd->SetGuidance("Set fRecoilDetThickness");
-    RecoilDetThicknessCmd->SetParameterName("recoilt", false);
-    RecoilDetThicknessCmd->SetDefaultUnit("mm");
+    RecoilDetL1ThicknessCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/recoil/thick1", this);
+    RecoilDetL1ThicknessCmd->SetGuidance("Set fRecoilDetL1Thickness");
+    RecoilDetL1ThicknessCmd->SetParameterName("recoilt1", false);
+    RecoilDetL1ThicknessCmd->SetDefaultUnit("um");
+    
+    RecoilDetL2ThicknessCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/recoil/thick2", this);
+    RecoilDetL2ThicknessCmd->SetGuidance("Set fRecoilDetL2Thickness");
+    RecoilDetL2ThicknessCmd->SetParameterName("recoilt2", false);
+    RecoilDetL2ThicknessCmd->SetDefaultUnit("um");
 
     SDDir = new G4UIdirectory("/pradsim/det/sensitive/");
     SDDir->SetGuidance("Sensitive detector control");
@@ -170,7 +175,8 @@ DetectorMessenger::~DetectorMessenger()
     delete RecoilDetNSegCmd;
     delete RecoilDetRCmd;
     delete RecoilDetHalfLCmd;
-    delete RecoilDetThicknessCmd;
+    delete RecoilDetL1ThicknessCmd;
+    delete RecoilDetL2ThicknessCmd;
     delete RecoilDetDir;
     delete TargetRCmd;
     delete TargetHalfLCmd;
@@ -219,16 +225,20 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
         Detector->SetTargetMaterial(newValue);
 
     if (command == RecoilDetNSegCmd)
-        Detector->SetRecoilDetector(RecoilDetNSegCmd->GetNewIntValue(newValue), -10000, -10000, -10000);
+        Detector->SetRecoilDetector(RecoilDetNSegCmd->GetNewIntValue(newValue), -10000, -10000, -10000, -10000);
 
     if (command == RecoilDetRCmd)
-        Detector->SetRecoilDetector(-10000, RecoilDetHalfLCmd->GetNewDoubleValue(newValue), -10000, -10000);
+        Detector->SetRecoilDetector(-10000, RecoilDetHalfLCmd->GetNewDoubleValue(newValue), -10000, -10000, -10000);
 
     if (command == RecoilDetHalfLCmd)
-        Detector->SetRecoilDetector(-10000, -10000, RecoilDetHalfLCmd->GetNewDoubleValue(newValue), -10000);
+        Detector->SetRecoilDetector(-10000, -10000, RecoilDetHalfLCmd->GetNewDoubleValue(newValue), -10000, -10000);
 
-    if (command == RecoilDetThicknessCmd)
-        Detector->SetRecoilDetector(-10000, -10000, -10000, RecoilDetThicknessCmd->GetNewDoubleValue(newValue));
+    if (command == RecoilDetL1ThicknessCmd)
+        Detector->SetRecoilDetector(-10000, -10000, -10000, RecoilDetL1ThicknessCmd->GetNewDoubleValue(newValue), -10000);
+    
+    if (command == RecoilDetL2ThicknessCmd)
+        Detector->SetRecoilDetector(-10000, -10000, -10000,  -10000, RecoilDetL2ThicknessCmd->GetNewDoubleValue(newValue));
+
 
     if (command == RecoilDetSDCmd) {
         if (RecoilDetSDCmd->GetNewBoolValue(newValue)) Detector->EnableSD("Recoil Detector");
