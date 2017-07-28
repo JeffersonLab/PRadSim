@@ -27,8 +27,8 @@
 void usage(int, char **argv)
 {
     printf("usage: %s [options] FILE_NAME\n", argv[0]);
-    printf("  -e, --energy=1100          Set beam energy (MeV)\n");
     printf("  -l, --list=run.list        Set run list\n");
+    printf("  -r, --run=1288             Set run number\n");
     printf("  -h, --help                 Print usage\n");
 }
 
@@ -36,14 +36,14 @@ void usage(int, char **argv)
 
 int main(int argc, char **argv)
 {
+    int run = 1288;
     std::string list_name;
-    double ei = 1100;
     bool use_file_list = false;
 
     while (1) {
         static struct option long_options[] = {
             {"help", no_argument, 0, 'h'},
-            {"energy",  required_argument, 0, 'e'},
+            {"run",  required_argument, 0, 'r'},
             {"list", required_argument, 0, 'l'},
             {0, 0, 0, 0}
         };
@@ -55,14 +55,8 @@ int main(int argc, char **argv)
             break;
 
         switch (c) {
-        case 'e':
-            ei = atof(optarg);
-
-            if (ei < 1.0) {
-                usage(argc, argv);
-                exit(1);
-            }
-
+        case 'r':
+            run = atoi(optarg);
             break;
 
         case 'h':
@@ -135,7 +129,7 @@ int main(int argc, char **argv)
     std::string outf = tf + ".evio";
 
     PRadDigitization *prad_digi = new PRadDigitization(t, outf);
-    prad_digi->RegisterDet(new HyCalDigitization("HC", "config/hycal.conf", ei));
+    prad_digi->RegisterDet(new HyCalDigitization("HC", "config/hycal.conf", run));
 
     int N = t->GetEntries();
 

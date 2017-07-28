@@ -37,7 +37,7 @@ class TChain;
 class HyCalDigitization : public StandardDigiBase
 {
 public:
-    HyCalDigitization(const std::string &abbrev, const std::string &path, double energy);
+    HyCalDigitization(const std::string &abbrev, const std::string &path, int run);
     virtual ~HyCalDigitization();
 
     void RegisterData(TChain *t);

@@ -386,7 +386,8 @@ PRadPrimaryGenerator::PRadPrimaryGenerator(G4String type, G4bool rec, G4String p
             path = "moller.dat";
     }
 
-    if (!fParser.ReadFile(path)) {
+    // only open file, do not read the whole file into memory
+    if (!fParser.OpenFile(path)) {
         G4cout << "ERROR: failed to read event file " << "\"" << path << "\"" << G4endl;
         exit(1);
     }
@@ -628,7 +629,8 @@ DRadPrimaryGenerator::DRadPrimaryGenerator(G4String type, G4bool rec, G4String p
             path = "edepn.dat";
     }
 
-    if (!fParser.ReadFile(path)) {
+    // OpenFile doesn't read the whole file into memory
+    if (!fParser.OpenFile(path)) {
         G4cout << "ERROR: failed to read event file " << "\"" << path << "\"" << G4endl;
         exit(1);
     }
