@@ -34,11 +34,12 @@ static TRandom2 *RandGen = new TRandom2();
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::string &path, double energy) : StandardDigiBase(abbrev), fDMethod(0)
+HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::string &path, int run) : StandardDigiBase(abbrev), fDMethod(0)
 {
     RandGen->SetSeed((UInt_t)time(NULL));
 
     fHyCal = new PRadHyCalSystem(path);
+    fHyCal->ChooseRun(run);
 
     fModuleList = fHyCal->GetModuleList();
 
@@ -59,6 +60,7 @@ HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::strin
         fModuleTrackL[i] = 0;
     }
 
+    double energy = (run > 1345) ? 2142 : 1097;
     LoadMCCaliConst(energy);
 }
 
