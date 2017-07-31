@@ -347,7 +347,7 @@ inline double G_M(double qq)
     
   if (flag_struct == 5) // Arbitrary parametrization from the file "const.h"
     {
-        return mu*(1. + a21*t + a22*Pow2(t) + a23*Pow3(t))/(1. + b21*t + b22*Pow2(t) + b23*Pow3(t)) + b24*Pow4(t) + b25*Pow5(t);
+        return mu*(1. + a21*t + a22*Pow2(t) + a23*Pow3(t))/(1. + b21*t + b22*Pow2(t) + b23*Pow3(t) + b24*Pow4(t) + b25*Pow5(t));
     }
     
   return mu*G_E(qq); // Dipole formula
