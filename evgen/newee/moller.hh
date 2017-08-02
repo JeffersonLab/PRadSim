@@ -523,6 +523,7 @@ void RecBremsKins(double theta)
     merad_genvt1z(t, v_min, v_max, &v, &t1, &z);
 
     double sqrts = Sqrt(s);
+    double lambdas = s * (s - 4.0 * m2);
 
     double lambda1 = Pow2(s - v) - 4 * s * m2;
     double lambda2 = 2.0 * t + s - v - 4.0 * m2;
@@ -532,7 +533,18 @@ void RecBremsKins(double theta)
     //double lambda6 = s * (v - z) - v * (v + z);
     double lambda7 = (s + 2.0 * t1 - z - 4.0 * m2) * lambda1 - lambda2 * lambda4;
     double lambda8 = 16 * lambda3 * lambda5 - lambda7 * lambda7;
-    double lambdas = s * (s - 4.0 * m2);
+
+    while (lambda3 < 0.0 || lambdas * lambda1 * lambda8 < 0.0) {
+        merad_genvt1z(t, v_min, v_max, &v, &t1, &z);
+
+        lambda1 = Pow2(s - v) - 4 * s * m2;
+        lambda2 = 2.0 * t + s - v - 4.0 * m2;
+        lambda3 = -s * t * (s + t - v - 4.0 * m2) - m2 * Pow2(v);
+        lambda4 = s * (s - v - 4.0 * m2) - (s + v) * z;
+        lambda5 = v * z * (s - v - z) - m2 * Pow2(v + z);
+        lambda7 = (s + 2.0 * t1 - z - 4.0 * m2) * lambda1 - lambda2 * lambda4;
+        lambda8 = 16 * lambda3 * lambda5 - lambda7 * lambda7;
+    }
 
     double lambda34 = lambda3 * lambda4;
     double lambda27 = lambda2 * lambda7;

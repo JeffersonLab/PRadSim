@@ -11,7 +11,7 @@ USER        := $(shell whoami)
 MYHOST      := $(shell hostname -s)
 
 ########################################################################
-EXECFILE    := elasticep
+EXECFILE    := newep
 
 ########################################################################
 SRCDIR      := .
@@ -36,15 +36,8 @@ INCDIRS     := $(patsubst %,-I%,$(subst :, ,$(INCDIR)))
 CFLAGS      := -Wall -fPIC -O3 -g $(MODE) $(INCDIRS)
 CXXFLAGS    := -Wall -fPIC -O3 -g $(MODE) $(INCDIRS)
 FFLAGS      := -Wall -fPIC -O3 -g $(MODE) $(INCDIRS)
-ifeq ($(MYOS),Darwin) #in Darwin, do not use -fno-leading-underscore
-    FFLAGS  += -fno-second-underscore -fno-automatic -fbounds-check \
-               -funroll-all-loops -fdollar-ok -ffixed-line-length-none \
-               -fno-range-check
-else
-    FFLAGS  += -fno-leading-underscore -fno-second-underscore \
-               -fno-automatic -fbounds-check -funroll-all-loops \
-               -fdollar-ok -ffixed-line-length-none -fno-range-check
-endif
+CXXFLAGS    += -std=c++11
+FFLAGS      += -cpp -ffixed-line-length-none
 GPPFLAGS    := -MM
 LDFLAGS     := -O3 -g $(MODE)
 
