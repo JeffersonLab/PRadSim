@@ -37,6 +37,7 @@ void usage(int, char **argv)
 int main(int argc, char **argv)
 {
     int run = 1288;
+    int    sMode = 0;
     std::string list_name;
     bool use_file_list = false;
 
@@ -44,6 +45,7 @@ int main(int argc, char **argv)
         static struct option long_options[] = {
             {"help", no_argument, 0, 'h'},
             {"run",  required_argument, 0, 'r'},
+            {"smear", required_argument, 0, 's'},
             {"list", required_argument, 0, 'l'},
             {0, 0, 0, 0}
         };
@@ -67,6 +69,10 @@ int main(int argc, char **argv)
         case 'l':
             list_name = optarg;
             use_file_list = true;
+            break;
+            
+        case 's':
+            sMode = atoi(optarg);
             break;
 
         case '?':
@@ -129,7 +135,7 @@ int main(int argc, char **argv)
     std::string outf = tf + ".evio";
 
     PRadDigitization *prad_digi = new PRadDigitization(t, outf);
-    prad_digi->RegisterDet(new HyCalDigitization("HC", "config/hycal.conf", run));
+    prad_digi->RegisterDet(new HyCalDigitization("HC", "config/hycal.conf", run, sMode));
 
     int N = t->GetEntries();
 
