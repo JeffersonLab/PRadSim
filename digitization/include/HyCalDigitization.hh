@@ -37,7 +37,7 @@ class TChain;
 class HyCalDigitization : public StandardDigiBase
 {
 public:
-    HyCalDigitization(const std::string &abbrev, const std::string &path, int run);
+    HyCalDigitization(const std::string &abbrev, const std::string &path, int run, int smearMode);
     virtual ~HyCalDigitization();
 
     void RegisterData(TChain *t);
@@ -69,8 +69,10 @@ private:
     PRadHyCalSystem *fHyCal;
     PRadClusterProfile *fProfile;
 
+    int    fSmearMode;
     double fMCCaliConst[T_BLOCKS];
     double fMCCaliSigma[T_BLOCKS];
+    double fResoPar[T_BLOCKS][3];
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

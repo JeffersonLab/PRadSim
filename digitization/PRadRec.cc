@@ -121,7 +121,7 @@ int main(int argc, char **argv)
     RandGen->SetSeed((UInt_t)time(NULL));
 
     // initiate calibration constants
-    LoadConst(ei);
+    //LoadConst(ei);
 
     // simulation data is more like raw evio data with HyCal information only,
     // so we only need hycal system to connected to the handler
@@ -242,7 +242,7 @@ int main(int argc, char **argv)
                 X_HC[j] = hits[j].x;
                 Y_HC[j] = hits[j].y;
                 Z_HC[j] = hits[j].z;
-                E[j] = EnergyCorrect(hits[j].E, hits[j].cid);
+                E[j] = hits[j].E; //EnergyCorrect(hits[j].E, hits[j].cid);
                 CID[j] = hits[j].cid;
             }
         }

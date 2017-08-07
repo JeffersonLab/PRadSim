@@ -34,7 +34,7 @@ static TRandom2 *RandGen = new TRandom2();
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::string &path, int run) : StandardDigiBase(abbrev), fDMethod(0)
+HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::string &path, int run, int smearMode) : StandardDigiBase(abbrev), fDMethod(0)
 {
     RandGen->SetSeed((UInt_t)time(NULL));
 
@@ -60,6 +60,7 @@ HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::strin
         fModuleTrackL[i] = 0;
     }
 
+    fSmearMode = smearMode;
     double energy = (run > 1345) ? 2142 : 1097;
     LoadMCCaliConst(energy);
 }
@@ -236,7 +237,7 @@ void HyCalDigitization::FillBuffer(uint32_t *buffer, const PRadHyCalModule &modu
     double mcSigma = fMCCaliSigma[module.GetID() - 1];
 
     if (!module.GetChannel()->IsDead()) {
-        if (module.IsLeadTungstate()) {
+        /*if (module.IsLeadTungstate()) {
             double reso = (0.026 * TMath::Sqrt(0.73) / TMath::Sqrt(edep / 1000.) + mcSigma);
 
             if (reso < 0.) reso = 0.;
@@ -248,7 +249,19 @@ void HyCalDigitization::FillBuffer(uint32_t *buffer, const PRadHyCalModule &modu
             if (reso < 0.) reso = 0.;
 
             val = ped + (RandGen->Gaus(edep,  edep * reso)) * (mcConst / module.GetCalibrationFactor());
-        }
+        }*/
+        
+        double reso = TMath::Sqrt(0.76)*TMath::Sqrt( pow(fResoPar[module.GetID()-1][0]/TMath::Sqrt(edep/1000.), 2) + 
+                                                     pow(fResoPar[module.GetID()-1][1]/(edep/1000.), 2)            + 
+                                                     pow(fResoPar[module.GetID()-1][2], 2) );
+                
+        reso += mcSigma;
+
+        if (reso < 0.) reso = 0.;
+
+
+        val = ped + (RandGen->Gaus(edep,  edep * reso )) *  (mcConst / module.GetCalibrationFactor());
+        
     } else
         val = ped;
 
@@ -260,30 +273,62 @@ void HyCalDigitization::FillBuffer(uint32_t *buffer, const PRadHyCalModule &modu
 void HyCalDigitization::LoadMCCaliConst(double energy)
 {
     ConfigParser parser;
-
-    std::string path;
-    if (energy<2000.) path = "./database/calibration/1GeV_mc_cali_const.dat";
-    else path = "./database/calibration/2GeV_mc_cali_const.dat";
-
-    if (!parser.OpenFile(path)) {
-        std::cout << "cannot find mc calibration file, using default value 1 and sigma 0" << std::endl;
-
-        for (int i = 0; i < T_BLOCKS; i++) {
+    std::string fileName = "./database/calibration/new_mc_cali_const.dat";
+    
+    if (!parser.OpenFile(fileName)){
+        std::cout<<"cannot find mc calibration file, using default value 1 and sigma 0"<<std::endl;
+        for (int i=0; i<T_BLOCKS; i++){
             fMCCaliConst[i] = 1.;
             fMCCaliSigma[i] = 0.;
+            fResoPar[i][0] = 0.;
+            fResoPar[i][1] = 0.;
+            fResoPar[i][2] = 0.;
         }
-
         return;
     }
-
     int count = 0;
-
-    while (parser.ParseLine()) {
-        fMCCaliConst[count] = parser.TakeFirst().Double();
-        fMCCaliSigma[count] = parser.TakeFirst().Double();
+    while (parser.ParseLine()){
+        double input[8];
+        for (int i=0; i<8; i++) input[i] = parser.TakeFirst().Double();
+        if (energy < 1500){
+            fMCCaliConst[count] = fSmearMode == 0 ? input[0] : input[2];
+            fMCCaliSigma[count] = fSmearMode == 0 ? input[1] : input[3];
+        }
+        else{
+            fMCCaliConst[count] = fSmearMode == 0 ? input[4] : input[6];
+            fMCCaliSigma[count] = fSmearMode == 0 ? input[5] : input[7];
+        }
         count++;
+        
     }
+    parser.CloseFile();
+    
+    if (!parser.OpenFile("./database/hycal_resolution_curve_2terms.dat")){
+        std::cout<<"cannot find hycal_resolution_curve.dat"<<std::endl;
+        exit(0);
+    }
+    
+    while(parser.ParseLine()){
+        std::string channelName = parser.TakeFirst();
+        double input[3];
+        for (int i=0; i<3; i++) input[i] = parser.TakeFirst().Double();
+        
+        int id = -1;
+        
+        if (channelName[0] == 'W' || channelName[0] == 'G'){
+            id = std::stoi(channelName.substr(1, channelName.length() - 1));
+            if (channelName[0] == 'W') id += 1000;
+        }else{
+            id = -1;
+        }
+        
+        if (id <= 0 ) continue;
+        
+        for (int i=0; i<3; i++) fResoPar[id-1][i] = input[i];
+        
 
+    }
+    
     parser.CloseFile();
 }
 
