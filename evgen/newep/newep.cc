@@ -108,6 +108,7 @@ int main()
 
         xs_elastic_sin[i] = ElasticXS_Sin(theta_e);
         xs_brems_sin[i] = BremsXS_Sin(theta_e);
+        xs_sin[i] = xs_elastic_sin[i] + xs_brems_sin[i];
 
         double sigma_born = BornXS_Sin(theta_e) / sinth;
 
@@ -129,13 +130,19 @@ int main()
     Integrator_ElasticXS_Sin.SetFunction(Func_ElasticXS_Sin);
     Integrator_ElasticXS_Sin.SetRelTolerance(IntTol);
 
-    double xsint = 2 * pi * Integrator_EPXS_Sin.Integral(theta_min, theta_max);
-    double elxsint = 2 * pi * Integrator_ElasticXS_Sin.Integral(theta_min, theta_max);
+    //double xsint = 2 * pi * Integrator_EPXS_Sin.Integral(theta_min, theta_max);
+    //double elxsint = 2 * pi * Integrator_ElasticXS_Sin.Integral(theta_min, theta_max);
 
-    int n_elastic = int(N * (elxsint / xsint));
+    //int n_elastic = int(N * (elxsint / xsint));
 
+    Interpolator_EPXS_Sin.SetData(InterpolPoints, theta, xs_sin);
     Interpolator_ElasticXS_Sin.SetData(InterpolPoints, theta, xs_elastic_sin);
     Interpolator_BremsXS_Sin.SetData(InterpolPoints, theta, xs_brems_sin);
+
+    double xsint = 2 * pi * Interpolator_EPXS_Sin.Integ(theta_min, theta_max);
+    double elxsint = 2 * pi * Interpolator_ElasticXS_Sin.Integ(theta_min, theta_max);
+
+    int n_elastic = int(N * (elxsint / xsint));
 
     TFoam *FoamElastic = new TFoam("FoamElastic");
     TFoamIntegrand *pFoamElastic = new ElasticIntegrand();

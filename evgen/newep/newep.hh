@@ -88,6 +88,7 @@ double E_g, theta_g, phi_g;
 TLorentzVector v_g;
 
 double theta[InterpolPoints];
+double xs_sin[InterpolPoints];
 double xs_elastic_sin[InterpolPoints];
 double xs_brems_sin[InterpolPoints];
 
@@ -119,6 +120,7 @@ ROOT::Math::GSLIntegrator Integrator_EPXS_Sin(IntOpt);
 ROOT::Math::Functor1D Func_ElasticXS_Sin(&ElasticXS_Sin);
 ROOT::Math::GSLIntegrator Integrator_ElasticXS_Sin(IntOpt);
 
+ROOT::Math::Interpolator Interpolator_EPXS_Sin(InterpolPoints, InterpolType);
 ROOT::Math::Interpolator Interpolator_ElasticXS_Sin(InterpolPoints, InterpolType);
 ROOT::Math::Interpolator Interpolator_BremsXS_Sin(InterpolPoints, InterpolType);
 
