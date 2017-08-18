@@ -398,7 +398,7 @@ void RecBremsKins(double theta)
 
     double lambda_q = Pow2(q2 + v) + 4.0 * M2 * q2;
 
-    while (lambda_3 < 0 || lambda_4 < 0 || lambda_q < 0) {
+    while (std::isnan(t) || std::isnan(v) || std::isnan(phi) || lambda_3 < 0 || lambda_4 < 0 || lambda_q < 0) {
         elrad_gentvp(s, q2, v_min, v_max, &t, &v, &phi);
 
         lambda_1 = s * (q2 + v) + 2.0 * M2 * q2;

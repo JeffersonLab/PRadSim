@@ -534,7 +534,7 @@ void RecBremsKins(double theta)
     double lambda7 = (s + 2.0 * t1 - z - 4.0 * m2) * lambda1 - lambda2 * lambda4;
     double lambda8 = 16 * lambda3 * lambda5 - lambda7 * lambda7;
 
-    while (lambda3 < 0.0 || lambdas * lambda1 * lambda8 < 0.0) {
+    while (std::isnan(v) || std::isnan(t1) || std::isnan(z) || lambda3 < 0.0 || lambdas * lambda1 * lambda8 < 0.0) {
         merad_genvt1z(t, v_min, v_max, &v, &t1, &z);
 
         lambda1 = Pow2(s - v) - 4 * s * m2;
