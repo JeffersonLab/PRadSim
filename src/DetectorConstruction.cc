@@ -177,11 +177,13 @@ void DetectorConstruction::DefineMaterials()
     G4Element *P  = pNM->FindOrBuildElement(z = 15);
     G4Element *S  = pNM->FindOrBuildElement(z = 16);
     G4Element *Ar = pNM->FindOrBuildElement(z = 18);
+    G4Element *K  = pNM->FindOrBuildElement(z = 19);
     G4Element *Cr = pNM->FindOrBuildElement(z = 24);
     G4Element *Mn = pNM->FindOrBuildElement(z = 25);
     G4Element *Fe = pNM->FindOrBuildElement(z = 26);
     G4Element *Ni = pNM->FindOrBuildElement(z = 28);
     G4Element *Cu = pNM->FindOrBuildElement(z = 29);
+    G4Element *Ce = pNM->FindOrBuildElement(z = 58);
     G4Element *W  = pNM->FindOrBuildElement(z = 74);
     G4Element *Pb = pNM->FindOrBuildElement(z = 86);
 
@@ -340,9 +342,13 @@ void DetectorConstruction::DefineMaterials()
     SiO2->AddElement(O, natoms = 2);
     fVisAtts[SiO2->GetName()] = new G4VisAttributes(G4Colour::Green());
     
-    G4Material *PbGlass = new G4Material("PbGlass", density = 3.85 * g / cm3, ncomponents = 2);
-    PbGlass->AddElement(Pb, fractionmass = 0.5316);
-    PbGlass->AddMaterial(SiO2, fractionmass = 0.4684);
+    // Lead Glass
+    G4Material *PbGlass = new G4Material("PbGlass", density = 3.833 * g / cm3, ncomponents = 5);
+    PbGlass->AddElement(Pb, fractionmass = 0.475767);
+    PbGlass->AddElement(K, fractionmass = 0.058133);
+    PbGlass->AddElement(Si, fractionmass = 0.194215);
+    PbGlass->AddElement(O, fractionmass = 0.270256);
+    PbGlass->AddElement(Ce, fractionmass = 0.001629);
     fVisAtts[PbGlass->GetName()] = new G4VisAttributes(G4Colour::Blue());
 
     // Print out material table
