@@ -60,6 +60,7 @@
 #include "G4ProcessManager.hh"
 #include "G4ParticleTypes.hh"
 #include "G4ParticleTable.hh"
+#include "G4StepLimiter.hh"
 
 #include "G4Gamma.hh"
 #include "G4Electron.hh"
@@ -121,15 +122,16 @@ void PhysicsList::ConstructParticle()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PhysicsList::ConstructProcess()
-{
+{   
     AddTransportation();
     fEmPhysicsList->ConstructProcess();
     fDecayPhysicsList->ConstructProcess();
 
     for (size_t i = 0; i < fHadronPhys.size(); ++i)
         fHadronPhys[i]->ConstructProcess();
-
+     
     AddStepMax();
+    AddStepLimiter();
 
     if (verboseLevel > 0) DumpCutValuesTable();
 }
@@ -269,6 +271,26 @@ void PhysicsList::AddStepMax()
 
         if (fStepMaxProcess->IsApplicable(*particle) && !particle->IsShortLived())
             pmanager->AddDiscreteProcess(fStepMaxProcess);
+    }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void PhysicsList::AddStepLimiter()
+{
+    // Step limitation seen as a process
+
+    auto particleIterator = GetParticleIterator();
+    particleIterator->reset();
+
+    while ((*particleIterator)()) {
+        G4ParticleDefinition *particle = particleIterator->value();
+        G4ProcessManager *pmanager = particle->GetProcessManager();
+
+        if (!particle->IsShortLived()) {
+            G4StepLimiter* stepLimiter = new G4StepLimiter();
+            pmanager->AddDiscreteProcess(stepLimiter);
+        }
     }
 }
 

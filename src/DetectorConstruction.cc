@@ -62,6 +62,7 @@
 #include "G4SubtractionSolid.hh"
 #include "G4Tubs.hh"
 #include "G4UnionSolid.hh"
+#include "G4UserLimits.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VSolid.hh"
 #include "G4VUserDetectorConstruction.hh"
@@ -911,45 +912,58 @@ void DetectorConstruction::AddGEM(G4LogicalVolume *mother, int layerid, bool cul
 
 void DetectorConstruction::AddHyCal(G4LogicalVolume *mother)
 {
+    G4Material *HyCalBoxConM = G4Material::GetMaterial("Air");
     G4Material *HyCalBoxM = G4Material::GetMaterial("Rohacell");
     G4Material *HyCalBoxWinM = G4Material::GetMaterial("Tedlar");
     G4Material *CollimatorM = G4Material::GetMaterial("Tungsten");
     G4Material *HyCalModuleM = G4Material::GetMaterial("PbWO4");
-    G4Material *HyCalModuleWrapM = G4Material::GetMaterial("Galaxy");
+    G4Material *HyCalModuleWrapM = G4Material::GetMaterial("Air");
     
     if (fHyCalConfig == 1)
         HyCalModuleWrapM = G4Material::GetMaterial("WrapMaterial");
 
+    G4double MaxStep = 1.0 * mm;
+    
     // HyCal
     G4double PbGlassL = 45.0 * cm;
-    //G4double CrystalL = 18.0 * cm;
+    G4double CrystalL = 18.0 * cm;
     G4double CrystalDiffL = 9.73 * cm; // according to last survey (april 2017)
     G4double HyCalCenter = fCrystalSurf - CrystalDiffL + PbGlassL / 2.0;
-
+  
     // HyCal box
     G4double HyCalBoxCenter = HyCalCenter - 9.0 * cm + 30.0 * cm; // Check
+    G4Box *HyCalBoxConNoHole = new G4Box("HyCalBoxConNoHole", 80.0 * cm, 80.0 * cm, 70.0 * cm);
+    G4Tubs *HyCalBoxConHole = new G4Tubs("HyCalBoxConHole", 0, 31.75 * mm, 75.0 * cm, 0, twopi);
+    G4SubtractionSolid *solidHyCalBoxCon = new G4SubtractionSolid("HyCalBoxConS", HyCalBoxConNoHole, HyCalBoxConHole);
+    G4LogicalVolume *logicHyCalBoxCon = new G4LogicalVolume(solidHyCalBoxCon, HyCalBoxConM, "HyCalBoxConLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalBoxCenter), logicHyCalBoxCon, "HyCal Box Container", mother, false, 0);
+    
+    logicHyCalBoxCon->SetUserLimits(new G4UserLimits(MaxStep));
+    
     G4Box *HyCalBoxOuter = new G4Box("HyCalBoxOuter", 72.54 * cm, 72.54 * cm, 62.54 * cm);
     G4Box *HyCalBoxInner = new G4Box("HyCalBoxInner", 70.0 * cm, 70.0 * cm, 60.0 * cm);
     G4SubtractionSolid *HyCalBoxNoHole = new G4SubtractionSolid("HyCalBoxNoHole", HyCalBoxOuter, HyCalBoxInner);
     G4Tubs *HyCalBoxHole = new G4Tubs("HyCalBoxHole", 0, 31.75 * mm, 65.0 * cm, 0, twopi);
     G4SubtractionSolid *solidHyCalBox = new G4SubtractionSolid("HyCalBoxS", HyCalBoxNoHole, HyCalBoxHole);
     G4LogicalVolume *logicHyCalBox = new G4LogicalVolume(solidHyCalBox, HyCalBoxM, "HyCalBoxLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalBoxCenter), logicHyCalBox, "HyCal Box", mother, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicHyCalBox, "HyCal Box", logicHyCalBoxCon, false, 0);
 
     // HyCal box window
     G4VSolid *solidHyCalBoxWin = new G4Tubs("HyCalBoxWinS", 1.90 * cm, 5.08 * cm, 19.0 * um, 0, twopi);
     G4LogicalVolume *logicHyCalBoxWin = new G4LogicalVolume(solidHyCalBoxWin, HyCalBoxWinM, "HyCalBoxWinLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalBoxCenter - 62.54 * cm - 19.0 * um), logicHyCalBoxWin, "HyCal Box Window", mother, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalBoxCenter - 60.00 * cm + 19.0 * um), logicHyCalBoxWin, "HyCal Box Window", mother, false, 1);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, -62.54 * cm - 19.0 * um), logicHyCalBoxWin, "HyCal Box Window", logicHyCalBoxCon, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, -60.00 * cm + 19.0 * um), logicHyCalBoxWin, "HyCal Box Window", logicHyCalBoxCon, false, 1);
 
     // HyCal container
     G4Box *HyCalConPiece1 = new G4Box("HyCalConPiece1", 58.21 * cm, 58.17 * cm, PbGlassL / 2.0);
     G4Box *HyCalConPiece2 = new G4Box("HyCalConPiece2", 35.30 * cm, 35.27 * cm, CrystalDiffL / 2.0 + 0.5 * mm);
-    G4SubtractionSolid *HyCalConBox = new G4SubtractionSolid("HyCalConBox", HyCalConPiece1, HyCalConPiece2, 0, G4ThreeVector(0, 0, (CrystalDiffL - PbGlassL) / 2.0 - 0.5 * mm));
+    G4Box *HyCalConPiece3 = new G4Box("HyCalConPiece3", 35.30 * cm, 35.27 * cm, (PbGlassL - CrystalL - CrystalDiffL) / 2.0 + 0.5 * mm);
+    G4SubtractionSolid *HyCalConPiece4 = new G4SubtractionSolid("HyCalConPiece4", HyCalConPiece1, HyCalConPiece2, 0, G4ThreeVector(0, 0, (CrystalDiffL - PbGlassL) / 2.0 - 0.5 * mm));
+    G4SubtractionSolid *HyCalConBox = new G4SubtractionSolid("HyCalConBox", HyCalConPiece4, HyCalConPiece3, 0, G4ThreeVector(0, 0, (CrystalL + CrystalDiffL) / 2.0 + 0.5 * mm));
     G4Box *HyCalConHole = new G4Box("HyCalConHole", 2.0 * cm, 2.0 * cm, PbGlassL / 2.0 + 1.0 * mm);
     G4SubtractionSolid *solidHyCalCon = new G4SubtractionSolid("HyCalContainerS", HyCalConBox, HyCalConHole);
     G4LogicalVolume *logicHyCalCon = new G4LogicalVolume(solidHyCalCon, HyCalModuleWrapM, "HyCalContainerLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalCenter), logicHyCalCon, "HyCal Container", mother, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalCenter - HyCalBoxCenter), logicHyCalCon, "HyCal Container", logicHyCalBoxCon, false, 0);
 
     // HyCal modules
     G4VSolid *solidAbsorber = new G4Box("HyCalModuleS", 1.025 * cm, 1.025 * cm, 90.0 * mm);
@@ -964,7 +978,7 @@ void DetectorConstruction::AddHyCal(G4LogicalVolume *mother)
     G4LogicalVolume *logicCollimator = new G4LogicalVolume(solidCollimator, CollimatorM, "CollimatorLV");
     G4RotationMatrix rmColl;
     rmColl.rotateZ(-8.8 * deg);
-    new G4PVPlacement(G4Transform3D(rmColl, G4ThreeVector(0, 0, HyCalCenter - PbGlassL / 2.0 + CrystalDiffL - 3.1 * cm)), logicCollimator, "Collimator", mother, false, 0);
+    new G4PVPlacement(G4Transform3D(rmColl, G4ThreeVector(0, 0, HyCalCenter - PbGlassL / 2.0 + CrystalDiffL - 3.1 * cm - HyCalBoxCenter)), logicCollimator, "Collimator", logicHyCalBoxCon, false, 0);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
