@@ -56,9 +56,9 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act
 
     GunTypeCmd = new G4UIcmdWithAString("/pradsim/gun/type", this);
     GunTypeCmd->SetGuidance("Choose a type of event generator.");
-    GunTypeCmd->SetGuidance("  Choice : point, ring, file");
+    GunTypeCmd->SetGuidance("  Choice : point, ring, cosmics file");
     GunTypeCmd->SetParameterName("guntype", false);
-    GunTypeCmd->SetCandidates("point ring file");
+    GunTypeCmd->SetCandidates("point ring cosmics file");
 
     EventTypeCmd = new G4UIcmdWithAString("/pradsim/gun/evtype", this);
     EventTypeCmd->SetGuidance("Choose a type of model.");

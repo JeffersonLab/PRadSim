@@ -177,4 +177,53 @@ private:
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+class CosmicsGenerator;
+
+class CosmicsIntegrand : public TFoamIntegrand
+{
+public:
+    CosmicsIntegrand(CosmicsGenerator *gen, double e0, double eps, double rd, double nn);
+
+    double Density(int nDim, double *arg);
+
+    double E0, epsilon, Rd, n;
+    
+    double fEMin, fEMax;
+    double fZenithMin, fZenithMax;
+};
+
+class CosmicsGenerator : public G4VPrimaryGenerator
+{
+    friend class CosmicsIntegrand;
+    
+public:
+    CosmicsGenerator();
+    virtual ~CosmicsGenerator();
+
+    virtual void GeneratePrimaryVertex(G4Event *);
+
+protected:
+    void Register(TTree *);
+
+    void Print() const;
+    void Clear();
+
+    bool fRegistered;
+
+    int fN;
+    int fPID[MaxN];
+    double fX[MaxN], fY[MaxN], fZ[MaxN];
+    double fE[MaxN], fMomentum[MaxN];
+    double fTheta[MaxN], fPhi[MaxN];
+         
+    double fEMin, fEMax;
+    double fZenithMin, fZenithMax;
+    
+    TFoam *fETGenerator;
+    TRandom2 *fPseRan;
+    CosmicsIntegrand *fFoamI;
+};
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 #endif

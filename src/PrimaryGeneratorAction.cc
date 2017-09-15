@@ -84,6 +84,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
                 fPrimaryGenerator = new PrimaryGenerator("point", fE, fX, fY, fZ, fTheta, fPhi, false, "proton");
             else if (fGunType == "ring")
                 fPrimaryGenerator = new PrimaryGenerator(fEventType, fE, fThetaLo, fThetaHi, false, "proton");
+            else if (fGunType == "cosmics")
+                fPrimaryGenerator = new CosmicsGenerator();
             else
                 fPrimaryGenerator = new PRadPrimaryGenerator(fEventType, false, "proton", fEventFile, fTargetProfile);
         } else {
@@ -97,6 +99,8 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
                 else
                     fPrimaryGenerator = new PrimaryGenerator(fEventType, fE, fThetaLo, fThetaHi, recoilon, fRecoilParticle);
             }
+            else if (fGunType == "cosmics")
+                fPrimaryGenerator = new CosmicsGenerator();
             else
                 fPrimaryGenerator = new DRadPrimaryGenerator(fEventType, recoilon, fRecoilParticle, fEventFile);
         }

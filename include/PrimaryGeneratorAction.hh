@@ -42,9 +42,9 @@
 #include "G4String.hh"
 #include "G4ThreeVector.hh"
 
-class PrimaryGeneratorMessenger;
+class G4VPrimaryGenerator;
 
-class PrimaryGenerator;
+class PrimaryGeneratorMessenger;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -88,7 +88,7 @@ private:
     G4String fEventFile;
     G4String fTargetProfile;
 
-    PrimaryGenerator *fPrimaryGenerator;
+    G4VPrimaryGenerator *fPrimaryGenerator;
 
     PrimaryGeneratorMessenger *gunMessenger; // pointer to the messenger
 };

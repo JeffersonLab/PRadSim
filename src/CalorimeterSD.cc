@@ -235,7 +235,6 @@ void CalorimeterSD::EndOfEvent(G4HCofThisEvent *HCE)
         fTheta[i] = aHit->GetInMom().theta();
         fPhi[i] = aHit->GetInMom().phi();
         fTime[i] = aHit->GetTime();
-        G4cout << i << " " << fMomentum[i] << G4endl;
     }
 
     fTotalEdep = 0;
@@ -247,7 +246,6 @@ void CalorimeterSD::EndOfEvent(G4HCofThisEvent *HCE)
         fModuleTrackL[i] = aCalorHit->GetTrackLength();
         fTotalEdep += fModuleEdep[i];
     }
-    G4cout << fTotalEdep << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
