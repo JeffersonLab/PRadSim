@@ -38,7 +38,7 @@
       q22 = q2
 
       xs = fsirs(tmin + 1d-8)
-      call simpsx(tmin + 1d-8, tmax - 1d-8, 10000, 1d-3, fsirs, xs)
+      call simpsx(tmin + 1d-8, tmax - 1d-8, 10000, 1d-4, fsirs, xs)
       elrad_sigfs = xs
 
       end
@@ -67,7 +67,7 @@ c v and phik ds/dQ2/dphi/dt
       vmaxx = vcut
       
       xs = fsirh(tmin)
-      call simpsx(tmin, tmax, 10000, 1d-3, fsirh, xs)
+      call simpsx(tmin, tmax, 10000, 1d-4, fsirh, xs)
       elrad_sigfh = xs
 
       end
@@ -151,7 +151,7 @@ c      distart(nt1) = q2
       do itt = 1, nt1 + nt2
         if (distsit(itt) .gt. sigrand) then
           tgen = distart(itt - 1) + (distart(itt) -
-     .        distart(itt - 1)) * (sigrand - distsiv(itt - 1)) /
+     .        distart(itt - 1)) * (sigrand - distsit(itt - 1)) /
      .        (distsit(itt) - distsit(itt - 1))
           exit
         endif
@@ -299,43 +299,35 @@ c phik ds/dQ2/dphi/dt/dv
       ta=(t-q2)/r
       alq=sx**2+4d0*amp2*q2
       sqlq=dsqrt(alq)
-      sqls=sqrt(s**2-4d0*amp2*aml2)
-
-      ym=q2+2d0*aml**2
 
       if(iphik.eq.0.or.iphik.eq.2)then
         b2=(-alq*ta+sxp*sx*ta+2.*sxp*q2)/2.
         b1=(-alq*ta-sxp*sx*ta-2.*sxp*q2)/2.
         c1=-(4.*(amp2*ta**2-sx*ta-q2)*aml2-(s*ta+q2)**2)
         c2=-(4.*(amp2*ta**2-sx*ta-q2)*aml2-(ta*x-q2)**2)
-        bb=1/sqlq
+        bb=1./sqlq
         sc1=dsqrt(c1)
         sc2=dsqrt(c2)
         bis=(-b1/sc1/c1+b2/sc2/c2)
         bir=b2/sc2/c2+b1/sc1/c1
         bip=1d0/sc1+1d0/sc2
         bi12=(sxp*(sx*ta+2.*q2))/(sc1*sc2*(sc1+sc2))
-        sl3=0d0
       else
-        sl3=sqrt(t*v*(q2-t+v)-amp2*(q2-t)**2)
         tamin=(sx-sqlq)/2d0/amp2
         tamax=(sx+sqlq)/2d0/amp2
         sqrtmb=sqrt((ta-tamin)*(tamax-ta)*(s*x*q2-q2**2*amp2-aml2*alq))
         z1=(q2*sxp+ta*(s*sx+2d0*amp2*q2)-2d0*amp*cos(phik)*sqrtmb)/alq
         z2=(q2*sxp+ta*(x*sx-2d0*amp2*q2)-2d0*amp*cos(phik)*sqrtmb)/alq
-        bb=1./sqlq/pi
+        bb=1./sqlq/2.0/pi
         bi12=bb/(z1*z2)
         bip=bb*(1d0/z1+1d0/z2)
         bis=bb/z2**2+bb/z1**2
         bir=bb/z2**2-bb/z1**2
-c*****New bim (correspond to a new F_{1-}=F*(1/z1 -1/z2) in MASCARD paper)******
-        bim=bb*(1d0/z1-1d0/z2)
-c*******************************************************************************
       endif
 
-      bfir=aml2*bis-q2*bi12
+      bfir=aml2*bis-(q2+2.0d0*aml2)*bi12
 
-c*****Modification of the thetas beyon Ultra-relativistic limit*****************
+c***** Beyond URA **************************************************************
       t11=4d0*(q2-2*aml2)*bfir
       t12=4d0*(ta*bfir)
       t13=-4d0*bb-2d0*ta**2*bi12

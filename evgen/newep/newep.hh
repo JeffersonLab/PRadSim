@@ -47,6 +47,8 @@
 #define ATan  TMath::ATan
 #define ATan2 TMath::ATan2
 
+//#define TEST_URA
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 const double pi = 3.14159265358979323846;
@@ -266,7 +268,7 @@ double NonRadXS(double s, double q2)
         return result * s / 2.0 / slambda;
     };
 
-    double v_limit = 2.0 * q2 * (lambda_s - q2 * (s + m2 + M2)) / (q2 * (s + 2.0 * m2) + Sqrt(q2 * lambda_s * (q2 + 4.0 * m2)));
+    double v_limit = 0.99 * 2.0 * q2 * (lambda_s - q2 * (s + m2 + M2)) / (q2 * (s + 2.0 * m2) + Sqrt(q2 * lambda_s * (q2 + 4.0 * m2)));
     double v_max = (v_limit > v_cut) ? v_cut : v_limit;
 
     double q2mlm = q2_m * l_m - 1.0;
@@ -298,6 +300,18 @@ double NonRadXS(double s, double q2)
     // Ignore sigma_AMM (eq. (38)) since it is always very small
     double result = (1.0 + alpha_pi * (delta_VR + delta_vac - delta_inf)) * sig_0 * Exp(alpha_pi * delta_inf) + sig_0 * delta_Fs + sig_Fs;
 
+#ifdef TEST_URA
+    double delta_inf_ura = (Log(q2 / m2) - 1.0) * Log(v_max * v_max / s / x);
+    double delta_VR_ura = 3.0 / 2.0 * Log(q2 / m2) - 2.0 - Pow2(Log(s / x)) / 2.0 + DiLog(1.0 - M2 * q2 / s / x) - pi2 / 6.0;
+    double delta_Fs_ura = -2.0 * alpha_pi * (Log(q2 / m2) - 1.0) * Log(v_max / v_min);
+
+    std::cout << delta_inf << " " << delta_inf_ura << std::endl;
+    std::cout << delta_VR - delta_inf << " " << delta_VR_ura << std::endl;
+    std::cout << delta_Fs << " " << delta_Fs_ura << std::endl;
+    
+    result = (1.0 + alpha_pi * (delta_VR_ura + delta_vac)) * sig_0 * Exp(alpha_pi * delta_inf_ura) + sig_0 * delta_Fs_ura + sig_Fs;
+#endif
+
     return result;
 }
 
@@ -307,7 +321,7 @@ double RadXS(double s, double q2)
 {
     double lambda_s = s * s - 4.0 * m2 * M2;
     
-    double v_limit = 2.0 * q2 * (lambda_s - q2 * (s + m2 + M2)) / (q2 * (s + 2.0 * m2) + Sqrt(q2 * lambda_s * (q2 + 4.0 * m2)));
+    double v_limit = 0.99 * 2.0 * q2 * (lambda_s - q2 * (s + m2 + M2)) / (q2 * (s + 2.0 * m2) + Sqrt(q2 * lambda_s * (q2 + 4.0 * m2)));
     double v_max = (v_limit > v_cut) ? v_cut : v_limit;
 
     double tmin = (2.0 * M2 * q2 + v_max * (q2 + v_max - Sqrt(Pow2(q2 + v_max) + 4.0 * M2 * q2))) / 2.0 / (M2 + v_max);
@@ -385,7 +399,7 @@ void RecBremsKins(double theta)
 
     double lambda_s = s * s - 4.0 * m2 * M2;
 
-    double v_limit = 2.0 * q2 * (lambda_s - q2 * (s + m2 + M2)) / (q2 * (s + 2.0 * m2) + Sqrt(q2 * lambda_s * (q2 + 4.0 * m2)));
+    double v_limit = 0.99 * 2.0 * q2 * (lambda_s - q2 * (s + m2 + M2)) / (q2 * (s + 2.0 * m2) + Sqrt(q2 * lambda_s * (q2 + 4.0 * m2)));
     double v_max = (v_limit > v_cut) ? v_cut : v_limit;
 
     double t = 0.0, v = 0.0, phi = 0.0;
@@ -430,10 +444,11 @@ void RecBremsKins(double theta)
         (lambda_1 * (lambda_q - lambda_2) + 4.0 * M2 * slambda_3 * slambda_4 * cosphi) / (2.0 * lambda_q * M * s),
         (q2 + v - t) / 2.0 / M);
 
-    if (std::isnan(vf_p[0]) || std::isnan(vf_p[1]) || std::isnan(vf_p[2]) || std::isnan(vf_p[3])) {
-        std::cout << vf_e[0] << std::endl;
-        std::cout << vf_p[0] << " " << vf_p[1] << " " << vf_p[2] << " " << vf_p[3] << std::endl;
-        std::cout << lambda_1 << " " << lambda_2 << " " << lambda_3 << " " << lambda_4 << " " << std::endl;
+    if (std::isnan(vf_p[0]) || std::isnan(vf_p[1]) || std::isnan(vf_p[2]) || std::isnan(vf_p[3]) || vf_p[3] < 0) {
+        std::cout << vf_e.E() << " " << vf_e.Theta() << std::endl;
+        std::cout << vf_p.E() << " " << vf_p[1] << " " << vf_p[2] << " " << vf_p[3] << std::endl;
+        std::cout << t << " " << M2 << " " << lambda_1 << " " << lambda_2 << " " << lambda_3 << " " << lambda_4 << " " << std::endl;
+        std::cout << std::endl;
     }
 }
 

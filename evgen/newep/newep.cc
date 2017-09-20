@@ -1,4 +1,4 @@
-//
+ //
 // newep.cc
 // Developer : Chao Gu
 // Based on Eur. Phys. J. A 51(2015)1
@@ -61,12 +61,13 @@ int main()
     std::cin.getline(mychar, 64);
     int N = atoi(mychar);
 /*
-    Ei_e = 1.1;
-    theta_min = 0.6 * deg;
-    theta_max = 6.0 * deg;
-    int N = 10000;
+    Ei_e = 2.142;
+    theta_min = 0.5 * deg;
+    theta_max = 8.0 * deg;
+    int N = 100000;
     v_min = 25.335e-6;
-    v_cut = 50000.0e-6;
+    v_cut = Pow2(2000.0) * 1e-6;
+    //v_cut = 10000.0e-6;
 */
     PseRan = new TRandom2();
     PseRan->SetSeed((int)(time(NULL)));
@@ -234,7 +235,7 @@ int main()
     fp = fopen(ifilename, "w");
 
     fprintf(fp, "beam energy:\n");
-    fprintf(fp, "%lf MeV\n", Ei_e);
+    fprintf(fp, "%lf MeV\n", Ei_e * 1000);
     fprintf(fp, "polar angle range:\n");
     fprintf(fp, "%lf ~ %lf deg\n", theta_min / deg, theta_max / deg);
     fprintf(fp, "angle acceptance (the solid angle):\n");
@@ -245,7 +246,7 @@ int main()
     fprintf(fp, "%lf inverse microbarn\n", N / xsint);
 
     printf("beam energy:\n");
-    printf("%lf MeV\n", Ei_e);
+    printf("%lf MeV\n", Ei_e * 1000);
     printf("polar angle range:\n");
     printf("%lf ~ %lf deg\n", theta_min / deg, theta_max / deg);
     printf("angle acceptance (the solid angle):\n");
