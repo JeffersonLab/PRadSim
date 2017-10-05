@@ -428,7 +428,7 @@ double BornXS_Sin(double theta)
 
     double jacob = 2.0 * Pow2(Ei_e) / Pow2(1.0 + Ei_e / M * (1.0 - Cos(theta)));
 
-    return BornXS(s, q2) * jacob * mkb * Sin(theta);
+    return BornXS(s, q2) * Sin(theta) * jacob * mkb;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -440,7 +440,7 @@ double ElasticXS_Sin(double theta)
 
     double jacob = 2.0 * Pow2(Ei_e) / Pow2(1.0 + Ei_e / M * (1.0 - Cos(theta)));
 
-    return NonRadXS(s, q2) * jacob * mkb * Sin(theta);
+    return NonRadXS(s, q2) * Sin(theta) * jacob * mkb;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -452,7 +452,7 @@ double BremsXS_Sin(double theta)
 
     double jacob = 2.0 * Pow2(Ei_e) / Pow2(1.0 + Ei_e / M * (1.0 - Cos(theta)));
 
-    return RadXS(s, q2) * jacob * mkb * Sin(theta);
+    return RadXS(s, q2) * Sin(theta) * jacob * mkb;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -680,6 +680,10 @@ public:
         EvalKinematicParams(E_g); // Evaluation of some kinematic parameters
         SetFinalFourMomenta(); // Set four-momenta for the final particles
 
+        double vv = (v_li + v_pi - v_lf) * (v_li + v_pi - v_lf) - M * M;
+
+        if (vv < v_min || vv > v_cut) return 0.0;
+        
         EvalAllProducts(); // Evaluation of the four-momentum products
 
         // Square of the total amplitude:
