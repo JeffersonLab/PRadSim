@@ -296,6 +296,7 @@ c phik ds/dQ2/dphi/dt/dv
       x=s-r-t
       sx=s-x
       sxp=s+x
+      als=s**2-4d0*aml2*amp2
       ta=(t-q2)/r
       alq=sx**2+4d0*amp2*q2
       sqlq=dsqrt(alq)
@@ -317,7 +318,7 @@ c phik ds/dQ2/dphi/dt/dv
         tamax=(sx+sqlq)/2d0/amp2
         sqrtmb=sqrt((ta-tamin)*(tamax-ta)*(s*x*q2-q2**2*amp2-aml2*alq))
         z1=(q2*sxp+ta*(s*sx+2d0*amp2*q2)-2d0*amp*cos(phik)*sqrtmb)/alq
-        z2=(q2*sxp+ta*(x*sx-2d0*amp2*q2)-2d0*amp*cos(phik)*sqrtmb)/alq
+        z2=(q2*sxp+ta*(s*sx-2d0*amp2*q2)-2d0*amp*cos(phik)*sqrtmb)/alq
         bb=1./sqlq/2.0/pi
         bi12=bb/(z1*z2)
         bip=bb*(1d0/z1+1d0/z2)
@@ -340,7 +341,7 @@ c***** Beyond URA **************************************************************
       th2n=t21/r**2+t22/r+t23
 c*******************************************************************************
       call sffun(t,f1,f2)
-      fsigtv=-alpha**3*barn/4d0/pi/s**2*(th1n*f1+th2n*f2)/t**2
+      fsigtv=-alpha**3*barn/4d0/pi/als*(th1n*f1+th2n*f2)/t**2
 
       if(iphik.eq.2)then
         call sffun(q2,f10,f20)
@@ -348,8 +349,8 @@ c***** Beyond URA **************************************************************
         tm1=q2-2*aml2
 c*******************************************************************************
         tm2=(s*(s-q2)-amp2*q2)/2d0/amp2
-        fsigtv=fsigtv+alpha**3*barn*bfir*(tm1*f10+tm2*f20)
-     .      /pi/(s*q2*r)**2
+        fsigtv=fsigtv+alpha**3*barn/pi/als*bfir*(tm1*f10+tm2*f20)
+     .      /(r*q2)**2
       endif
 
       end

@@ -60,31 +60,14 @@ int main()
     std::cout << "Number of events to generate: " << std::flush;
     std::cin.getline(mychar, 64);
     int N = atoi(mychar);
-/*
-    Ei_e = 2.142;
-    theta_min = 0.5 * deg;
-    theta_max = 8.0 * deg;
-    int N = 100000;
-    v_min = 25.335e-6;
-    v_cut = Pow2(2000.0) * 1e-6;
-    //v_cut = 10000.0e-6;
-*/
-    en_sign = -1;
 
-    phi_min = 0.0;
-    phi_max = 2.0 * pi;
-
-    double s_h_t_mi_2 = Sin(theta_min / 2.0) * Sin(theta_min / 2.0);
-    double s_h_t_ma_2 = Sin(theta_max / 2.0) * Sin(theta_max / 2.0);
-    double E_el_mi = Ei_e / (1.0 + 2.0 * Ei_e / M * s_h_t_mi_2);
-    double E_el_ma = Ei_e / (1.0 + 2.0 * Ei_e / M * s_h_t_ma_2);
-    
-    E_g_cut = (v_min - 2.0 * (Ei_e - E_el_ma) * M + 4.0 * Ei_e * E_el_ma * s_h_t_ma_2) / (2.0 * M + 4.0 * Ei_e * s_h_t_ma_2);
-    E_g_max = (v_cut - 2.0 * (Ei_e - E_el_mi) * M + 4.0 * Ei_e * E_el_mi * s_h_t_mi_2) / (2.0 * M + 4.0 * Ei_e * s_h_t_mi_2);
-
-    std::cout << E_g_cut << " " << E_g_max << std::endl;
-
-    E_li = Ei_e;
+    // Ei_e = 2.142;
+    // theta_min = 0.5 * deg;
+    // theta_max = 8.0 * deg;
+    // int N = 1000000;
+    // v_min = 25.335e-6;
+    // v_cut = Pow2(2000.0) * 1e-6;
+    // //v_cut = 1000000.0e-6;
 
     PseRan = new TRandom2();
     PseRan->SetSeed((int)(time(NULL)));
@@ -94,33 +77,30 @@ int main()
     vi_e.SetPxPyPzE(0.0, 0.0, Sqrt(Pow2(Ei_e) - m2), Ei_e);
     vi_p.SetPxPyPzE(0.0, 0.0, 0.0, M);
 
-    v_li = vi_e;
-    v_pi = vi_p;
-    
     elrad_init(Ei_e, v_min);
 
     FILE *fp = fopen("xs.dat", "w");
-/*
-    for (int i = 0; i < 101; i++) {
-        double q2 = Exp((-6 + i * 0.06) * Log(10.0));
-        double ef = Ei_e - q2 / 2.0 / M;
-        double tt = ACos(1.0 - (Ei_e / ef - 1.0) * M / Ei_e);
 
-        double sinth = Sin(tt);
+    // for (int i = 0; i < 101; i++) {
+    //     double q2 = Exp((-6 + i * 0.06) * Log(10.0));
+    //     double ef = Ei_e - q2 / 2.0 / M;
+    //     double tt = ACos(1.0 - (Ei_e / ef - 1.0) * M / Ei_e);
 
-        double sigma_born = BornXS_Sin(tt) / sinth * 2 * pi;
+    //     double sinth = Sin(tt);
 
-        double sigma_elastic = ElasticXS_Sin(tt) / sinth * 2 * pi;
-        double sigma_brems = BremsXS_Sin(tt) / sinth * 2 * pi;
-        double sigma_total = sigma_elastic + sigma_brems;
+    //     double sigma_born = BornXS_Sin(tt) / sinth;
 
-        fprintf(fp, "%8.6lf %10.4le %10.4le %10.4le %10.4le %10.4le %8.6lf %8.6lf %8.6lf\n", tt * 180.0 / pi, q2, sigma_born, sigma_total, sigma_elastic, sigma_brems, sigma_total / sigma_born - 1, sigma_elastic / sigma_born, sigma_brems / sigma_born);
-        printf("%8.6lf %10.4le %10.4le %10.4le %10.4le %10.4le %8.6lf %8.6lf %8.6lf\n", tt * 180.0 / pi, q2, sigma_born, sigma_total, sigma_elastic, sigma_brems, sigma_total / sigma_born - 1, sigma_elastic / sigma_born, sigma_brems / sigma_born);
-    }
+    //     double sigma_elastic = ElasticXS_Sin(tt) / sinth;
+    //     double sigma_brems = BremsXS_Sin(tt) / sinth;
+    //     double sigma_total = sigma_elastic + sigma_brems;
 
-    fclose(fp);
-    exit(0);
-*/
+    //     fprintf(fp, "%8.6lf %10.4le %10.4le %10.4le %10.4le %10.4le %8.6lf %8.6lf %8.6lf\n", tt * 180.0 / pi, q2, sigma_born, sigma_total, sigma_elastic, sigma_brems, sigma_total / sigma_born - 1, sigma_elastic / sigma_born, sigma_brems / sigma_born);
+    //     printf("%8.6lf %10.4le %10.4le %10.4le %10.4le %10.4le %8.6lf %8.6lf %8.6lf\n", tt * 180.0 / pi, q2, sigma_born, sigma_total, sigma_elastic, sigma_brems, sigma_total / sigma_born - 1, sigma_elastic / sigma_born, sigma_brems / sigma_born);
+    // }
+
+    // fclose(fp);
+    // exit(0);
+
     for (int i = 0; i < InterpolPoints; i++) {
         theta_e = theta_min + i * (theta_max - theta_min) / (InterpolPoints - 1);
         theta[i] = theta_e;
@@ -144,7 +124,7 @@ int main()
     }
 
     fclose(fp);
-    
+
     Integrator_EPXS_Sin.SetFunction(Func_EPXS_Sin);
     Integrator_EPXS_Sin.SetRelTolerance(IntTol);
 
@@ -163,7 +143,7 @@ int main()
     double xsint = 2 * pi * Interpolator_EPXS_Sin.Integ(theta_min, theta_max);
     double elxsint = 2 * pi * Interpolator_ElasticXS_Sin.Integ(theta_min, theta_max);
 
-    std::cout << xsint << " " << elxsint << " " << std::endl;
+    //std::cout << xsint << " " << elxsint << " " << std::endl;
 
     int n_elastic = int(N * (elxsint / xsint));
 
@@ -188,17 +168,6 @@ int main()
     FoamBrems->SetPseRan(PseRan); // Set random number generator
     //FoamBrems->SetChat(1); // Set "chat level" in the standard output
     FoamBrems->Initialize();
-
-    TFoam *FoamESEPP = new TFoam("FoamESEPP");
-    TFoamIntegrand *pFoamESEPP = new TFDISTR2e();
-    FoamESEPP->SetkDim(4);
-    FoamESEPP->SetnCells(30000); // Set number of cells
-    FoamESEPP->SetnSampl(1500); // Set number of samples
-    FoamESEPP->SetOptRej(1); // Unweighted events in MC generation
-    FoamESEPP->SetRho(pFoamESEPP); // Set distribution function
-    FoamESEPP->SetPseRan(PseRan); // Set random number generator
-    //FoamESEPP->SetChat(1); // Set "chat level" in the standard output
-    FoamESEPP->Initialize();
 
     fp = fopen(filename, "w");
 
@@ -234,15 +203,10 @@ int main()
 
             count_elastic++;
         } else {
-            //FoamBrems->MakeEvent();
-            //RecBremsKins(theta_e);
+            FoamBrems->MakeEvent();
+            RecBremsKins(theta_e);
 
-            FoamESEPP->MakeEvent();
             double phi = 2.0 * pi * PseRan->Rndm();
-
-            vf_e = v_lf;
-            vf_p = v_pf;
-            v_g = v_kf;
 
             vf_e.RotateZ(phi);
             vf_p.RotateZ(phi);

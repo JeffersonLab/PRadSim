@@ -31,7 +31,7 @@
 #define IntOpt ROOT::Math::IntegrationOneDim::kADAPTIVE
 #define IntTol 0.001
 
-#define InterpolPoints 751
+#define InterpolPoints 1001
 #define InterpolType ROOT::Math::Interpolation::kCSPLINE
 
 #define Abs   TMath::Abs
@@ -99,73 +99,6 @@ double xs_brems_sin[InterpolPoints];
 
 TRandom *PseRan;
 
-// ESEPP
-double E_li; // Full energy of the initial lepton
-
-double E_lf; // Full energy of the final lepton
-double E_p;  // Full energy of the final proton
-
-// Theta angles ("polar") of the final particles:
-double theta_l; // Theta angle of the final lepton
-
-// Phi angles ("azimuthal") of the final particles:
-double phi_l; // Phi angle of the final lepton
-
-double phi_min; // Minimum phi angle for the lepton
-double phi_max; // Maximum phi angle for the lepton
-
-// Cut and maximum energies for the photon (E_g_cut < E_g < E_g_max):
-double E_g_cut, E_g_max;
-
-// For the evaluation of the final lepton energy:
-double A, B, C; // Coefficients of the quadratic equation
-double en_sign; // Sign to be changed to get two different roots
-
-// Some kinematic variables:
-double qq;     // Four-momentum transfer
-double tau; // tau = -q^2 / (4*M^2)
-double eps;    // Virtual photon polarization
-double q_12;   // Four-momentum transfer squared (when the lepton emits the photon)
-double q_22;   // Four-momentum transfer squared (when the proton emits the photon)
-
-// Some variables to calculate the cross section of elastic scattering:
-double myeps;
-double d;
-
-// Form factors of the proton:
-double F10, F20; // F1(0) and F2(0)
-double F11, F12; // F1(q_12) and F1(q_22)
-double F21, F22; // F2(q_12) and F2(q_22)
-
-// Some auxiliary variables:
-double delta_sum;
-double M_sum;
-
-double ret;
-
-double res, res1, res2, res3, res4;
-
-// Some four-momenta:
-TLorentzVector v_li; // Initial lepton four-momentum
-TLorentzVector v_pi; // Initial proton four-momentum
-TLorentzVector v_lf; // Final lepton four-momentum
-TLorentzVector v_pf; // Final proton four-momentum
-TLorentzVector v_kf; // Photon four-momentum
-
-TLorentzVector p_x; // LorentzVector for numerical integration
-
-// Scalar products and their squares:
-double kfli; // Photon, lepton initial
-double kflf; // Photon, lepton final
-double kfpi; // Photon, proton initial
-double kfpf; // Photon, proton final
-double lilf; // Lepton initial, lepton final
-double lipi; // Lepton initial, proton initial
-double lipf; // Lepton initial, proton final
-double pipf; // Proton initial, proton final
-double lfpi; // Lepton final, proton initial
-double lfpf; // Lepton final, proton final
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 extern "C"
@@ -222,8 +155,6 @@ inline double Pow6(double arg) // arg^6
 {
     return TMath::Power(arg, 6);
 }
-
-#include "lepton.h"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -362,7 +293,7 @@ double NonRadXS(double s, double q2)
     }
 
     // Note: in ELRADGEN, the delta_inf (delta_infx in the code) is written
-    // as Log(q2 / m2) - 1.0) * Log(v_max * v_max / s / x), which is actually
+    // as (Log(q2 / m2) - 1.0) * Log(v_max * v_max / s / x), which is actually
     // the form with in URA
     double delta_inf = q2mlm * Log(v_max * v_max / s / x); // eq. (42)
 
@@ -373,6 +304,7 @@ double NonRadXS(double s, double q2)
     double delta_Fs = -2.0 * alpha_pi * q2mlm * Log(v_max / v_min);
 
     // Ignore sigma_AMM (eq. (38)) since it is always very small
+    //double result = (1.0 + alpha_pi * (delta_VR + delta_vac - delta_inf)) * sig_0 * Exp(alpha_pi * delta_inf) + sig_0 * delta_Fs + sig_Fs;
     double result = (1.0 + alpha_pi * (delta_VR + delta_vac - delta_inf)) * sig_0 * Exp(alpha_pi * delta_inf) + sig_0 * delta_Fs + sig_Fs;
 
 #ifdef TEST_URA
@@ -392,6 +324,62 @@ double NonRadXS(double s, double q2)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+// double sig_rad(double s, double q2, double v, double ta, double phi, double tamin, double tamax)
+// {
+//     double x = s - q2 - v;
+
+//     double lambda_s = s * s - 4.0 * m2 * M2;
+//     double lambda_y = Pow2(s - x) + 4.0 * M2 * q2;
+
+//     double lambda_z = (ta - tamin) * (tamax - ta) * (s * x * q2 - M2 * Pow2(q2) - m2 * lambda_y);
+//     double slambda_z = (lambda_z > 0.0) ? Sqrt(lambda_z) : 0.0;
+
+//     double z1 = (q2 * (s + x) + ta * (s * (s - x) + 2.0 * M2 * q2) - 2.0 * M * slambda_z * Cos(phi)) / lambda_y;
+//     double z2 = (q2 * (s + x) + ta * (s * (s - x) - 2.0 * M2 * q2) - 2.0 * M * slambda_z * Cos(phi)) / lambda_y;
+
+//     double F = 0.5 / pi / Sqrt(lambda_y);
+//     double F_d = F / z1 / z2;
+//     double F_1p = F / z1 + F / z2;
+//     double F_2p = F * m2 * (1.0 / Pow2(z2) + 1.0 / Pow2(z1));
+//     double F_2m = F * m2 * (1.0 / Pow2(z2) - 1.0 / Pow2(z1));
+//     double F_IR = F_2p - (q2 + 2.0 * m2) * F_d;
+
+//     double tm[3][4];
+//     tm[1][1] = 4.0 * (q2 - 2.0 * m2) * F_IR;
+//     tm[1][2] = 4.0 * F_IR * ta;
+//     tm[1][3] = -4.0 * F - 2.0 * Pow2(ta) * F_d;
+//     tm[2][1] = 2.0 * (s * x - M2 * q2) * F_IR / M2;
+//     tm[2][2] = (2.0 * (s + x) * F_2m + (Pow2(s) - Pow2(x)) * F_1p + 2.0 * (s - x - 2.0 * M2 * ta) * F_IR - ta * Pow2(s + x) * F_d) / 2.0 / M2;
+//     tm[2][3] = (4.0 * M2 * F + (4.0 * m2 + 2.0 * M2 * Pow2(ta) - (s - x) * ta) * F_d - (s + x) * F_1p) / 2.0 / M2;
+
+//     double factor = 1.0 + ta;
+//     double r = v / factor;
+
+//     double t = q2 / 4.0 / M2; // Tau
+//     double tm0[3] = {0, q2 - 2.0 * m2, (s * (s - q2) - M2 * q2) / (2.0 * M2)};
+//     double sfm0[3] = {0, 4.0 * t * M2 * Pow2(GMp(q2)), 4.0 * M2 * (Pow2(GEp(q2)) + t * Pow2(GMp(q2))) / (1.0 + t)};
+
+//     double q2p = q2 + r * ta;
+//     double tp = q2p / 4.0 / M2;
+//     double sfm[3] = {0, 4.0 * tp * M2 * Pow2(GMp(q2p)), 4.0 * M2 * (Pow2(GEp(q2p)) + tp * Pow2(GMp(q2p))) / (1.0 + tp)};
+
+//     double podinl = 0.0;
+//     for (int i = 1; i <= 2; i++) {
+//         for (int j = 1; j <= 3; j++) {
+//             double pp = sfm[i] * tm[i][j];
+//             if (j == 1) pp = pp - 4.0 * F_IR * tm0[i] * sfm0[i] * Pow2(1.0 + r * ta / q2);
+//             double pres = pp * TMath::Power(r, j - 2) / Pow2(q2 + r * ta);
+//             podinl = podinl - pres;
+//         }
+//     }
+
+//     double result = Pow3(alpha) / 2.0 / lambda_s * podinl / factor;
+
+//     return result;
+// }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 double RadXS(double s, double q2)
 {
     double lambda_s = s * s - 4.0 * m2 * M2;
@@ -404,6 +392,53 @@ double RadXS(double s, double q2)
     double sig_Fh = elrad_sigfh(tmin, tmax, q2, v_max);
 
     return sig_Fh;
+
+    // double lambda_s = s * s - 4.0 * m2 * M2;
+
+    // double v_limit = 0.99 * 2.0 * q2 * (lambda_s - q2 * (s + m2 + M2)) / (q2 * (s + 2.0 * m2) + Sqrt(q2 * lambda_s * (q2 + 4.0 * m2)));
+    // double v_max = (v_limit > v_cut) ? v_cut : v_limit;
+
+    // double phi_range[4] = {0.0, 0.01, 0.99, 1.0};
+
+    // double result = 0.0;
+    // for (int i = 0; i < 3; i++) {
+    //     for (int j = 0; j < 5; j++) {
+    //         double phi_min = 2.0 * pi * phi_range[i];
+    //         double phi_max = 2.0 * pi * phi_range[i + 1];
+
+    //         double sum = 0.0;
+    //         for (int k = 0; k < 100000; k++) {
+    //             double v = v_max * PseRan->Rndm();
+
+    //             double x = s - v - q2;
+    //             double lambda_y = Pow2(s - x) + 4.0 * M2 * q2;
+
+    //             double ta_maxx = (s - x + Sqrt(lambda_y)) / 2.0 / M2;
+    //             double ta_minn = -q2 / M2 / ta_maxx;
+    //             double ta_sp = -q2 / s;
+    //             double ta_pp = q2 / x;
+
+    //             double ta_range[6] = {ta_minn, (ta_minn + 9.0 * ta_sp) / 10.0, ta_sp / 1.1, ta_pp / 1.2, (ta_pp / 0.8 < (ta_maxx + ta_pp) / 2.0) ? ta_pp / 0.8 : (ta_maxx + ta_pp) / 2.0, ta_maxx};
+
+    //             double ta_min = ta_range[j];
+    //             double ta_max = ta_range[j + 1];
+    //             double ta = ta_min + (ta_max - ta_min) * PseRan->Rndm();
+
+    //             double phi = phi_min + (phi_max - phi_min) * PseRan->Rndm();
+
+    //             double int_volume = v_max * (ta_max - ta_min) * (phi_max - phi_min);
+    //             double xs_rad = sig_rad(s, q2, v, ta, phi, ta_minn, ta_maxx);
+
+    //             sum += xs_rad * int_volume;
+    //         }
+
+    //         sum = sum / 100000.0;
+
+    //         result += sum;
+    //     }
+    // }
+
+    // return result;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -483,20 +518,9 @@ void RecBremsKins(double theta)
     double lambda_1 = s * (q2 + v) + 2.0 * M2 * q2;
     double lambda_2 = t * (q2 + v) + 2.0 * M2 * (q2 + t);
     double lambda_3 = t * v * (q2 - t + v) - M2 * Pow2(q2 - t);
-    double lambda_4 = q2 * s * (v_limit - v);
+    double lambda_4 = q2 * s * (s - q2 - M2 * q2 / s - v);
 
     double lambda_q = Pow2(q2 + v) + 4.0 * M2 * q2;
-
-    while (std::isnan(t) || std::isnan(v) || std::isnan(phi) || lambda_3 < 0 || lambda_4 < 0 || lambda_q < 0) {
-        elrad_gentvp(s, q2, v_min, v_max, &t, &v, &phi);
-
-        lambda_1 = s * (q2 + v) + 2.0 * M2 * q2;
-        lambda_2 = t * (q2 + v) + 2.0 * M2 * (q2 + t);
-        lambda_3 = t * v * (q2 - t + v) - M2 * Pow2(q2 - t);
-        lambda_4 = q2 * s * (v_limit - v);
-
-        lambda_q = Pow2(q2 + v) + 4.0 * M2 * q2;
-    }
 
     double slambda_3 = Sqrt(lambda_3);
     double slambda_4 = Sqrt(lambda_4);
@@ -505,19 +529,38 @@ void RecBremsKins(double theta)
     double cosphi = Cos(phi);
     double sinphi = Sin(phi);
 
-    if (PseRan->Rndm() > 0.5) slambda_3 *= -1.0;
+    //if (PseRan->Rndm() > 0.5) slambda_3 *= -1.0;
 
     vf_e.SetPxPyPzE(slambda_4 / s, 0.0, (s * s - lambda_1) / (2.0 * M * s), (s - q2 - v) / 2.0 / M);
     vf_p.SetPxPyPzE(
-        (slambda_3 * lambda_1 * cosphi + lambda_2 * slambda_4) / (lambda_q * s),
-        (slambda_3 * slambda_q * s * sinphi) / (lambda_q * s),
+        (-slambda_3 * lambda_1 * cosphi - lambda_2 * slambda_4) / (lambda_q * s),
+        (-slambda_3 * slambda_q * s * sinphi) / (lambda_q * s),
         (lambda_1 * lambda_2 - 4 * M2 * slambda_3 * slambda_4 * cosphi) / (2.0 * lambda_q * M * s),
         (t + 2.0 * M2) / 2.0 / M);
     v_g.SetPxPyPzE(
-        (-slambda_3 * lambda_1 * cosphi + (lambda_q - lambda_2) * slambda_4) / (lambda_q * s),
-        (-slambda_3 * slambda_q * s * sinphi) / (lambda_q * s),
+        (slambda_3 * lambda_1 * cosphi - (lambda_q - lambda_2) * slambda_4) / (lambda_q * s),
+        (slambda_3 * slambda_q * s * sinphi) / (lambda_q * s),
         (lambda_1 * (lambda_q - lambda_2) + 4.0 * M2 * slambda_3 * slambda_4 * cosphi) / (2.0 * lambda_q * M * s),
         (q2 + v - t) / 2.0 / M);
+
+    // TVector3 k1 = vi_e.Vect(), k2 = vf_e.Vect();
+    // TVector3 q = (vi_e - vf_e).Vect(), k = v_g.Vect();
+    // TVector3 k1k2 = k1.Cross(k2);
+    // TVector3 qk = q.Cross(k);
+
+    // double phi_new = qk.Angle(k1k2);
+
+    // std::cout << std::endl;
+    // std::cout << v_g.E() << std::endl;
+    // std::cout << k1[0] << " " << k1[1] << " " << k1[2] << std::endl;
+    // std::cout << k2[0] << " " << k2[1] << " " << k2[2] << std::endl;
+    // std::cout << q[0] << " " << q[1] << " " << q[2] << std::endl;
+    // std::cout << k[0] << " " << k[1] << " " << k[2] << std::endl;
+    // std::cout << vf_e[0] + vf_p[0] + v_g[0] << " " << vf_e[1] + vf_p[1] + v_g[1] << " " << vf_e[2] + vf_p[2] + v_g[2] << " " << vf_e[3] + vf_p[3] + v_g[3] << std::endl;
+    // std::cout << v_g * v_g << std::endl;
+    // std::cout << t << " " << -(vf_p - vi_p) * (vf_p - vi_p) << std::endl;
+    // std::cout << v << " " << (vi_e + vi_p - vf_e) * (vi_e + vi_p - vf_e) - M2 << std::endl;
+    // std::cout << phi << " " << phi_new << std::endl;
 
     if (std::isnan(vf_p[0]) || std::isnan(vf_p[1]) || std::isnan(vf_p[2]) || std::isnan(vf_p[3]) || vf_p[3] < 0) {
         std::cout << vf_e.E() << " " << vf_e.Theta() << std::endl;
@@ -538,7 +581,7 @@ public:
     {
         theta_e = theta_min + arg[0] * (theta_max - theta_min);
 
-        return 2.0 * pi * (theta_max - theta_min) * Interpolator_ElasticXS_Sin.Eval(theta_e);
+        return (theta_max - theta_min) * Interpolator_ElasticXS_Sin.Eval(theta_e);
     }
 };
 
@@ -554,149 +597,6 @@ public:
         theta_e = theta_min + arg[0] * (theta_max - theta_min);
 
         return 2.0 * pi * (theta_max - theta_min) * Interpolator_BremsXS_Sin.Eval(theta_e);
-    }
-};
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-int EvalEnergy()
-{
-    // Calculation of the coefficients A, B and C:
-    A = Sqrt(Pow2(E_li) - Pow2(m)) * Cos(theta_l) - E_g * (Cos(theta_l) * Cos(theta_g) + Sin(theta_l) * Sin(theta_g) * Cos(phi_g));
-    B = E_li + M - E_g;
-    C = E_g * (E_li + M - Sqrt(Pow2(E_li) - Pow2(m)) * Cos(theta_g)) - M * E_li - Pow2(m);
-
-    // Checking the radicand:
-    if (Pow2(m) * (Pow2(A) - Pow2(B)) + Pow2(C) < 0.0) return 0;
-
-    // Checking the denominator:
-    if (Abs(Pow2(A) - Pow2(B)) < 1.0e-12) {
-        std::cout << std::endl << "Warning: too small denominator!" << std::endl;
-        //flag_warn = true;
-        return 0;
-    }
-
-    // The final lepton energy (remember that "en_sign" can be "-1" or "+1"):
-    E_lf = (B * C + en_sign * A * Sqrt(Pow2(m) * (Pow2(A) - Pow2(B)) + Pow2(C))) / (Pow2(A) - Pow2(B));
-
-    // Checking whether E_lf is a physical root:
-    if (Abs(A * Sqrt(Pow2(E_lf) - Pow2(m)) - B * E_lf - C) > 1.0e-9) return 0;
-
-    // Checking the E_lf value:
-    if (E_lf < m || E_lf > E_li - E_g) return 0;
-
-    return 1; // If everything is okay
-}
-
-void EvalKinematicParams(double E_gamma)
-{
-    qq = 2.0 * M * (E_lf - E_li + E_gamma); // Four-momentum transfer squared
-    tau = -qq / (4.*M * M); // Tau
-    eps = 1.0 / (1.0 + 2.0 * (1.0 + tau) * Pow2(Tan(theta_l / 2.0))); // Epsilon
-    // To calculate the Rosenbluth cross section without neglecting the lepton mass:
-    myeps = 1.0 / (1.0 - 2.0 * (1.0 + tau) * (qq + 2.0 * m * m) / (4.0 * E_li * E_lf + qq)); // Modified epsilon
-    d = (E_lf / E_li) * Sqrt((Pow2(E_li) - Pow2(m)) / (Pow2(E_lf) - Pow2(m)));
-}
-
-void SetFinalFourMomenta()
-{
-    v_kf.SetPxPyPzE(E_g * Sin(theta_g)*Cos(phi_g), E_g * Sin(theta_g)*Sin(phi_g), E_g * Cos(theta_g), E_g);
-    v_lf.SetPxPyPzE(Sqrt(Pow2(E_lf) - Pow2(m))*Sin(theta_l), 0., Sqrt(Pow2(E_lf) - Pow2(m))*Cos(theta_l), E_lf);
-    v_pf = v_li + v_pi - v_lf - v_kf;
-
-    // Checking the kinematics:
-    if (Abs(Pow2(M) - v_pf * v_pf) > 1.0e-8) {
-        std::cout << std::endl << "Warning: bad kinematics! M^2 - v_pf^2 = " << Pow2(M) - v_pf *v_pf << " GeV^2" << std::endl;
-        //flag_warn = true;
-    }
-
-    // Kinematic parameters of the final proton:
-    E_p = v_pf.E();
-    theta_p = v_pf.Theta();
-    phi_p = v_pf.Phi();
-}
-
-inline double F1(double qq)
-{
-    double t = -qq / (4.0 * M * M); // Tau
-    return (GEp(-qq) + t * GMp(-qq)) / (1.0 + t);
-}
-
-inline double F2(double qq)
-{
-    double t = -qq / (4.0 * M * M); // Tau
-    return (GMp(-qq) - GEp(-qq)) / (1.0 + t);
-}
-
-void EvalAllProducts()
-{
-    // Scalar products of the four-momenta:
-    kfli = v_kf * v_li; // Photon (v_kf) and initial lepton (v_li)
-    kflf = v_kf * v_lf; // Photon (v_kf) and final lepton (v_lf)
-    kfpi = v_kf * v_pi; // Photon (v_kf) and initial proton (v_pi)
-    kfpf = v_kf * v_pf; // Photon (v_kf) and final proton (v_pf)
-    lilf = v_li * v_lf; // Initial lepton (v_li) and final lepton (v_lf)
-    lipi = v_li * v_pi; // Initial lepton (v_li) and initial proton (v_pi)
-    lipf = v_li * v_pf; // Initial lepton (v_li) and final proton (v_pf)
-    pipf = v_pi * v_pf; // Initial proton (v_pi) and final proton (v_pf)
-    lfpi = v_lf * v_pi; // Final lepton (v_lf) and initial proton (v_pi)
-    lfpf = v_lf * v_pf; // Final lepton (v_lf) and final proton (v_pf)
-
-    // Four-momentum transfers squared:
-    q_12 = (v_pf - v_pi) * (v_pf - v_pi);
-    q_22 = (v_li - v_lf) * (v_li - v_lf);
-
-    // Values for the proton form factors:
-    F11 = F1(q_12);
-    F21 = F2(q_12);
-
-    F12 = F1(q_22);
-    F22 = F2(q_22);
-
-    // In the case of zero four-momentum transfer:
-    F10 = F1(0.0);
-    F20 = F2(0.0);
-}
-
-class TFDISTR2e: public TFoamIntegrand
-{
-public:
-    TFDISTR2e() {};
-
-    Double_t Density(int nDim, Double_t *arg)
-    {
-        // Four arguments (basic kinematic variables):
-        theta_g = arg[0] * pi; // Theta angle for the photon
-        phi_g = arg[1] * 2.0 * pi; // Phi angle for the photon
-        E_g = E_g_cut + arg[2] * (E_g_max - E_g_cut); // Energy for the photon
-        theta_l = theta_min + arg[3] * (theta_max - theta_min); // Theta angle for the lepton
-
-        // Checking the photon energy:
-        if (E_g > M * (E_li - m) / (M + E_li - Sqrt(Pow2(E_li) - Pow2(m))*Cos(theta_g))) return 0.0;
-
-        // Evaluation of the final lepton energy:
-        if (EvalEnergy() == 0) return 0.0;
-
-        EvalKinematicParams(E_g); // Evaluation of some kinematic parameters
-        SetFinalFourMomenta(); // Set four-momenta for the final particles
-
-        double vv = (v_li + v_pi - v_lf) * (v_li + v_pi - v_lf) - M * M;
-
-        if (vv < v_min || vv > v_cut) return 0.0;
-        
-        EvalAllProducts(); // Evaluation of the four-momentum products
-
-        // Square of the total amplitude:
-        M_sum = lterm();
-
-        // Checking the the square of the amplitude:
-        if (M_sum < 0.0) {
-            std::cout << std::endl << "Warning: negative value! M_sum = " << M_sum << std::endl;
-            //flag_warn = true;
-            return 0.0;
-        }
-
-        return (1. / (512.*Pow3(pi) * Sqrt(Pow2(E_li) - Pow2(m)) * M)) * E_g * ((Pow2(E_lf) - Pow2(m)) / Abs((Sqrt(Pow2(E_li) - Pow2(m)) * Cos(theta_l) - E_g * (Cos(theta_l) * Cos(theta_g) + Sin(theta_l) * Sin(theta_g) * Cos(phi_g))) * E_lf - (E_li + M - E_g) * Sqrt(Pow2(E_lf) - Pow2(m)))) * M_sum * (phi_max - phi_min) * (theta_max - theta_min) * (E_g_max - E_g_cut) * Sin(theta_l) * Sin(theta_g) * mkb;
     }
 };
 
