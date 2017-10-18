@@ -1,0 +1,12 @@
+import os
+
+path = ['/usr/bin']
+env = Environment(ENV = {'PATH':path}, CERN = os.environ['CERN'])
+env.Append(FORTRANFLAGS = ['-fno-automatic', '-ffixed-line-length-none', '-fno-second-underscore', '-funroll-loops', '-fomit-frame-pointer'])
+
+staticlibs = ['kernlib.a', 'mathlib.a', 'packlib.a', 'jetset74.a', 'lepto651.a']
+env.Append(LIBS = [File(env['CERN']+'/2005/lib/lib'+lib) for lib in staticlibs])
+
+Export('env')
+
+env.SConscript('sconscript', variant_dir='build/', duplicate=0)

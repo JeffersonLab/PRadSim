@@ -110,7 +110,7 @@ PrimaryGenerator::PrimaryGenerator(G4String type, G4double e, G4double x, G4doub
     if (fRecoilParticle != "proton" && fRecoilParticle != "deuteron")
         fRecoilParticle = "proton";
 
-    if (fEventType != "point" && fEventType != "elastic" && fEventType != "moller")
+    if (fEventType != "point" && fEventType != "elastic" && fEventType != "moller" && fEventType != "inelastic")
         fEventType = "elastic";
 
     fN = 0;
@@ -134,7 +134,7 @@ PrimaryGenerator::PrimaryGenerator(G4String type, G4double e, G4double thlo, G4d
     if (fRecoilParticle != "proton" && fRecoilParticle != "deuteron")
         fRecoilParticle = "proton";
 
-    if (fEventType != "point" && fEventType != "elastic" && fEventType != "moller")
+    if (fEventType != "point" && fEventType != "elastic" && fEventType != "moller" && fEventType != "inelastic")
         fEventType = "elastic";
 
     fN = 0;
@@ -439,6 +439,42 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
             G4cout << "WARNING: target volume not found" << G4endl;
 
         fTargetInfo = true;
+    }
+    
+    if (fEventType=="inelastic") {
+	    int pid[4];
+	    double p[4][3];
+	    while (fParser.ParseLine()) {
+	        if (!fParser.CheckElements(16))  continue;
+	        else {
+		        fParser >> pid[0] >> p[0][0] >> p[0][1] >> p[0][2] >> pid[1] >> p[1][0] >> p[1][1] >> p[1][2] >> pid[2] >> p[2][0] >> p[2][1] >> p[2][2] >> pid[3] >> p[3][0] >> p[3][1] >> p[3][2];
+		        break;
+	        }
+	    }   
+
+        double x = G4RandGauss::shoot(0, 0.08) * mm;
+	    double y = G4RandGauss::shoot(0, 0.08) * mm;
+	    double z = GenerateZ();
+	    G4PrimaryVertex *vertexL = new G4PrimaryVertex(x, y, z, 0);
+    
+	    for (int i=0; i<4; i++) {
+	        if (p[i][2]<=0.) continue;
+	        G4PrimaryParticle *particleL = new G4PrimaryParticle(pid[i],p[i][0],p[i][1],p[i][2]);
+	        G4PrimaryVertex *vertexL = new G4PrimaryVertex(x, y, z, 0);
+	        vertexL->SetPrimary(particleL);
+	        anEvent->AddPrimaryVertex(vertexL);
+	  
+	        fPID[fN] = pid[i];
+	        fX[fN] = x;
+	        fY[fN] = y;
+	        fZ[fN] = z;
+	        fE[fN] = particleL->GetTotalEnergy();
+	        fMomentum[fN] = particleL->GetTotalMomentum();
+	        fTheta[fN] = particleL->GetMomentum().theta();
+	        fPhi[fN] = particleL->GetMomentum().phi();
+	        fN++;
+	    }
+        return;
     }
 
     double e_l = 0, theta_l = 0, phi_l = 0;

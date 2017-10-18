@@ -1,0 +1,6 @@
+Import('env')
+
+#for srcname in Glob('*.[cF]'):
+# objfile = env.Object(srcname)
+
+exenode = env.Program(target='aao_rad.exe', source = Glob('*.[cF]'))
