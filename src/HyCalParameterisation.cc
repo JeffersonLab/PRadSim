@@ -101,29 +101,31 @@ void HyCalParameterisation::LoadModuleList(const std::string &path)
 
         if (type.compare("PbGlass") == 0) {
             t = Lead_Glass;
+
             if (fConfig == 1) {
                 sizex = 38.00 * mm;
                 sizey = 38.00 * mm;
-            }
-            else {
+            } else {
                 sizex = sizex * mm - 1.0 * nm;
                 sizey = sizey * mm - 1.0 * nm;
             }
+
             z = 0.0 * mm;
         } else if (type.compare("PbWO4") == 0) {
             t = Lead_Tungstate;
+
             if (fConfig == 1) {
                 sizex = 20.50 * mm;
                 sizey = 20.50 * mm;
-            }
-            else {
+            } else {
                 sizex = sizex * mm - 1.0 * nm;
                 sizey = sizey * mm - 1.0 * nm;
             }
+
             z = (97.3 - (450.0 - 180.0) / 2.0) * mm;
         } else
             continue;
-        
+
         length = length * mm;
         x = x * mm;
         y = y * mm;

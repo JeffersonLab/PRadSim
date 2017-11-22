@@ -98,8 +98,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event *anEvent)
                     fPrimaryGenerator = new DeuteronDisintegration(fE, fEnpLo, fEnpHi, fThetaLo, fThetaHi);
                 else
                     fPrimaryGenerator = new PrimaryGenerator(fEventType, fE, fThetaLo, fThetaHi, recoilon, fRecoilParticle);
-            }
-            else if (fGunType == "cosmics")
+            } else if (fGunType == "cosmics")
                 fPrimaryGenerator = new CosmicsGenerator();
             else
                 fPrimaryGenerator = new DRadPrimaryGenerator(fEventType, recoilon, fRecoilParticle, fEventFile);

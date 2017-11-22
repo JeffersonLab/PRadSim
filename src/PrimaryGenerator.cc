@@ -440,40 +440,43 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
 
         fTargetInfo = true;
     }
-    
-    if (fEventType=="inelastic") {
-	    int pid[4];
-	    double p[4][3];
-	    while (fParser.ParseLine()) {
-	        if (!fParser.CheckElements(16))  continue;
-	        else {
-		        fParser >> pid[0] >> p[0][0] >> p[0][1] >> p[0][2] >> pid[1] >> p[1][0] >> p[1][1] >> p[1][2] >> pid[2] >> p[2][0] >> p[2][1] >> p[2][2] >> pid[3] >> p[3][0] >> p[3][1] >> p[3][2];
-		        break;
-	        }
-	    }   
+
+    if (fEventType == "inelastic") {
+        int pid[4];
+        double p[4][3];
+
+        while (fParser.ParseLine()) {
+            if (!fParser.CheckElements(16))  continue;
+            else {
+                fParser >> pid[0] >> p[0][0] >> p[0][1] >> p[0][2] >> pid[1] >> p[1][0] >> p[1][1] >> p[1][2] >> pid[2] >> p[2][0] >> p[2][1] >> p[2][2] >> pid[3] >> p[3][0] >> p[3][1] >> p[3][2];
+                break;
+            }
+        }
 
         double x = G4RandGauss::shoot(0, 0.08) * mm;
-	    double y = G4RandGauss::shoot(0, 0.08) * mm;
-	    double z = GenerateZ();
-	    G4PrimaryVertex *vertexL = new G4PrimaryVertex(x, y, z, 0);
-    
-	    for (int i=0; i<4; i++) {
-	        if (p[i][2]<=0.) continue;
-	        G4PrimaryParticle *particleL = new G4PrimaryParticle(pid[i],p[i][0],p[i][1],p[i][2]);
-	        G4PrimaryVertex *vertexL = new G4PrimaryVertex(x, y, z, 0);
-	        vertexL->SetPrimary(particleL);
-	        anEvent->AddPrimaryVertex(vertexL);
-	  
-	        fPID[fN] = pid[i];
-	        fX[fN] = x;
-	        fY[fN] = y;
-	        fZ[fN] = z;
-	        fE[fN] = particleL->GetTotalEnergy();
-	        fMomentum[fN] = particleL->GetTotalMomentum();
-	        fTheta[fN] = particleL->GetMomentum().theta();
-	        fPhi[fN] = particleL->GetMomentum().phi();
-	        fN++;
-	    }
+        double y = G4RandGauss::shoot(0, 0.08) * mm;
+        double z = GenerateZ();
+        G4PrimaryVertex *vertexL = new G4PrimaryVertex(x, y, z, 0);
+
+        for (int i = 0; i < 4; i++) {
+            if (p[i][2] <= 0.) continue;
+
+            G4PrimaryParticle *particleL = new G4PrimaryParticle(pid[i], p[i][0], p[i][1], p[i][2]);
+            G4PrimaryVertex *vertexL = new G4PrimaryVertex(x, y, z, 0);
+            vertexL->SetPrimary(particleL);
+            anEvent->AddPrimaryVertex(vertexL);
+
+            fPID[fN] = pid[i];
+            fX[fN] = x;
+            fY[fN] = y;
+            fZ[fN] = z;
+            fE[fN] = particleL->GetTotalEnergy();
+            fMomentum[fN] = particleL->GetTotalMomentum();
+            fTheta[fN] = particleL->GetMomentum().theta();
+            fPhi[fN] = particleL->GetMomentum().phi();
+            fN++;
+        }
+
         return;
     }
 
@@ -603,7 +606,7 @@ void PRadPrimaryGenerator::LoadTargetProfile(const std::string &path)
     fZMin = z[0];
     fZMax = z.back();
 
-    fPseRan = new TRandom2();
+    fPseRan = new TRandom2(0);
     fFoamI = new TargetProfileIntegrand(this);
 
     fZGenerator = new TFoam("Z Generator");
@@ -789,13 +792,13 @@ void DRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
     if (e_p > 0) {
         G4PrimaryVertex *vertexP = new G4PrimaryVertex(x, y, z, 0);
         G4PrimaryParticle *particleP = NULL;
-        
+
         if (fEventType == "disintegration")
             //particleP = new G4PrimaryParticle(particleTable->FindParticle("neutron"));
             return;
         else
             particleP = new G4PrimaryParticle(particleTable->FindParticle("gamma"));
-        
+
         double kx_p = sin(theta_p) * cos(phi_p);
         double ky_p = sin(theta_p) * sin(phi_p);
         double kz_p = cos(theta_p);
@@ -1014,12 +1017,12 @@ void DeuteronDisintegration::GeneratePrimaryVertex(G4Event *anEvent)
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 CosmicsGenerator::CosmicsGenerator() : G4VPrimaryGenerator(), fRegistered(false)
-{  
+{
     fEMin = 0.5 * GeV;
     fEMax = 100.0 * GeV;
     fZenithMin = 0.0 * deg;
     fZenithMax = 120.0 * deg;
-    
+
     fPseRan = new TRandom2();
     fFoamI = new CosmicsIntegrand(this, 4.28, 854.0, 174.0, 3.09);
 
@@ -1032,7 +1035,7 @@ CosmicsGenerator::CosmicsGenerator() : G4VPrimaryGenerator(), fRegistered(false)
     fETGenerator->SetPseRan(fPseRan); // Set random number generator
     fETGenerator->SetChat(0); // Set "chat level" in the standard output
     fETGenerator->Initialize();
-    
+
     fN = 0;
 
     for (int i = 0; i < MaxN; i++) {
@@ -1070,28 +1073,28 @@ void CosmicsGenerator::GeneratePrimaryVertex(G4Event *anEvent)
     double x, y, z, theta_l, phi_l;
     double p_l, e_l;
     double rvect[2];
-    
+
     double tempr, tempt, tempp;
-    
+
     tempr = 2.8 * m;
     tempt = acos(G4UniformRand());
     tempp = twopi * G4UniformRand();
-    
+
     x = tempr * sin(tempt) * sin(tempp);
     y = -1.4 * m + tempr * cos(tempt);
     z = 2.85 * m + tempr * sin(tempt) * cos(tempp);
-   
+
     fETGenerator->MakeEvent();
     fETGenerator->GetMCvect(rvect);
     double E = fEMin + (fEMax - fEMin) * rvect[0];
     double zenith = fZenithMin + (fZenithMax - fZenithMin) * rvect[1];
-    
+
     theta_l = 180.0 * deg - zenith;
     phi_l = twopi * G4UniformRand();
- 
+
     e_l = E;
     p_l = sqrt(E * E - mmu * mmu);
-   
+
     G4PrimaryVertex *vertexL = new G4PrimaryVertex(x, y, z, 0);
     G4PrimaryParticle *particleL = new G4PrimaryParticle(particleTable->FindParticle("mu-"));
     double kx_l = sin(theta_l) * sin(phi_l);
@@ -1166,7 +1169,7 @@ void CosmicsGenerator::Clear()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-CosmicsIntegrand::CosmicsIntegrand(CosmicsGenerator *gen, double e0, double eps, double rd, double nn) :  E0(e0), epsilon(eps), Rd(rd), n(nn) 
+CosmicsIntegrand::CosmicsIntegrand(CosmicsGenerator *gen, double e0, double eps, double rd, double nn) :  E0(e0), epsilon(eps), Rd(rd), n(nn)
 {
     fEMin = gen->fEMin;
     fEMax = gen->fEMax;
@@ -1180,9 +1183,9 @@ double CosmicsIntegrand::Density(int, double *arg)
 {
     double E = (fEMin + (fEMax - fEMin) * arg[0]) / GeV;
     double Theta = fZenithMin + (fZenithMax - fZenithMin) * arg[1];
-    
+
     double cosTheta = cos(Theta);
-    
+
     return TMath::Power(E0 + E, -n) / (1 + E / epsilon) * TMath::Power(sqrt(Rd * Rd * cosTheta * cosTheta + 2 * Rd + 1) - Rd * cosTheta, -(n - 1));
 }
 

@@ -122,14 +122,14 @@ void PhysicsList::ConstructParticle()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void PhysicsList::ConstructProcess()
-{   
+{
     AddTransportation();
     fEmPhysicsList->ConstructProcess();
     fDecayPhysicsList->ConstructProcess();
 
     for (size_t i = 0; i < fHadronPhys.size(); ++i)
         fHadronPhys[i]->ConstructProcess();
-     
+
     AddStepMax();
     AddStepLimiter();
 
@@ -288,7 +288,7 @@ void PhysicsList::AddStepLimiter()
         G4ProcessManager *pmanager = particle->GetProcessManager();
 
         if (!particle->IsShortLived()) {
-            G4StepLimiter* stepLimiter = new G4StepLimiter();
+            G4StepLimiter *stepLimiter = new G4StepLimiter();
             pmanager->AddDiscreteProcess(stepLimiter);
         }
     }

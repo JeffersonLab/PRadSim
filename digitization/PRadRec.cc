@@ -203,16 +203,15 @@ int main(int argc, char **argv)
             N_GEM = (int)matched.size();
 
             for (int j = 0; j < N_HC; ++j) {
+                E[j] = EnergyCorrect(matched[j].hycal.E, matched[j].hycal.cid);
 
-                if (trg_eff && (RandGen->Uniform() > hycal->GetModule(matched[j].hycal.cid)->GetTriggerEfficiency())) continue;
+                CID[j] = matched[j].hycal.cid;
+
+                if (trg_eff && (RandGen->Uniform() > hycal->GetModule(CID[j])->GetTriggerEfficiency(E[j]))) continue;
 
                 X_HC[j] = matched[j].hycal.x;
                 Y_HC[j] = matched[j].hycal.y;
                 Z_HC[j] = matched[j].hycal.z;
-
-                E[j] = EnergyCorrect(matched[j].hycal.E, matched[j].hycal.cid);
-
-                CID[j] = matched[j].hycal.cid;
 
                 if (matched[j].gem1.empty() && matched[j].gem2.empty()) {
                     X_GEM[j] = -10000;
@@ -236,14 +235,15 @@ int main(int argc, char **argv)
             N_HC = (int)hits.size();
 
             for (int j = 0; j < (int)hits.size(); ++j) {
+                E[j] = hits[j].E; //EnergyCorrect(hits[j].E, hits[j].cid);
+                CID[j] = hits[j].cid;
 
-                if (trg_eff && (RandGen->Uniform() > hycal->GetModule(hits[j].cid)->GetTriggerEfficiency())) continue;
+                if (trg_eff && (RandGen->Uniform() > hycal->GetModule(CID[j])->GetTriggerEfficiency(E[j]))) continue;
 
                 X_HC[j] = hits[j].x;
                 Y_HC[j] = hits[j].y;
                 Z_HC[j] = hits[j].z;
-                E[j] = hits[j].E; //EnergyCorrect(hits[j].E, hits[j].cid);
-                CID[j] = hits[j].cid;
+
             }
         }
 
@@ -268,9 +268,10 @@ void LoadConst(double beam_energy)
     ConfigParser parser;
 
     std::string path;
-    if (beam_energy<2000.) path = "./database/calibration/1GeV_mc_cali_const.dat";
+
+    if (beam_energy < 2000.) path = "./database/calibration/1GeV_mc_cali_const.dat";
     else path = "./database/calibration/2GeV_mc_cali_const.dat";
-    
+
     if (!parser.OpenFile(path)) {
         std::cout << "cannot find mc calibration file" << std::endl;
         exit(0);

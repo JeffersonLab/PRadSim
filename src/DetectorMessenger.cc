@@ -130,7 +130,7 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
     RecoilDetL1ThicknessCmd->SetGuidance("Set fRecoilDetL1Thickness");
     RecoilDetL1ThicknessCmd->SetParameterName("recoilt1", false);
     RecoilDetL1ThicknessCmd->SetDefaultUnit("um");
-    
+
     RecoilDetL2ThicknessCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/recoil/thick2", this);
     RecoilDetL2ThicknessCmd->SetGuidance("Set fRecoilDetL2Thickness");
     RecoilDetL2ThicknessCmd->SetParameterName("recoilt2", false);
@@ -155,7 +155,7 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
     HyCalSDCmd->SetGuidance("Turn on HyCalSD");
     HyCalSDCmd->SetParameterName("hycalsd", false);
     HyCalSDCmd->SetCandidates("true false simple");
-    
+
     HyCalWrapCmd = new G4UIcmdWithAString("/pradsim/det/hycal", this);
     HyCalWrapCmd->SetGuidance("Set HyCal wrapping materials");
     HyCalWrapCmd->SetParameterName("hycalwrap", false);
@@ -165,7 +165,7 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorMessenger::~DetectorMessenger()
-{   
+{
     delete HyCalWrapCmd;
     delete RecoilDetSDCmd;
     delete GEMSDCmd;
@@ -235,7 +235,7 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 
     if (command == RecoilDetL1ThicknessCmd)
         Detector->SetRecoilDetector(-10000, -10000, -10000, RecoilDetL1ThicknessCmd->GetNewDoubleValue(newValue), -10000);
-    
+
     if (command == RecoilDetL2ThicknessCmd)
         Detector->SetRecoilDetector(-10000, -10000, -10000,  -10000, RecoilDetL2ThicknessCmd->GetNewDoubleValue(newValue));
 
@@ -260,7 +260,7 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
         else if (newValue == "simple") Detector->EnableSD("HyCal No Response");
         else Detector->DisableSD("HyCal");
     }
-    
+
     if (command == HyCalWrapCmd)
         Detector->SetHyCalConfig(newValue);
 }

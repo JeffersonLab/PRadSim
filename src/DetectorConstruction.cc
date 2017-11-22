@@ -317,13 +317,13 @@ void DetectorConstruction::DefineMaterials()
     G4Material *Tungsten = new G4Material("Tungsten", density = 19.25 * g / cm3, ncomponents = 1);
     Tungsten->AddElement(W, natoms = 1);
     fVisAtts[Tungsten->GetName()] = new G4VisAttributes(G4Colour::Black());
-    
+
     // Polyester (3M VM-2000 reflector)
     G4Material *Polyester = new G4Material("Polyester", density = 1.37 * g / cm3, ncomponents = 3);
     Polyester->AddElement(C, natoms = 10);
     Polyester->AddElement(H, natoms = 8);
     Polyester->AddElement(O, natoms = 4);
-    
+
     // Wrap material (63 um Polyester, 38.1 um Tedlar, the total thickness is 260 um / 2 = 130 um)
     G4Material *WrapMaterial = new G4Material("WrapMaterial", density = (1.37 * 63.0 + 1.545 * 38.1) / 130.0 * g / cm3, ncomponents = 2);
     WrapMaterial->AddMaterial(Polyester, 63.0 / (63.0 + 38.1));
@@ -342,7 +342,7 @@ void DetectorConstruction::DefineMaterials()
     SiO2->AddElement(Si, natoms = 1);
     SiO2->AddElement(O, natoms = 2);
     fVisAtts[SiO2->GetName()] = new G4VisAttributes(G4Colour::Green());
-    
+
     // Lead Glass
     G4Material *PbGlass = new G4Material("PbGlass", density = 3.833 * g / cm3, ncomponents = 5);
     PbGlass->AddElement(Pb, fractionmass = 0.475767);
@@ -558,7 +558,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
 
     // Target
     G4double CellXY = 15.0 * cm;
-    
+
     // Target Container
     G4VSolid *solidTargetCon = new G4Box("TargetContainerS", CellXY + 0.1 * cm, CellXY + 0.1 * cm, fTargetHalfL + 0.1 * cm);
     G4LogicalVolume *logicTargetCon = new G4LogicalVolume(solidTargetCon, DefaultM, "TargetContainerLV");
@@ -596,22 +596,22 @@ G4VPhysicalVolume *DetectorConstruction::DefineDRadVolumes()
     G4double RecoilDetL1OR = RecoilDetL2IR;
     G4double RecoilDetL1IRC = RecoilDetL1OR - fRecoilDetL1Thickness + CoverThickness;
     G4double RecoilDetL1IR = RecoilDetL1OR - fRecoilDetL1Thickness;
-    
+
     G4double rInnerRDL2[] = {RecoilDetL2IRC, RecoilDetL2IRC};
     G4double rOuterRDL2[] = {RecoilDetL2OR, RecoilDetL2OR};
     G4double zPlaneRDL2[] = {-fRecoilDetHalfL, fRecoilDetHalfL};
     G4VSolid *solidRecoilDet2 = new G4Polyhedra("RecoilDet2S", 0, twopi, fRecoilDetNSeg, 2, zPlaneRDL2, rInnerRDL2, rOuterRDL2);
-    
+
     G4double rInnerRDL2Cover[] = {RecoilDetL2IR, RecoilDetL2IR};
     G4double rOuterRDL2Cover[] = {RecoilDetL2IRC, RecoilDetL2IRC};
     G4double zPlaneRDL2Cover[] = {-fRecoilDetHalfL, fRecoilDetHalfL};
     G4VSolid *solidRecoilDet2Cover = new G4Polyhedra("RecoilDet2CoverS", 0, twopi, fRecoilDetNSeg, 2, zPlaneRDL2Cover, rInnerRDL2Cover, rOuterRDL2Cover);
-    
+
     G4double rInnerRDL1[] = {RecoilDetL1IRC, RecoilDetL1IRC};
     G4double rOuterRDL1[] = {RecoilDetL1OR, RecoilDetL1OR};
     G4double zPlaneRDL1[] = {-fRecoilDetHalfL, fRecoilDetHalfL};
     G4VSolid *solidRecoilDet1 = new G4Polyhedra("RecoilDet1S", 0, twopi, fRecoilDetNSeg, 2, zPlaneRDL1, rInnerRDL1, rOuterRDL1);
-    
+
     G4double rInnerRDL1Cover[] = {RecoilDetL1IR, RecoilDetL1IR};
     G4double rOuterRDL1Cover[] = {RecoilDetL1IRC, RecoilDetL1IRC};
     G4double zPlaneRDL1Cover[] = {-fRecoilDetHalfL, fRecoilDetHalfL};
@@ -918,18 +918,18 @@ void DetectorConstruction::AddHyCal(G4LogicalVolume *mother)
     G4Material *CollimatorM = G4Material::GetMaterial("Tungsten");
     G4Material *HyCalModuleM = G4Material::GetMaterial("PbWO4");
     G4Material *HyCalModuleWrapM = G4Material::GetMaterial("Air");
-    
+
     if (fHyCalConfig == 1)
         HyCalModuleWrapM = G4Material::GetMaterial("WrapMaterial");
 
     G4double MaxStep = 1.0 * mm;
-    
+
     // HyCal
     G4double PbGlassL = 45.0 * cm;
     G4double CrystalL = 18.0 * cm;
     G4double CrystalDiffL = 9.73 * cm; // according to last survey (april 2017)
     G4double HyCalCenter = fCrystalSurf - CrystalDiffL + PbGlassL / 2.0;
-  
+
     // HyCal box
     G4double HyCalBoxCenter = HyCalCenter - 9.0 * cm + 30.0 * cm; // Check
     G4Box *HyCalBoxConNoHole = new G4Box("HyCalBoxConNoHole", 80.0 * cm, 80.0 * cm, 70.0 * cm);
@@ -937,9 +937,9 @@ void DetectorConstruction::AddHyCal(G4LogicalVolume *mother)
     G4SubtractionSolid *solidHyCalBoxCon = new G4SubtractionSolid("HyCalBoxConS", HyCalBoxConNoHole, HyCalBoxConHole);
     G4LogicalVolume *logicHyCalBoxCon = new G4LogicalVolume(solidHyCalBoxCon, HyCalBoxConM, "HyCalBoxConLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, HyCalBoxCenter), logicHyCalBoxCon, "HyCal Box Container", mother, false, 0);
-    
+
     logicHyCalBoxCon->SetUserLimits(new G4UserLimits(MaxStep));
-    
+
     G4Box *HyCalBoxOuter = new G4Box("HyCalBoxOuter", 72.54 * cm, 72.54 * cm, 62.54 * cm);
     G4Box *HyCalBoxInner = new G4Box("HyCalBoxInner", 70.0 * cm, 70.0 * cm, 60.0 * cm);
     G4SubtractionSolid *HyCalBoxNoHole = new G4SubtractionSolid("HyCalBoxNoHole", HyCalBoxOuter, HyCalBoxInner);

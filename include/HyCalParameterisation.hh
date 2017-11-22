@@ -113,7 +113,7 @@ private: // Dummy declarations to get rid of warnings ...
 
 private:
     std::vector<HyCal_Module> moduleList;
-    
+
     G4int fConfig;
 };
 

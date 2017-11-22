@@ -71,7 +71,7 @@ public:
     inline void SetRecoilDetector(G4int n, G4double ir, G4double l, G4double t1, G4double t2);
 
     inline void SetTargetMaterial(G4String val);
-    
+
     inline void SetHyCalConfig(G4String conf);
 
     inline void EnableSD(G4String detname);
@@ -163,7 +163,7 @@ inline void DetectorConstruction::SetRecoilDetector(G4int n, G4double ir, G4doub
     if (l > -9999) fRecoilDetHalfL = l;
 
     if (t1 > -9999) fRecoilDetL1Thickness = t1;
-    
+
     if (t2 > -9999) fRecoilDetL2Thickness = t2;
 }
 
@@ -174,12 +174,10 @@ inline void DetectorConstruction::SetTargetMaterial(G4String val)
 
 inline void DetectorConstruction::SetHyCalConfig(G4String conf)
 {
-    if (conf == "wrapped") {
+    if (conf == "wrapped")
         fHyCalConfig = 1;
-    }
-    else {
+    else
         fHyCalConfig = 0;
-    }
 }
 
 inline void DetectorConstruction::EnableSD(G4String detname)

@@ -52,7 +52,7 @@ private:
 
     int addRocData(uint32_t *buffer, int roc_id, int base_index);
     void FillBuffer(uint32_t *buffer, const PRadHyCalModule &module, double edep);
-    
+
     void LoadMCCaliConst(double energy);
 
     int fDMethod;

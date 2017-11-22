@@ -151,7 +151,7 @@ class DRadPrimaryGenerator : public PRadPrimaryGenerator
 public:
     DRadPrimaryGenerator(G4String type, G4bool rec, G4String par, G4String path);
     virtual ~DRadPrimaryGenerator();
-    
+
     virtual void GeneratePrimaryVertex(G4Event *);
 
 protected:
@@ -187,7 +187,7 @@ public:
     double Density(int nDim, double *arg);
 
     double E0, epsilon, Rd, n;
-    
+
     double fEMin, fEMax;
     double fZenithMin, fZenithMax;
 };
@@ -195,7 +195,7 @@ public:
 class CosmicsGenerator : public G4VPrimaryGenerator
 {
     friend class CosmicsIntegrand;
-    
+
 public:
     CosmicsGenerator();
     virtual ~CosmicsGenerator();
@@ -215,10 +215,10 @@ protected:
     double fX[MaxN], fY[MaxN], fZ[MaxN];
     double fE[MaxN], fMomentum[MaxN];
     double fTheta[MaxN], fPhi[MaxN];
-         
+
     double fEMin, fEMax;
     double fZenithMin, fZenithMax;
-    
+
     TFoam *fETGenerator;
     TRandom2 *fPseRan;
     CosmicsIntegrand *fFoamI;

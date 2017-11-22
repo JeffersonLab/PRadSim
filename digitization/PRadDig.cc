@@ -70,7 +70,7 @@ int main(int argc, char **argv)
             list_name = optarg;
             use_file_list = true;
             break;
-            
+
         case 's':
             sMode = atoi(optarg);
             break;
