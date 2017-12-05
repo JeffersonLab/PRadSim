@@ -49,7 +49,7 @@ HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::strin
     fModuleHitList.clear();
 
     for (auto &module : fModuleList)
-        fModuleHitList.push_back(ModuleHit(module->GetID(), module->GetGeometry(), module->GetLayout(), 0, false));
+        fModuleHitList.emplace_back(module, module->GetID(), 0, false);
 
     fProfile = &PRadClusterProfile::Instance();
 
@@ -134,15 +134,21 @@ void HyCalDigitization::Clear()
 
 void HyCalDigitization::UpdateEnergy()
 {
+    auto det = fHyCal->GetDetector();
     for (int i = 0; i < fN; i++) {
         float fx = fX[i];
         float fy = fY[i];
 
         double fracsum = 0;
         double frac[NModules];
+        int sid = det->GetSectorID(fx, fy);
+        int type = det->GetSectorInfo().at(sid).mtype;
 
         for (int j = 0; j < NModules; j++) {
-            PRadClusterProfile::Profile profile = fProfile->GetProfile(fx, fy, fModuleHitList[j]);
+            auto &hit = fModuleHitList[j];
+            double dist = det->QuantizedDist(fx, fy, sid,
+                                             hit->GetX(), hit->GetY(), hit->GetSectorID());
+            auto profile = fProfile->GetProfile(type, dist, fMomentum[i]);
 
             if (profile.frac > 0)
                 frac[j] = RandGen->Gaus(profile.frac, profile.err);
