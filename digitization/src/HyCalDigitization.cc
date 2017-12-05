@@ -279,7 +279,7 @@ void HyCalDigitization::FillBuffer(uint32_t *buffer, const PRadHyCalModule &modu
 void HyCalDigitization::LoadMCCaliConst(double energy)
 {
     ConfigParser parser;
-    std::string fileName = "./database/calibration/new_mc_cali_const.dat";
+    std::string fileName = "./digitization/database/new_mc_cali_const.dat";
 
     if (!parser.OpenFile(fileName)) {
         std::cout << "cannot find mc calibration file, using default value 1 and sigma 0" << std::endl;
@@ -316,7 +316,7 @@ void HyCalDigitization::LoadMCCaliConst(double energy)
 
     parser.CloseFile();
 
-    if (!parser.OpenFile("./database/hycal_resolution_curve_2terms.dat")) {
+    if (!parser.OpenFile("./digitization/database/hycal_resolution_curve_2terms.dat")) {
         std::cout << "cannot find hycal_resolution_curve.dat" << std::endl;
         exit(0);
     }

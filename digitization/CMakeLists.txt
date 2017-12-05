@@ -28,12 +28,9 @@ set(EVIO_LIBRARIES evio)
 #---------------------------------------------------------------------------
 # Locate pradanalyzer library and headers
 #
-if(DEFINED ENV{PRAD_INC} AND DEFINED ENV{PRAD_LIB})
-  set(PRADANA_INCLUDE_DIR $ENV{PRAD_INC} CACHE PATH "Path to prad analyzer headers")
-  set(PRADANA_LIBRARY_DIR $ENV{PRAD_LIB} CACHE PATH "Path to prad analyzer libraries")
-elseif(DEFINED ENV{PRADANADIR})
-  set(PRADANA_INCLUDE_DIR $ENV{PRADANADIR}/include CACHE PATH "Path to prad analyzer headers")
-  set(PRADANA_LIBRARY_DIR $ENV{PRADANADIR}/lib CACHE PATH "Path to prad analyzer libraries")
+if(DEFINED ENV{PRAD_PATH})
+  set(PRADANA_INCLUDE_DIR $ENV{PRAD_PATH}/include CACHE PATH "Path to prad analyzer headers")
+  set(PRADANA_LIBRARY_DIR $ENV{PRAD_PATH}/lib CACHE PATH "Path to prad analyzer libraries")
 else()
   set(PRADANA_INCLUDE_DIR PRADANA_INCLUDE_DIR_NOT_FOUND CACHE PATH "Path to prad analyzer headers")
   set(PRADANA_LIBRARY_DIR PRADANA_INCLUDE_DIR_NOT_FOUND CACHE PATH "Path to prad analyzer libraries")
@@ -95,3 +92,10 @@ add_custom_command(TARGET copy_exes POST_BUILD
 add_custom_command(TARGET copy_exes POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E create_symlink ${PRADANA_LIBRARY_DIR}/libcana.so ../libcana.so
 )
+add_custom_command(TARGET copy_exes POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E create_symlink $ENV{PRAD_PATH}/database ../database
+)
+add_custom_command(TARGET copy_exes POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E create_symlink $ENV{PRAD_PATH}/config ../config
+)
+
