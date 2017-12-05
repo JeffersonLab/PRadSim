@@ -269,8 +269,8 @@ void LoadConst(double beam_energy)
 
     std::string path;
 
-    if (beam_energy < 2000.) path = "./database/calibration/1GeV_mc_cali_const.dat";
-    else path = "./database/calibration/2GeV_mc_cali_const.dat";
+    if (beam_energy < 2000.) path = "./digitization/database/1GeV_mc_cali_const.dat";
+    else path = "./digitization/database/2GeV_mc_cali_const.dat";
 
     if (!parser.OpenFile(path)) {
         std::cout << "cannot find mc calibration file" << std::endl;
