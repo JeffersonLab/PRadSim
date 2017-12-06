@@ -83,19 +83,3 @@ add_custom_command(TARGET copy_exes POST_BUILD
 add_custom_command(TARGET copy_exes POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy PRadRec ..
 )
-add_custom_command(TARGET copy_exes POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E create_symlink ${PRADANA_LIBRARY_DIR}/libprana.so ../libprana.so
-)
-add_custom_command(TARGET copy_exes POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E create_symlink ${PRADANA_LIBRARY_DIR}/libprconf.so ../libprconf.so
-)
-add_custom_command(TARGET copy_exes POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E create_symlink ${PRADANA_LIBRARY_DIR}/libcana.so ../libcana.so
-)
-add_custom_command(TARGET copy_exes POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E create_symlink $ENV{PRAD_PATH}/database ../database
-)
-add_custom_command(TARGET copy_exes POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E create_symlink $ENV{PRAD_PATH}/config ../config
-)
-
