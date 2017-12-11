@@ -39,6 +39,7 @@ HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::strin
     RandGen->SetSeed((UInt_t)time(NULL));
 
     fHyCal = new PRadHyCalSystem(path);
+    fHyCal->GetDetector()->SortModuleList();
     fHyCal->ChooseRun(run);
 
     fModuleList = fHyCal->GetModuleList();
@@ -49,7 +50,7 @@ HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::strin
     fModuleHitList.clear();
 
     for (auto &module : fModuleList)
-        fModuleHitList.push_back(ModuleHit(module->GetID(), module->GetGeometry(), module->GetLayout(), 0, false));
+        fModuleHitList.emplace_back(module, module->GetID(), 0, false);
 
     fProfile = &PRadClusterProfile::Instance();
 
@@ -134,15 +135,21 @@ void HyCalDigitization::Clear()
 
 void HyCalDigitization::UpdateEnergy()
 {
+    auto det = fHyCal->GetDetector();
     for (int i = 0; i < fN; i++) {
         float fx = fX[i];
         float fy = fY[i];
 
         double fracsum = 0;
         double frac[NModules];
+        int sid = det->GetSectorID(fx, fy);
+        int type = det->GetSectorInfo().at(sid).mtype;
 
         for (int j = 0; j < NModules; j++) {
-            PRadClusterProfile::Profile profile = fProfile->GetProfile(fx, fy, fModuleHitList[j]);
+            auto &hit = fModuleHitList[j];
+            double dist = det->QuantizedDist(fx, fy, sid,
+                                             hit->GetX(), hit->GetY(), hit->GetSectorID());
+            auto profile = fProfile->GetProfile(type, dist, fMomentum[i]);
 
             if (profile.frac > 0)
                 frac[j] = RandGen->Gaus(profile.frac, profile.err);
@@ -273,7 +280,7 @@ void HyCalDigitization::FillBuffer(uint32_t *buffer, const PRadHyCalModule &modu
 void HyCalDigitization::LoadMCCaliConst(double energy)
 {
     ConfigParser parser;
-    std::string fileName = "./database/calibration/new_mc_cali_const.dat";
+    std::string fileName = "./digitization/database/new_mc_cali_const.dat";
 
     if (!parser.OpenFile(fileName)) {
         std::cout << "cannot find mc calibration file, using default value 1 and sigma 0" << std::endl;
@@ -310,7 +317,7 @@ void HyCalDigitization::LoadMCCaliConst(double energy)
 
     parser.CloseFile();
 
-    if (!parser.OpenFile("./database/hycal_resolution_curve_2terms.dat")) {
+    if (!parser.OpenFile("./digitization/database/hycal_resolution_curve_2terms.dat")) {
         std::cout << "cannot find hycal_resolution_curve.dat" << std::endl;
         exit(0);
     }
