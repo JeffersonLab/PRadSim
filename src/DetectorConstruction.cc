@@ -58,6 +58,7 @@
 #include "G4Polyhedra.hh"
 #include "G4PVParameterised.hh"
 #include "G4PVPlacement.hh"
+#include "G4RotationMatrix.hh"
 #include "G4Sphere.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4Tubs.hh"

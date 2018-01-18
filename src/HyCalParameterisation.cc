@@ -40,6 +40,7 @@
 
 #include "G4Box.hh"
 #include "G4Material.hh"
+#include "G4RotationMatrix.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VPVParameterisation.hh"
 
@@ -56,13 +57,16 @@ HyCalParameterisation::HyCalParameterisation(const std::string &path, const std:
 {
     if (!path.empty())
         Configure(path);
+
+    fRotation = new G4RotationMatrix();
+    fRotation->rotateZ(-90.0 * deg);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 HyCalParameterisation::~HyCalParameterisation()
 {
-    //
+    delete fRotation;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -135,11 +139,8 @@ void HyCalParameterisation::ComputeTransformation(const G4int copyNo, G4VPhysica
     G4ThreeVector origin(moduleList[copyNo].x, moduleList[copyNo].y, moduleList[copyNo].z);
     physVol->SetTranslation(G4ThreeVector(origin));
 
-    G4RotationMatrix *rm = new G4RotationMatrix();
-    rm->rotateZ(-90.0 * deg);
-
     if (moduleList[copyNo].rot)
-        physVol->SetRotation(rm);
+        physVol->SetRotation(fRotation);
     else
         physVol->SetRotation(0);
 }

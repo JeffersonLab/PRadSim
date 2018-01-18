@@ -38,6 +38,7 @@
 
 #include "ConfigObject.h"
 
+#include "G4RotationMatrix.hh"
 #include "G4VPVParameterisation.hh"
 
 #include <string>
@@ -114,6 +115,7 @@ private:
     std::vector<HyCal_Module> moduleList;
 
     std::string fType;
+    G4RotationMatrix *fRotation;
 };
 
 inline size_t HyCalParameterisation::GetNumber()
