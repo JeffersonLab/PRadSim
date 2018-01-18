@@ -35,7 +35,7 @@
 #include "CalorimeterSD.hh"
 
 #include "CalorimeterHit.hh"
-#include "Globals.hh"
+#include "GlobalVars.hh"
 #include "RootTree.hh"
 #include "StandardDetectorSD.hh"
 #include "StandardHit.hh"
@@ -125,6 +125,11 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
         G4int TrackID = theTrack->GetTrackID();
         G4int ParentTrackID = theTrack->GetParentID();
 
+        G4int DetectorID = 0;
+
+        for (G4int i = 0; i < theTouchable->GetHistoryDepth(); i++)
+            DetectorID += theTouchable->GetCopyNumber(i);
+
         G4ThreeVector InPos = preStepPoint->GetPosition();
         G4ThreeVector InMom = preStepPoint->GetMomentum();
 
@@ -170,6 +175,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
             aHit->SetPID(PID);
             aHit->SetTrackID(TrackID);
             aHit->SetParentTrackID(ParentTrackID);
+            aHit->SetDetectorID(DetectorID);
             aHit->SetInPos(InPos);
             aHit->SetInMom(InMom);
             aHit->SetOutPos(OutPos);
@@ -183,7 +189,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
             fHitsCollection->insert(aHit);
         }
 
-        CalorimeterHit *aCalorHit = (*fCalorHitsCollection)[CopyNo];
+        CalorimeterHit *aCalorHit = (*fCalorHitsCollection)[DetectorID];
 
         aCalorHit->Add(Edep, StepLength);
     }

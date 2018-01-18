@@ -52,7 +52,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-HyCalParameterisation::HyCalParameterisation(const std::string &path, G4int conf) : G4VPVParameterisation(), ConfigObject(), fConfig(conf)
+HyCalParameterisation::HyCalParameterisation(const std::string &path, const std::string &type) : G4VPVParameterisation(), ConfigObject(), fType(type)
 {
     if (!path.empty())
         Configure(path);
@@ -99,38 +99,27 @@ void HyCalParameterisation::LoadModuleList(const std::string &path)
 
         c_parser >> name >> type >> sizex >> sizey >> length >> x >> y >> z;
 
+        bool rotate = false;
+
         if (type.compare("PbGlass") == 0) {
             t = Lead_Glass;
 
-            if (fConfig == 1) {
-                sizex = 38.00 * mm;
-                sizey = 38.00 * mm;
-            } else {
-                sizex = sizex * mm - 1.0 * nm;
-                sizey = sizey * mm - 1.0 * nm;
-            }
-
-            z = 0.0 * mm;
-        } else if (type.compare("PbWO4") == 0) {
+            if ((x < 353.09 && y > 352.75) || (x > -353.09 && y < -352.75))
+                rotate = true;
+        } else if (type.compare("PbWO4") == 0)
             t = Lead_Tungstate;
-
-            if (fConfig == 1) {
-                sizex = 20.50 * mm;
-                sizey = 20.50 * mm;
-            } else {
-                sizex = sizex * mm - 1.0 * nm;
-                sizey = sizey * mm - 1.0 * nm;
-            }
-
-            z = (97.3 - (450.0 - 180.0) / 2.0) * mm;
-        } else
+        else
             continue;
 
+        sizex = sizex * mm;
+        sizey = sizey * mm;
         length = length * mm;
         x = x * mm;
         y = y * mm;
+        z = 0.0 * mm;
 
-        moduleList.push_back(HyCal_Module(name, t, sizex, sizey, length, -1.0 * x, y, z));
+        if (type == fType)
+            moduleList.push_back(HyCal_Module(name, t, sizex, sizey, length, -1.0 * x, y, z, rotate));
     }
 }
 
@@ -145,42 +134,14 @@ void HyCalParameterisation::ComputeTransformation(const G4int copyNo, G4VPhysica
 
     G4ThreeVector origin(moduleList[copyNo].x, moduleList[copyNo].y, moduleList[copyNo].z);
     physVol->SetTranslation(G4ThreeVector(origin));
-    physVol->SetRotation(0);
-}
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+    G4RotationMatrix *rm = new G4RotationMatrix();
+    rm->rotateZ(-90.0 * deg);
 
-void HyCalParameterisation::ComputeDimensions(G4Box &CalBlock, const G4int copyNo, const G4VPhysicalVolume *) const
-{
-    if ((size_t)copyNo >= moduleList.size()) {
-        G4cout << "ERROR: trying to load module no." << copyNo << ", but the loaded module list only has " << moduleList.size() << " modules" << G4endl;
-        exit(1);
-    }
-
-    CalBlock.SetXHalfLength(moduleList[copyNo].sizex / 2.0);
-    CalBlock.SetYHalfLength(moduleList[copyNo].sizey / 2.0);
-    CalBlock.SetZHalfLength(moduleList[copyNo].length / 2.0);
-}
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-G4Material *HyCalParameterisation::ComputeMaterial(const G4int copyNo, G4VPhysicalVolume * /*currVol*/, const G4VTouchable * /*parentTouch*/)
-{
-    if ((size_t)copyNo >= moduleList.size()) {
-        G4cout << "ERROR: trying to load module no." << copyNo << ", but the loaded module list only has " << moduleList.size() << " modules" << G4endl;
-        exit(1);
-    }
-
-    switch (moduleList[copyNo].type) {
-    default:
-        return G4Material::GetMaterial("Galaxy");
-
-    case Lead_Glass:
-        return G4Material::GetMaterial("PbGlass");
-
-    case Lead_Tungstate:
-        return G4Material::GetMaterial("PbWO4");
-    }
+    if (moduleList[copyNo].rot)
+        physVol->SetRotation(rm);
+    else
+        physVol->SetRotation(0);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -36,7 +36,7 @@
 #include "EventAction.hh"
 
 #include "EventMessenger.hh"
-#include "Globals.hh"
+#include "GlobalVars.hh"
 #include "RootTree.hh"
 
 #include "G4Event.hh"

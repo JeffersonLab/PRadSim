@@ -37,7 +37,7 @@
 #include "PrimaryGenerator.hh"
 
 #include "ConfigParser.h"
-#include "Globals.hh"
+#include "GlobalVars.hh"
 #include "RootTree.hh"
 
 #include "TROOT.h"

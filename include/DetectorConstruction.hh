@@ -72,8 +72,6 @@ public:
 
     inline void SetTargetMaterial(G4String val);
 
-    inline void SetHyCalConfig(G4String conf);
-
     inline void EnableSD(G4String detname);
     inline void DisableSD(G4String detname);
 
@@ -110,7 +108,6 @@ private:
     G4double fSciPlaneCenter;
 
     G4double fCrystalSurf;
-    G4int fHyCalConfig;
 
     G4bool fRecoilDetSDOn;
     G4bool fGEMSDOn;
@@ -170,14 +167,6 @@ inline void DetectorConstruction::SetRecoilDetector(G4int n, G4double ir, G4doub
 inline void DetectorConstruction::SetTargetMaterial(G4String val)
 {
     fTargetMat = val;
-}
-
-inline void DetectorConstruction::SetHyCalConfig(G4String conf)
-{
-    if (conf == "wrapped")
-        fHyCalConfig = 1;
-    else
-        fHyCalConfig = 0;
 }
 
 inline void DetectorConstruction::EnableSD(G4String detname)

@@ -155,18 +155,12 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
     HyCalSDCmd->SetGuidance("Turn on HyCalSD");
     HyCalSDCmd->SetParameterName("hycalsd", false);
     HyCalSDCmd->SetCandidates("true false simple");
-
-    HyCalWrapCmd = new G4UIcmdWithAString("/pradsim/det/hycal", this);
-    HyCalWrapCmd->SetGuidance("Set HyCal wrapping materials");
-    HyCalWrapCmd->SetParameterName("hycalwrap", false);
-    HyCalWrapCmd->SetCandidates("wrapped nowrap");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorMessenger::~DetectorMessenger()
 {
-    delete HyCalWrapCmd;
     delete RecoilDetSDCmd;
     delete GEMSDCmd;
     delete SciPlaneSDCmd;
@@ -260,9 +254,6 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
         else if (newValue == "simple") Detector->EnableSD("HyCal No Response");
         else Detector->DisableSD("HyCal");
     }
-
-    if (command == HyCalWrapCmd)
-        Detector->SetHyCalConfig(newValue);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

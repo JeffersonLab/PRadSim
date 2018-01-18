@@ -73,7 +73,18 @@ void SteppingVerbose::StepInfo()
         G4cout << std::setw(5) << G4BestUnit(fTrack->GetPosition().x(), "Length") << " " << std::setw(5) << G4BestUnit(fTrack->GetPosition().y(), "Length") << " " << std::setw(5) << G4BestUnit(fTrack->GetPosition().z(), "Length") << " ";
         G4cout << std::setw(5) << G4BestUnit(fTrack->GetKineticEnergy(), "Energy") << " " << std::setw(8) << G4BestUnit(fStep->GetTotalEnergyDeposit(), "Energy")  << " ";
         G4cout << std::setw(5) << G4BestUnit(fStep->GetStepLength(), "Length")  << " " << std::setw(5) << G4BestUnit(fTrack->GetTrackLength(), "Length") << " ";
-        G4cout << std::setw(18) << fTrack->GetVolume()->GetName() << " " << std::setw(5) << fStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber() << " ";
+        G4cout << std::setw(18) << fTrack->GetVolume()->GetName() << " ";
+
+        if (fTrack->GetVolume()->GetName().contains("Absorber")) {
+            G4int DetectorID = 0;
+            G4TouchableHandle theTouchable = fStep->GetPreStepPoint()->GetTouchableHandle();
+
+            for (G4int i = 0; i < theTouchable->GetHistoryDepth(); i++)
+                DetectorID += theTouchable->GetCopyNumber(i);
+
+            G4cout << std::setw(5) << DetectorID << " ";
+        } else
+            G4cout << std::setw(5) << fStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber() << " ";
 
         const G4VProcess *process = fStep->GetPostStepPoint()->GetProcessDefinedStep();
         G4String procName = "limit";
@@ -106,7 +117,18 @@ void SteppingVerbose::TrackingStarted()
         G4cout << std::setw(5) << G4BestUnit(fTrack->GetPosition().x(), "Length") << " " << std::setw(5) << G4BestUnit(fTrack->GetPosition().y(), "Length") << " " << std::setw(5) << G4BestUnit(fTrack->GetPosition().z(), "Length") << " ";
         G4cout << std::setw(5) << G4BestUnit(fTrack->GetKineticEnergy(), "Energy") << " " << std::setw(8) << G4BestUnit(fStep->GetTotalEnergyDeposit(), "Energy")  << " ";
         G4cout << std::setw(5) << G4BestUnit(fStep->GetStepLength(), "Length")  << " " << std::setw(5) << G4BestUnit(fTrack->GetTrackLength(), "Length") << " ";
-        G4cout << std::setw(18) << fTrack->GetVolume()->GetName() << " " << std::setw(5) << fStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber() << " ";
+        G4cout << std::setw(18) << fTrack->GetVolume()->GetName() << " ";
+
+        if (fTrack->GetVolume()->GetName().contains("Absorber")) {
+            G4int DetectorID = 0;
+            G4TouchableHandle theTouchable = fStep->GetPreStepPoint()->GetTouchableHandle();
+
+            for (G4int i = 0; i < theTouchable->GetHistoryDepth(); i++)
+                DetectorID += theTouchable->GetCopyNumber(i);
+
+            G4cout << std::setw(5) << DetectorID << " ";
+        } else
+            G4cout << std::setw(5) << fStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber() << " ";
 
         G4cout << std::setw(8) << "init";
         G4cout << G4endl;

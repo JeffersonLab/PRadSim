@@ -34,7 +34,7 @@
 
 #include "TrackingDetectorSD.hh"
 
-#include "Globals.hh"
+#include "GlobalVars.hh"
 #include "RootTree.hh"
 #include "StandardDetectorSD.hh"
 #include "StandardHit.hh"

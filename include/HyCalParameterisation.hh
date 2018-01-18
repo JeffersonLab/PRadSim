@@ -80,20 +80,19 @@ public:
         double x;
         double y;
         double z;
+        bool rot;
         HyCal_Module() {}
-        HyCal_Module(std::string n, HyCal_Module_Type t, double sx, double sy, double l, double xx, double yy, double zz) : name(n), type(t), sizex(sx), sizey(sy), length(l), x(xx), y(yy), z(zz) {}
+        HyCal_Module(std::string n, HyCal_Module_Type t, double sx, double sy, double l, double xx, double yy, double zz, bool r) : name(n), type(t), sizex(sx), sizey(sy), length(l), x(xx), y(yy), z(zz), rot(r) {}
     };
 
 public:
-    HyCalParameterisation(const std::string &path = "", G4int conf = 0);
+    HyCalParameterisation(const std::string &path = "", const std::string &type = "");
     virtual ~HyCalParameterisation();
 
     void Configure(const std::string &path);
     void LoadModuleList(const std::string &path);
 
     void ComputeTransformation(const G4int copyNo, G4VPhysicalVolume *physVol) const;
-    void ComputeDimensions(G4Box &CalBlock, const G4int copyNo, const G4VPhysicalVolume *physVol) const;
-    G4Material *ComputeMaterial(const G4int copyNo, G4VPhysicalVolume *currVol, const G4VTouchable *pTouch = NULL);
 
     inline size_t GetNumber();
 
@@ -114,7 +113,7 @@ private: // Dummy declarations to get rid of warnings ...
 private:
     std::vector<HyCal_Module> moduleList;
 
-    G4int fConfig;
+    std::string fType;
 };
 
 inline size_t HyCalParameterisation::GetNumber()
