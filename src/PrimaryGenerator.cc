@@ -456,7 +456,6 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
         double x = G4RandGauss::shoot(0, 0.08) * mm;
         double y = G4RandGauss::shoot(0, 0.08) * mm;
         double z = GenerateZ();
-        G4PrimaryVertex *vertexL = new G4PrimaryVertex(x, y, z, 0);
 
         for (int i = 0; i < 4; i++) {
             if (p[i][2] <= 0.) continue;

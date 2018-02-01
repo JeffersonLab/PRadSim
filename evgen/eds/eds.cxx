@@ -36,6 +36,7 @@
 #define InterpolPoints 1000
 #define InterpolType ROOT::Math::Interpolation::kCSPLINE
 
+using namespace std;
 
 const double Pi = TMath::Pi();
 const double degrad = Pi/180.;
