@@ -84,6 +84,9 @@ private:
     G4VPhysicalVolume *DefineDRadVolumes();
     void DefineDRadSDs();
 
+    G4VPhysicalVolume *DefinetTestVolumes();
+    void DefineTestSDs();
+
     void AddGEM(G4LogicalVolume *mother, int layerid, bool culess);
     void AddHyCal(G4LogicalVolume *mother);
 

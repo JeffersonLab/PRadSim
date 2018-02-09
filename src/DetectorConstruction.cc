@@ -83,7 +83,7 @@
 
 DetectorConstruction::DetectorConstruction(G4String conf) : G4VUserDetectorConstruction(), fConfig(conf)
 {
-    if (fConfig != "prad" && fConfig != "drad")
+    if (fConfig != "prad" && fConfig != "drad" && fConfig!= "test")
         fConfig = "prad";
 
     fVisAtts.clear();
@@ -139,6 +139,8 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     // Define volumes
     if (fConfig == "drad")
         return DefineDRadVolumes();
+    else if (fConfig == "test")
+        return DefinetTestVolumes();
     else
         return DefinePRadVolumes();
 }
@@ -149,6 +151,8 @@ void DetectorConstruction::ConstructSDandField()
 {
     if (fConfig == "drad")
         DefineDRadSDs();
+    else if (fConfig == "test")
+        DefineTestSDs();
     else
         DefinePRadSDs();
 }
@@ -731,6 +735,42 @@ void DetectorConstruction::DefineDRadSDs()
         SetSensitiveDetector("PbWO4AbsorberLV", HyCalSD);
         SetSensitiveDetector("PbGlassAbsorberLV", HyCalSD);
     }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4VPhysicalVolume *DetectorConstruction::DefinetTestVolumes()
+{
+    G4Material *DefaultM = G4Material::GetMaterial("Galaxy");
+    G4Material *TestBoxM = G4Material::GetMaterial("PbGlass");
+
+    // World
+    G4double WorldSizeXY = 100.0 * cm;
+    G4double WorldSizeZ = 100.0 * cm;
+    G4VSolid *solidWorld = new G4Box("WorldS", WorldSizeXY, WorldSizeXY, WorldSizeZ);
+    G4LogicalVolume *logicWorld = new G4LogicalVolume(solidWorld, DefaultM, "WorldLV");
+    G4VPhysicalVolume *physiWorld = new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicWorld, "World", 0, false, 0);
+
+    // Test Box
+    G4VSolid *solidTestBox = new G4Box("TestBoxS", 0.5 * m, 0.5 * m, 0.5 * m);
+    G4LogicalVolume *logicTestBox = new G4LogicalVolume(solidTestBox, TestBoxM, "TestBoxLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicTestBox, "Test Box", logicWorld, false, 0);
+
+    G4LogicalVolumeStore *pLogicalVolume = G4LogicalVolumeStore::GetInstance();
+
+    for (unsigned long i = 0; i < pLogicalVolume->size(); i++)
+        (*pLogicalVolume)[i]->SetVisAttributes(fVisAtts[(*pLogicalVolume)[i]->GetMaterial()->GetName()]);
+
+    return physiWorld;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::DefineTestSDs()
+{
+    CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC");
+    G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
+    SetSensitiveDetector("TestBoxLV", HyCalSD);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
