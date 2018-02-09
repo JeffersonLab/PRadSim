@@ -55,6 +55,7 @@
 #include "G4VPhysicalVolume.hh"
 
 #include "G4ThreeVector.hh"
+#include "G4SystemOfUnits.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -65,6 +66,7 @@ CalorimeterSD::CalorimeterSD(G4String name, G4String abbrev) : StandardDetectorS
     collectionName.insert(cname);
 
     fTotalEdep = 0;
+    fTotalTrackL = 0;
 
     for (int i = 0; i < NModules; i++) {
         fModuleEdep[i] = 1e+38;
@@ -136,12 +138,28 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
         G4ThreeVector OutPos = postStepPoint->GetPosition();
         G4ThreeVector OutMom = postStepPoint->GetMomentum();
 
+        G4double InBeta = preStepPoint->GetBeta();
+
         G4double Time = preStepPoint->GetGlobalTime();
+
+        G4String theMat = thePhysVol->GetLogicalVolume()->GetMaterial()->GetName();
 
         G4double StepLength = 0;
 
-        if (theTrack->GetParticleDefinition()->GetPDGCharge() != 0.)
-            StepLength = aStep->GetStepLength();
+        if (theTrack->GetParticleDefinition()->GetPDGCharge() != 0.) {
+            if (theMat == "PbGlass") {
+                if (InBeta > 1.0 / 1.65 && Edep > 400 * keV) {
+                    G4double theta = (InMom.theta() + OutMom.theta()) / 2.0;
+                    G4double theta_c = acos(1.0 / (InBeta * 1.65));
+
+                    if (theta - theta_c < 0.919697742) { // pi / 2.0 - asin(1.0 / 1.65)
+                        G4double factor = 1.0 - 1.0 / ((InBeta * 1.65) * (InBeta * 1.65));
+                        StepLength = aStep->GetStepLength() * factor;
+                    }
+                }
+            } else
+                StepLength = aStep->GetStepLength();
+        }
 
         G4int CopyNo = theTouchable->GetCopyNumber();
 
@@ -244,6 +262,7 @@ void CalorimeterSD::EndOfEvent(G4HCofThisEvent *HCE)
     }
 
     fTotalEdep = 0;
+    fTotalTrackL = 0;
 
     for (int i = 0; i < NModules; i++) {
         CalorimeterHit *aCalorHit = (*fCalorHitsCollection)[i];
@@ -251,6 +270,7 @@ void CalorimeterSD::EndOfEvent(G4HCofThisEvent *HCE)
         fModuleEdep[i] = aCalorHit->GetEdep();
         fModuleTrackL[i] = aCalorHit->GetTrackLength();
         fTotalEdep += fModuleEdep[i];
+        fTotalTrackL += fModuleTrackL[i];
     }
 }
 
@@ -263,6 +283,7 @@ void CalorimeterSD::Register(TTree *tree)
     const char *abbr = fAbbrev.data();
 
     tree->Branch(Form("%s.TotalEdep", abbr), &fTotalEdep, Form("%s.TotalEdep/D", abbr));
+    tree->Branch(Form("%s.TotalTrackL", abbr), &fTotalTrackL, Form("%s.TotalTrackL/D", abbr));
     tree->Branch(Form("%s.ModuleEdep", abbr), fModuleEdep, Form("%s.ModuleEdep[%d]/D", abbr, NModules));
     tree->Branch(Form("%s.ModuleTrackL", abbr), fModuleTrackL, Form("%s.ModuleTrackL[%d]/D", abbr, NModules));
 }
@@ -274,6 +295,7 @@ void CalorimeterSD::Clear()
     StandardDetectorSD::Clear();
 
     fTotalEdep = 0;
+    fTotalTrackL = 0;
 
     for (int i = 0; i < NModules; i++) {
         fModuleEdep[i] = 1e+38;

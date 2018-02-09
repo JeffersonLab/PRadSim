@@ -67,6 +67,7 @@ protected:
     CalorimeterHitsCollection *fCalorHitsCollection;
 
     double fTotalEdep;
+    double fTotalTrackL;
     double fModuleEdep[NModules];
     double fModuleTrackL[NModules];
 };
