@@ -39,6 +39,7 @@ HyCalDigitization::HyCalDigitization(const std::string &abbrev, const std::strin
     RandGen->SetSeed((UInt_t)time(NULL));
 
     fHyCal = new PRadHyCalSystem(path);
+    fHyCal->GetDetector()->SortModuleList();
     fHyCal->ChooseRun(run);
 
     fModuleList = fHyCal->GetModuleList();
