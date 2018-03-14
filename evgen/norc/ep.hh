@@ -146,7 +146,7 @@ double GEp(double qq)
     double t = Abs(qq) / (4. * M2); // Tau
 
     if (fselect == 1)
-        return 1. - (-qq) / 6. * Pow2(rp);
+        return 1. / Pow2(1. + (-qq) / 12. * Pow2(rp));
     else
         return (1. + a11 * t + a12 * Pow2(t) + a13 * Pow3(t)) / (1. + b11 * t + b12 * Pow2(t) + b13 * Pow3(t) + b14 * Pow4(t) + b15 * Pow5(t));
 }

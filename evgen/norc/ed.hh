@@ -114,7 +114,7 @@ double ElasticEnergy(double theta)
 double GCd(double q2)
 {
     if (fselect == 1)
-        return 1. - q2 / 6. * Pow2(rd);
+        return 1. / Pow2(1. + q2 / 12. * Pow2(rd));
     else
         return Exp(-q2 / 3.5) / (1. + q2 / mepsilon) / Pow2(1. + q2 / 0.71);
 }

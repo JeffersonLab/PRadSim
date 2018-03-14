@@ -87,12 +87,16 @@ private:
     G4VPhysicalVolume *DefinetTestVolumes();
     void DefineTestSDs();
 
+    void AddVaccumBox(G4LogicalVolume *mother);
     void AddGEM(G4LogicalVolume *mother, int layerid, bool culess);
     void AddHyCal(G4LogicalVolume *mother);
 
     G4String fConfig;
 
     std::map<G4String, G4VisAttributes *> fVisAtts;
+
+    G4double fWorldSizeXY;
+    G4double fWorldSizeZ;
 
     G4double fTargetCenter;
     G4double fTargetR;
@@ -105,6 +109,9 @@ private:
     G4double fRecoilDetHalfL;
     G4double fRecoilDetL1Thickness;
     G4double fRecoilDetL2Thickness;
+
+    G4double fDownChamberCenter;
+    G4double fVacBoxCenter;
 
     G4double fGEMCenter[10];
 
