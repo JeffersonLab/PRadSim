@@ -71,6 +71,7 @@ public:
     inline void SetRecoilDetector(G4int n, G4double ir, G4double l, G4double t1, G4double t2);
 
     inline void SetTargetMaterial(G4String val);
+    inline void SetTargetDensityRatio(G4double r);
 
     inline void EnableSD(G4String detname);
     inline void DisableSD(G4String detname);
@@ -102,6 +103,7 @@ private:
     G4double fTargetR;
     G4double fTargetHalfL;
     G4String fTargetMat;
+    G4double fTargetDensityRatio;
 
     G4int fRecoilDetNSeg;
     G4double fRecoilDetCenter;
@@ -177,6 +179,11 @@ inline void DetectorConstruction::SetRecoilDetector(G4int n, G4double ir, G4doub
 inline void DetectorConstruction::SetTargetMaterial(G4String val)
 {
     fTargetMat = val;
+}
+
+inline void DetectorConstruction::SetTargetDensityRatio(G4double r)
+{
+    fTargetDensityRatio = r;
 }
 
 inline void DetectorConstruction::EnableSD(G4String detname)

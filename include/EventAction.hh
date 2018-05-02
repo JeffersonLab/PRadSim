@@ -61,7 +61,7 @@ public:
 
 private:
     void Register(TTree *);
-    
+
     G4int fEventID;
 
     G4int fPrintModulo;

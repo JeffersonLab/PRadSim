@@ -95,6 +95,7 @@ DetectorConstruction::DetectorConstruction(G4String conf) : G4VUserDetectorConst
     fTargetR = 14.5 * cm;
     fTargetHalfL = 2.75 * cm;
     fTargetMat = "D2Gas";
+    fTargetDensityRatio = 1.0;
 
     fRecoilDetNSeg = 20;
     fRecoilDetCenter = fTargetCenter;
@@ -224,12 +225,12 @@ void DetectorConstruction::DefineMaterials()
     fVisAtts[Vacuum->GetName()] = new G4VisAttributes(G4VisAttributes::Invisible);
 
     // Hydrogen Gas (T = 19.5 K, P = 470 mTorr)
-    G4Material *H2Gas = new G4Material("H2Gas", density = 0.47 / 760.0 * 273.15 / 19.5 * 0.08988 * mg / cm3, ncomponents = 1, kStateGas, 19.5 * kelvin, 0.47 / 760.0 * atmosphere);
+    G4Material *H2Gas = new G4Material("H2Gas", density = fTargetDensityRatio * 0.47 / 760.0 * 273.15 / 19.5 * 0.08988 * mg / cm3, ncomponents = 1, kStateGas, 19.5 * kelvin, fTargetDensityRatio * 0.47 / 760.0 * atmosphere);
     H2Gas->AddElement(H, natoms = 2);
     fVisAtts[H2Gas->GetName()] = new G4VisAttributes(G4Colour::Cyan());
 
     // Deuteron Gas
-    G4Material *D2Gas = new G4Material("D2Gas", density = 0.47 / 760.0 * 273.15 / 19.5 * 0.1796 * mg / cm3, ncomponents = 1, kStateGas, 19.5 * kelvin, 0.47 / 760.0 * atmosphere);
+    G4Material *D2Gas = new G4Material("D2Gas", density = fTargetDensityRatio * 0.47 / 760.0 * 273.15 / 19.5 * 0.1796 * mg / cm3, ncomponents = 1, kStateGas, 19.5 * kelvin, fTargetDensityRatio * 0.47 / 760.0 * atmosphere);
     D2Gas->AddElement(D, natoms = 2);
     fVisAtts[D2Gas->GetName()] = new G4VisAttributes(G4Colour::Cyan());
 

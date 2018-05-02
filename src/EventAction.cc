@@ -56,7 +56,7 @@
 EventAction::EventAction() : G4UserEventAction(), fEventID(0), fPrintModulo(1000), fOnlyRecordHits(false)
 {
     Register(gRootTree->GetTree());
-    
+
     eventMessenger = new EventMessenger(this);
 }
 
@@ -92,9 +92,9 @@ void EventAction::EndOfEventAction(const G4Event *evt)
             if (ColName == "HCColl")  { // Hard-coded detector name in DetectorConstruction.cc
                 StandardHitsCollection *HyCalColl = (StandardHitsCollection *) HCE->GetHC(i);
                 G4int nHits = HyCalColl->entries();
-                if (nHits > 0) {
+
+                if (nHits > 0)
                     gRootTree->FillTree();
-                }
             }
         }
     } else

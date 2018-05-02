@@ -41,6 +41,7 @@
 #include "G4UIcommand.hh"
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithABool.hh"
+#include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithAnInteger.hh"
 #include "G4UIcmdWithAString.hh"
@@ -109,6 +110,10 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
     TargetMatCmd->SetParameterName("targetm", false);
     TargetMatCmd->SetCandidates("hydrogen deuteron");
 
+    TargetDensityRatioCmd = new G4UIcmdWithADouble("/pradsim/det/target/densityratio", this);
+    TargetDensityRatioCmd->SetGuidance("Set fTargetDensityRatio");
+    TargetDensityRatioCmd->SetParameterName("targetr", false);
+
     RecoilDetDir = new G4UIdirectory("/pradsim/det/recoil/");
     RecoilDetDir->SetGuidance("Recoil detector control");
 
@@ -175,6 +180,7 @@ DetectorMessenger::~DetectorMessenger()
     delete TargetRCmd;
     delete TargetHalfLCmd;
     delete TargetMatCmd;
+    delete TargetDensityRatioCmd;
     delete TargetDir;
     delete TargetZCmd;
     delete RecoilDetZCmd;
@@ -217,6 +223,9 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 
     if (command == TargetMatCmd)
         Detector->SetTargetMaterial(newValue);
+
+    if (command == TargetDensityRatioCmd)
+        Detector->SetTargetDensityRatio(TargetDensityRatioCmd->GetNewDoubleValue(newValue));
 
     if (command == RecoilDetNSegCmd)
         Detector->SetRecoilDetector(RecoilDetNSegCmd->GetNewIntValue(newValue), -10000, -10000, -10000, -10000);
