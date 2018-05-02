@@ -43,6 +43,7 @@ class EventAction;
 
 class G4UIcommand;
 class G4UIdirectory;
+class G4UIcmdWithABool;
 class G4UIcmdWithAnInteger;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -60,6 +61,7 @@ private:
 
     G4UIdirectory        *eventDir;
     G4UIcmdWithAnInteger *PrintCmd;
+    G4UIcmdWithABool     *OnlyRecordHitsCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

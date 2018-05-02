@@ -38,16 +38,25 @@
 #include "EventMessenger.hh"
 #include "GlobalVars.hh"
 #include "RootTree.hh"
+#include "StandardHit.hh"
+
+#include "TROOT.h"
+#include "TError.h"
+#include "TObject.h"
+#include "TTree.h"
 
 #include "G4Event.hh"
+#include "G4HCofThisEvent.hh"
 #include "G4UserEventAction.hh"
 
 #include "G4ios.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EventAction::EventAction() : G4UserEventAction(), printModulo(1000)
+EventAction::EventAction() : G4UserEventAction(), fEventID(0), fPrintModulo(1000), fOnlyRecordHits(false)
 {
+    Register(gRootTree->GetTree());
+    
     eventMessenger = new EventMessenger(this);
 }
 
@@ -62,17 +71,41 @@ EventAction::~EventAction()
 
 void EventAction::BeginOfEventAction(const G4Event *evt)
 {
-    G4int evtNb = evt->GetEventID();
+    fEventID = evt->GetEventID();
 
-    if (evtNb % printModulo == 0)
-        G4cout << "\n---> Begin of event: " << evtNb << G4endl;
+    if (fEventID % fPrintModulo == 0)
+        G4cout << "\n---> Begin of event: " << fEventID << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void EventAction::EndOfEventAction(const G4Event *)
+void EventAction::EndOfEventAction(const G4Event *evt)
 {
-    gRootTree->FillTree();
+    if (fOnlyRecordHits) {
+        G4HCofThisEvent *HCE = evt->GetHCofThisEvent();
+
+        G4int nHC = HCE->GetNumberOfCollections();
+
+        for (G4int i = 0; i < nHC; i++) {
+            G4String ColName = HCE->GetHC(i)->GetName();
+
+            if (ColName == "HCColl")  { // Hard-coded detector name in DetectorConstruction.cc
+                StandardHitsCollection *HyCalColl = (StandardHitsCollection *) HCE->GetHC(i);
+                G4int nHits = HyCalColl->entries();
+                if (nHits > 0) {
+                    gRootTree->FillTree();
+                }
+            }
+        }
+    } else
+        gRootTree->FillTree();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void EventAction::Register(TTree *tree)
+{
+    tree->Branch("EventID", &fEventID, "EventID/I");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

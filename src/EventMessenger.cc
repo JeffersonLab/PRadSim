@@ -39,6 +39,7 @@
 #include "G4UImessenger.hh"
 #include "G4UIcommand.hh"
 #include "G4UIdirectory.hh"
+#include "G4UIcmdWithABool.hh"
 #include "G4UIcmdWithAnInteger.hh"
 
 #include "G4String.hh"
@@ -54,6 +55,11 @@ EventMessenger::EventMessenger(EventAction *act) : G4UImessenger(), Action(act)
     PrintCmd->SetGuidance("Print events modulo n");
     PrintCmd->SetParameterName("EventNb", false);
     PrintCmd->SetRange("EventNb>0");
+
+    OnlyRecordHitsCmd = new G4UIcmdWithABool("/pradsim/event/onlyrecordhits", this);
+    OnlyRecordHitsCmd->SetGuidance("Only write the rootfile if there is a hit on HyCal");
+    OnlyRecordHitsCmd->SetParameterName("onlyrecordhits", false);
+    OnlyRecordHitsCmd->SetDefaultValue(false);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -61,6 +67,7 @@ EventMessenger::EventMessenger(EventAction *act) : G4UImessenger(), Action(act)
 EventMessenger::~EventMessenger()
 {
     delete PrintCmd;
+    delete OnlyRecordHitsCmd;
     delete eventDir;
 }
 
@@ -70,6 +77,9 @@ void EventMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 {
     if (command == PrintCmd)
         Action->SetPrintModulo(PrintCmd->GetNewIntValue(newValue));
+
+    if (command == OnlyRecordHitsCmd)
+        Action->SetOnlyRecordHits(OnlyRecordHitsCmd->GetNewBoolValue(newValue));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

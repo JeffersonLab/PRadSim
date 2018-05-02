@@ -43,6 +43,7 @@
 class EventMessenger;
 
 class G4Event;
+class TTree;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -56,16 +57,27 @@ public:
     void EndOfEventAction(const G4Event *);
 
     inline void SetPrintModulo(G4int val);
+    inline void SetOnlyRecordHits(G4bool val);
 
 private:
-    G4int printModulo;
+    void Register(TTree *);
+    
+    G4int fEventID;
+
+    G4int fPrintModulo;
+    G4bool fOnlyRecordHits;
 
     EventMessenger *eventMessenger;
 };
 
 inline void EventAction::SetPrintModulo(G4int val)
 {
-    printModulo = val;
+    fPrintModulo = val;
+}
+
+inline void EventAction::SetOnlyRecordHits(G4bool val)
+{
+    fOnlyRecordHits = val;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
