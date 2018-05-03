@@ -117,100 +117,98 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
     G4int AncestorID = theTrackInfo->GetAncestor(fID);
 
-    if (Edep > 0) {
-        G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
-        G4StepPoint *postStepPoint = aStep->GetPostStepPoint();
-        G4TouchableHandle theTouchable = preStepPoint->GetTouchableHandle();
-        G4VPhysicalVolume *thePhysVol = theTouchable->GetVolume();
+    G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
+    G4StepPoint *postStepPoint = aStep->GetPostStepPoint();
+    G4TouchableHandle theTouchable = preStepPoint->GetTouchableHandle();
+    G4VPhysicalVolume *thePhysVol = theTouchable->GetVolume();
 
-        G4int PID = theTrack->GetParticleDefinition()->GetPDGEncoding();
-        G4int TrackID = theTrack->GetTrackID();
-        G4int ParentTrackID = theTrack->GetParentID();
+    G4int PID = theTrack->GetParticleDefinition()->GetPDGEncoding();
+    G4int TrackID = theTrack->GetTrackID();
+    G4int ParentTrackID = theTrack->GetParentID();
 
-        G4int DetectorID = 0;
+    G4int DetectorID = 0;
 
-        for (G4int i = 0; i < theTouchable->GetHistoryDepth(); i++)
-            DetectorID += theTouchable->GetCopyNumber(i);
+    for (G4int i = 0; i < theTouchable->GetHistoryDepth(); i++)
+        DetectorID += theTouchable->GetCopyNumber(i);
 
-        G4ThreeVector InPos = preStepPoint->GetPosition();
-        G4ThreeVector InMom = preStepPoint->GetMomentum();
+    G4ThreeVector InPos = preStepPoint->GetPosition();
+    G4ThreeVector InMom = preStepPoint->GetMomentum();
 
-        G4ThreeVector OutPos = postStepPoint->GetPosition();
-        G4ThreeVector OutMom = postStepPoint->GetMomentum();
+    G4ThreeVector OutPos = postStepPoint->GetPosition();
+    G4ThreeVector OutMom = postStepPoint->GetMomentum();
 
-        G4double InBeta = preStepPoint->GetBeta();
+    G4double InBeta = preStepPoint->GetBeta();
 
-        G4double Time = preStepPoint->GetGlobalTime();
+    G4double Time = preStepPoint->GetGlobalTime();
 
-        G4String theMat = thePhysVol->GetLogicalVolume()->GetMaterial()->GetName();
+    G4String theMat = thePhysVol->GetLogicalVolume()->GetMaterial()->GetName();
 
-        G4double StepLength = 0;
+    G4double StepLength = 0;
 
-        if (theTrack->GetParticleDefinition()->GetPDGCharge() != 0.) {
-            if (theMat == "PbGlass") {
-                if (InBeta > 1.0 / 1.65 && Edep > 400 * keV) {
-                    G4double theta = (InMom.theta() + OutMom.theta()) / 2.0;
-                    G4double theta_c = acos(1.0 / (InBeta * 1.65));
+    if (theTrack->GetParticleDefinition()->GetPDGCharge() != 0.) {
+        if (theMat == "PbGlass") {
+            if (InBeta > 1.0 / 1.65 && Edep > 400 * keV) {
+                G4double theta = (InMom.theta() + OutMom.theta()) / 2.0;
+                G4double theta_c = acos(1.0 / (InBeta * 1.65));
 
-                    if (theta - theta_c < 0.919697742) { // pi / 2.0 - asin(1.0 / 1.65)
-                        G4double factor = 1.0 - 1.0 / ((InBeta * 1.65) * (InBeta * 1.65));
-                        StepLength = aStep->GetStepLength() * factor;
-                    }
+                if (theta - theta_c < 0.919697742) { // pi / 2.0 - asin(1.0 / 1.65)
+                    G4double factor = 1.0 - 1.0 / ((InBeta * 1.65) * (InBeta * 1.65));
+                    StepLength = aStep->GetStepLength() * factor;
                 }
-            } else
-                StepLength = aStep->GetStepLength();
-        }
-
-        G4int CopyNo = theTouchable->GetCopyNumber();
-
-        if (AncestorID < 0) AncestorID = TrackID;
-
-        StandardHit *aHit = NULL;
-
-        for (G4int i = fHitsCollection->entries() - 1; i >= 0; i--) {
-            if ((*fHitsCollection)[i]->GetTrackID() == AncestorID) {
-                aHit = (*fHitsCollection)[i];
-                break;
             }
+        } else
+            StepLength = aStep->GetStepLength();
+    }
+
+    G4int CopyNo = theTouchable->GetCopyNumber();
+
+    if (AncestorID < 0) AncestorID = TrackID;
+
+    StandardHit *aHit = NULL;
+
+    for (G4int i = fHitsCollection->entries() - 1; i >= 0; i--) {
+        if ((*fHitsCollection)[i]->GetTrackID() == AncestorID) {
+            aHit = (*fHitsCollection)[i];
+            break;
         }
+    }
 
-        // if found an exits hit, refresh it and accumulate the deposited energy
-        // if not, create a new hit and push it into the collection
-        if (aHit) {
-            aHit->AddEdep(Edep);
-            aHit->AddTrackLength(StepLength);
+    // if found an exits hit, refresh it and accumulate the deposited energy
+    // if not, create a new hit and push it into the collection
+    if (aHit) {
+        aHit->AddEdep(Edep);
+        aHit->AddTrackLength(StepLength);
 
-            if (aHit->GetTrackID() == TrackID) {
-                if (aHit->GetTime() > Time) aHit->SetTime(Time);
+        if (aHit->GetTrackID() == TrackID) {
+            if (aHit->GetTime() > Time) aHit->SetTime(Time);
 
-                aHit->SetOutPos(OutPos);
-                aHit->SetOutMom(OutMom);
-            }
-        } else {
-            // create a new hit
-            aHit = new StandardHit();
-
-            aHit->SetPID(PID);
-            aHit->SetTrackID(TrackID);
-            aHit->SetParentTrackID(ParentTrackID);
-            aHit->SetDetectorID(DetectorID);
-            aHit->SetInPos(InPos);
-            aHit->SetInMom(InMom);
             aHit->SetOutPos(OutPos);
             aHit->SetOutMom(OutMom);
-            aHit->SetTime(Time);
-            aHit->SetEdep(Edep);
-            aHit->SetTrackLength(StepLength);
-            aHit->SetPhysV(thePhysVol);
-            aHit->SetCopyNo(CopyNo);
-
-            fHitsCollection->insert(aHit);
         }
+    } else {
+        // create a new hit
+        aHit = new StandardHit();
 
-        CalorimeterHit *aCalorHit = (*fCalorHitsCollection)[DetectorID];
+        aHit->SetPID(PID);
+        aHit->SetTrackID(TrackID);
+        aHit->SetParentTrackID(ParentTrackID);
+        aHit->SetDetectorID(DetectorID);
+        aHit->SetInPos(InPos);
+        aHit->SetInMom(InMom);
+        aHit->SetOutPos(OutPos);
+        aHit->SetOutMom(OutMom);
+        aHit->SetTime(Time);
+        aHit->SetEdep(Edep);
+        aHit->SetTrackLength(StepLength);
+        aHit->SetPhysV(thePhysVol);
+        aHit->SetCopyNo(CopyNo);
 
-        aCalorHit->Add(Edep, StepLength);
+        fHitsCollection->insert(aHit);
     }
+
+    CalorimeterHit *aCalorHit = (*fCalorHitsCollection)[DetectorID];
+
+    aCalorHit->Add(Edep, StepLength);
 
     G4int nSecondaries = aStep->GetNumberOfSecondariesInCurrentStep();
 
