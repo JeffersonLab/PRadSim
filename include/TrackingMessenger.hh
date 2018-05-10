@@ -58,6 +58,7 @@ private:
     TrackingAction   *Action;
 
     G4UIcmdWithABool *NoSecondaryCmd;
+    G4UIcmdWithABool *SaveTrackInfoCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

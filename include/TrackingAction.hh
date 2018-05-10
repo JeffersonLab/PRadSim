@@ -39,7 +39,11 @@
 
 #include "globals.hh"
 
+#define MaxTracks 3000
+
 class TrackingMessenger;
+
+class TTree;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -53,9 +57,25 @@ public:
     void PostUserTrackingAction(const G4Track *);
 
     inline void SetNoSecondary(G4bool val);
+    void SetSaveTrackInfo(G4bool val);
+
+    void Clear();
 
 private:
+    void Register(TTree *);
+
     G4bool fNoSecondary;
+    G4bool fSaveTrackInfo;
+    G4bool fRegistered;
+
+    int fN;
+    int fPID[MaxTracks]; // Particle ID
+    int fTID[MaxTracks]; // Track ID
+    int fPTID[MaxTracks]; // Parent Track ID
+    double fX[MaxTracks];
+    double fY[MaxTracks];
+    double fZ[MaxTracks];
+    int fProcessID[MaxTracks];
 
     TrackingMessenger *trackingMessenger;
 };
@@ -63,6 +83,11 @@ private:
 inline void TrackingAction::SetNoSecondary(G4bool val)
 {
     fNoSecondary = val;
+}
+
+inline void TrackingAction::SetSaveTrackInfo(G4bool val)
+{
+    fSaveTrackInfo = val;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

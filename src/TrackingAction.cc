@@ -34,8 +34,15 @@
 
 #include "TrackingAction.hh"
 
+#include "GlobalVars.hh"
+#include "RootTree.hh"
 #include "TrackInformation.hh"
 #include "TrackingMessenger.hh"
+
+#include "TROOT.h"
+#include "TError.h"
+#include "TObject.h"
+#include "TTree.h"
 
 #include "G4Track.hh"
 #include "G4TrackStatus.hh"
@@ -45,9 +52,21 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-TrackingAction::TrackingAction() : G4UserTrackingAction(), fNoSecondary(false)
+TrackingAction::TrackingAction() : G4UserTrackingAction(), fNoSecondary(false), fSaveTrackInfo(false), fRegistered(false)
 {
     trackingMessenger = new TrackingMessenger(this);
+
+    fN = 0;
+
+    for (int i = 0; i < MaxTracks; i++) {
+        fPID[i] = -9999;
+        fTID[i] = -9999;
+        fPTID[i] = -9999;
+        fX[i] = 1e+38;
+        fY[i] = 1e+38;
+        fZ[i] = 1e+38;
+        fProcessID[i] = -9999;
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -71,6 +90,34 @@ void TrackingAction::PreUserTrackingAction(const G4Track *aTrack)
         G4Track *theTrack = (G4Track *)aTrack;
         theTrack->SetUserInformation(aTrackInfo);
     }
+
+    if (fSaveTrackInfo) {
+        if (!fRegistered) {
+            Register(gRootTree->GetTree());
+            fRegistered = true;
+        }
+
+        const G4LogicalVolume *theLV = aTrack->GetLogicalVolumeAtVertex();
+        const G4VProcess *theProcess = aTrack->GetCreatorProcess();
+
+        if (theLV && theProcess) {
+            G4String theLVName = theLV->GetName();
+            G4ProcessType theProcessType = theProcess->GetProcessType();
+            int theProcessSubType = theProcess->GetProcessSubType();
+            const G4ThreeVector thePosition = aTrack->GetVertexPosition();
+
+            if (fN < MaxTracks && theLVName != "PbWO4AbsorberLV" && theLVName != "PbGlassAbsorberLV") {
+                fPID[fN] = aTrack->GetParticleDefinition()->GetPDGEncoding();
+                fTID[fN] = aTrack->GetTrackID();
+                fPTID[fN] = aTrack->GetParentID();
+                fX[fN] = thePosition.x();
+                fY[fN] = thePosition.y();
+                fZ[fN] = thePosition.z();
+                fProcessID[fN] = (int)theProcessType * 1000 + theProcessSubType;
+                fN++;
+            }
+        }
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -92,6 +139,37 @@ void TrackingAction::PostUserTrackingAction(const G4Track *aTrack)
             }
         }
     }
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void TrackingAction::Register(TTree *tree)
+{
+    tree->Branch("TR.N", &fN, "TRACK.N/I");
+    tree->Branch("TR.PID", fPID, "TRACK.PID[TRACK.N]/I");
+    tree->Branch("TR.TID", fTID, "TRACK.TID[TRACK.N]/I");
+    tree->Branch("TR.PTID", fPTID, "TRACK.PTID[TRACK.N]/I");
+    tree->Branch("TR.X", fX, "TRACK.X[TRACK.N]/D");
+    tree->Branch("TR.Y", fY, "TRACK.Y[TRACK.N]/D");
+    tree->Branch("TR.Z", fZ, "TRACK.Z[TRACK.N]/D");
+    tree->Branch("TR.ProcessID", fProcessID, "TRACK.ProcessID[TRACK.N]/I");
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void TrackingAction::Clear()
+{
+    for (int i = 0; i < fN; i++) {
+        fPID[i] = -9999;
+        fTID[i] = -9999;
+        fPTID[i] = -9999;
+        fX[i] = 1e+38;
+        fY[i] = 1e+38;
+        fZ[i] = 1e+38;
+        fProcessID[i] = -9999;
+    }
+
+    fN = 0;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

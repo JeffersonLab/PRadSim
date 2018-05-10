@@ -49,6 +49,10 @@ TrackingMessenger::TrackingMessenger(TrackingAction *act) : G4UImessenger(), Act
     NoSecondaryCmd = new G4UIcmdWithABool("/tracking/nosecondary", this);
     NoSecondaryCmd->SetGuidance("Turn on/off secondary particles");
     NoSecondaryCmd->SetParameterName("nosecondary", false);
+
+    SaveTrackInfoCmd = new G4UIcmdWithABool("/tracking/savetrackinfo", this);
+    SaveTrackInfoCmd->SetGuidance("Turn on/off saving tracking infomation");
+    SaveTrackInfoCmd->SetParameterName("savetrackinfo", false);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -56,6 +60,7 @@ TrackingMessenger::TrackingMessenger(TrackingAction *act) : G4UImessenger(), Act
 TrackingMessenger::~TrackingMessenger()
 {
     delete NoSecondaryCmd;
+    delete SaveTrackInfoCmd;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -64,6 +69,9 @@ void TrackingMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 {
     if (command == NoSecondaryCmd)
         Action->SetNoSecondary(NoSecondaryCmd->GetNewBoolValue(newValue));
+
+    if (command == SaveTrackInfoCmd)
+        Action->SetSaveTrackInfo(SaveTrackInfoCmd->GetNewBoolValue(newValue));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

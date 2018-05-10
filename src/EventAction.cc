@@ -39,6 +39,7 @@
 #include "GlobalVars.hh"
 #include "RootTree.hh"
 #include "StandardHit.hh"
+#include "TrackingAction.hh"
 
 #include "TROOT.h"
 #include "TError.h"
@@ -47,6 +48,7 @@
 
 #include "G4Event.hh"
 #include "G4HCofThisEvent.hh"
+#include "G4RunManager.hh"
 #include "G4UserEventAction.hh"
 
 #include "G4ios.hh"
@@ -99,6 +101,9 @@ void EventAction::EndOfEventAction(const G4Event *evt)
         }
     } else
         gRootTree->FillTree();
+
+    TrackingAction *theTrackingAction = (TrackingAction *)G4RunManager::GetRunManager()->GetUserTrackingAction();
+    theTrackingAction->Clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
