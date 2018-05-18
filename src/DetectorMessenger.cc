@@ -156,10 +156,13 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
     SciPlaneSDCmd->SetGuidance("Turn on SciPlaneSD");
     SciPlaneSDCmd->SetParameterName("sciplanesd", false);
 
-    HyCalSDCmd = new G4UIcmdWithAString("/pradsim/det/sensitive/hycal", this);
+    HyCalSDCmd = new G4UIcmdWithABool("/pradsim/det/sensitive/hycal", this);
     HyCalSDCmd->SetGuidance("Turn on HyCalSD");
     HyCalSDCmd->SetParameterName("hycalsd", false);
-    HyCalSDCmd->SetCandidates("true false simple");
+
+    VirtualSDCmd = new G4UIcmdWithABool("/pradsim/det/sensitive/virtual", this);
+    VirtualSDCmd->SetGuidance("Turn on VirtualSD");
+    VirtualSDCmd->SetParameterName("virtualsd", false);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -170,6 +173,7 @@ DetectorMessenger::~DetectorMessenger()
     delete GEMSDCmd;
     delete SciPlaneSDCmd;
     delete HyCalSDCmd;
+    delete VirtualSDCmd;
     delete SDDir;
     delete RecoilDetNSegCmd;
     delete RecoilDetRCmd;
@@ -242,7 +246,6 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
     if (command == RecoilDetL2ThicknessCmd)
         Detector->SetRecoilDetector(-10000, -10000, -10000,  -10000, RecoilDetL2ThicknessCmd->GetNewDoubleValue(newValue));
 
-
     if (command == RecoilDetSDCmd) {
         if (RecoilDetSDCmd->GetNewBoolValue(newValue)) Detector->EnableSD("Recoil Detector");
         else Detector->DisableSD("Recoil Detector");
@@ -259,9 +262,13 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
     }
 
     if (command == HyCalSDCmd) {
-        if (newValue == "true") Detector->EnableSD("HyCal");
-        else if (newValue == "simple") Detector->EnableSD("HyCal No Response");
+        if (HyCalSDCmd->GetNewBoolValue(newValue)) Detector->EnableSD("HyCal");
         else Detector->DisableSD("HyCal");
+    }
+
+    if (command == VirtualSDCmd) {
+        if (VirtualSDCmd->GetNewBoolValue(newValue)) Detector->EnableSD("Virtual Detector");
+        else Detector->DisableSD("Virtual Detector");
     }
 }
 

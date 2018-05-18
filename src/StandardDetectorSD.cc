@@ -123,73 +123,71 @@ G4bool StandardDetectorSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
     G4int AncestorID = theTrackInfo->GetAncestor(fID);
 
-    if (Edep > 0) {
-        G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
-        G4StepPoint *postStepPoint = aStep->GetPostStepPoint();
-        G4TouchableHandle theTouchable = preStepPoint->GetTouchableHandle();
-        G4VPhysicalVolume *thePhysVol = theTouchable->GetVolume();
+    G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
+    G4StepPoint *postStepPoint = aStep->GetPostStepPoint();
+    G4TouchableHandle theTouchable = preStepPoint->GetTouchableHandle();
+    G4VPhysicalVolume *thePhysVol = theTouchable->GetVolume();
 
-        G4int PID = theTrack->GetParticleDefinition()->GetPDGEncoding();
-        G4int TrackID = theTrack->GetTrackID();
-        G4int ParentTrackID = theTrack->GetParentID();
+    G4int PID = theTrack->GetParticleDefinition()->GetPDGEncoding();
+    G4int TrackID = theTrack->GetTrackID();
+    G4int ParentTrackID = theTrack->GetParentID();
 
-        G4ThreeVector InPos = preStepPoint->GetPosition();
-        G4ThreeVector InMom = preStepPoint->GetMomentum();
+    G4ThreeVector InPos = preStepPoint->GetPosition();
+    G4ThreeVector InMom = preStepPoint->GetMomentum();
 
-        G4ThreeVector OutPos = postStepPoint->GetPosition();
-        G4ThreeVector OutMom = postStepPoint->GetMomentum();
+    G4ThreeVector OutPos = postStepPoint->GetPosition();
+    G4ThreeVector OutMom = postStepPoint->GetMomentum();
 
-        G4double Time = preStepPoint->GetGlobalTime();
+    G4double Time = preStepPoint->GetGlobalTime();
 
-        G4double StepLength = 0;
+    G4double StepLength = 0;
 
-        if (theTrack->GetParticleDefinition()->GetPDGCharge() != 0.)
-            StepLength = aStep->GetStepLength();
+    if (theTrack->GetParticleDefinition()->GetPDGCharge() != 0.)
+        StepLength = aStep->GetStepLength();
 
-        G4int CopyNo = theTouchable->GetCopyNumber();
+    G4int CopyNo = theTouchable->GetCopyNumber();
 
-        if (AncestorID < 0) AncestorID = TrackID;
+    if (AncestorID < 0) AncestorID = TrackID;
 
-        StandardHit *aHit = NULL;
+    StandardHit *aHit = NULL;
 
-        for (G4int i = fHitsCollection->entries() - 1; i >= 0; i--) {
-            if ((*fHitsCollection)[i]->GetTrackID() == AncestorID) {
-                aHit = (*fHitsCollection)[i];
-                break;
-            }
+    for (G4int i = fHitsCollection->entries() - 1; i >= 0; i--) {
+        if ((*fHitsCollection)[i]->GetTrackID() == AncestorID) {
+            aHit = (*fHitsCollection)[i];
+            break;
         }
+    }
 
-        // if found an exits hit, refresh it and accumulate the deposited energy
-        // if not, create a new hit and push it into the collection
-        if (aHit) {
-            aHit->AddEdep(Edep);
-            aHit->AddTrackLength(StepLength);
+    // if found an exits hit, refresh it and accumulate the deposited energy
+    // if not, create a new hit and push it into the collection
+    if (aHit) {
+        aHit->AddEdep(Edep);
+        aHit->AddTrackLength(StepLength);
 
-            if (aHit->GetTrackID() == TrackID) {
-                if (aHit->GetTime() > Time) aHit->SetTime(Time);
+        if (aHit->GetTrackID() == TrackID) {
+            if (aHit->GetTime() > Time) aHit->SetTime(Time);
 
-                aHit->SetOutPos(OutPos);
-                aHit->SetOutMom(OutMom);
-            }
-        } else {
-            // create a new hit
-            aHit = new StandardHit();
-
-            aHit->SetPID(PID);
-            aHit->SetTrackID(TrackID);
-            aHit->SetParentTrackID(ParentTrackID);
-            aHit->SetInPos(InPos);
-            aHit->SetInMom(InMom);
             aHit->SetOutPos(OutPos);
             aHit->SetOutMom(OutMom);
-            aHit->SetTime(Time);
-            aHit->SetEdep(Edep);
-            aHit->SetTrackLength(StepLength);
-            aHit->SetPhysV(thePhysVol);
-            aHit->SetCopyNo(CopyNo);
-
-            fHitsCollection->insert(aHit);
         }
+    } else {
+        // create a new hit
+        aHit = new StandardHit();
+
+        aHit->SetPID(PID);
+        aHit->SetTrackID(TrackID);
+        aHit->SetParentTrackID(ParentTrackID);
+        aHit->SetInPos(InPos);
+        aHit->SetInMom(InMom);
+        aHit->SetOutPos(OutPos);
+        aHit->SetOutMom(OutMom);
+        aHit->SetTime(Time);
+        aHit->SetEdep(Edep);
+        aHit->SetTrackLength(StepLength);
+        aHit->SetPhysV(thePhysVol);
+        aHit->SetCopyNo(CopyNo);
+
+        fHitsCollection->insert(aHit);
     }
 
     G4int nSecondaries = aStep->GetNumberOfSecondariesInCurrentStep();

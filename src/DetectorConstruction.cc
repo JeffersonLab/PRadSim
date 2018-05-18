@@ -118,12 +118,14 @@ DetectorConstruction::DetectorConstruction(G4String conf) : G4VUserDetectorConst
         fRecoilDetSDOn = true;
         fGEMSDOn = true;
         fSciPlaneSDOn = true;
-        fHyCalSDOn = 1;
+        fHyCalSDOn = true;
+        fVirtualSDOn = false;
     } else {
         fRecoilDetSDOn = false;
         fGEMSDOn = true;
         fSciPlaneSDOn = false;
-        fHyCalSDOn = 1;
+        fHyCalSDOn = true;
+        fVirtualSDOn = false;
     }
 
     detectorMessenger = new DetectorMessenger(this);
@@ -397,6 +399,7 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     G4Material *TargetWindowM = G4Material::GetMaterial("Kapton");
     G4Material *VacuumTubeM = G4Material::GetMaterial("SSteel");
     G4Material *UCollimatorM = G4Material::GetMaterial("Nickel");
+    G4Material *VirtualDetM = G4Material::GetMaterial("Air");
 
     // World
     G4VSolid *solidWorld = new G4Box("WorldS", fWorldSizeXY, fWorldSizeXY, fWorldSizeZ);
@@ -465,6 +468,13 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     fCrystalSurf = 272.5 * cm; // Surface of the PWO
     AddHyCal(logicWorld);
 
+    // Virtual Detector
+    G4double VirtualDetR = 1.9 - 0.125 * cm;
+    G4double VirtualDetZ = 0.1 * mm;
+    G4VSolid *solidVirtualDet = new G4Tubs("VirtualDetS", 0, VirtualDetR, VirtualDetZ / 2.0, 0, twopi);
+    G4LogicalVolume *logicVirtualDet = new G4LogicalVolume(solidVirtualDet, VirtualDetM, "VirtualDetLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, fCrystalSurf), logicVirtualDet, "Virtual Detector", logicWorld, false, 0);
+
     G4LogicalVolumeStore *pLogicalVolume = G4LogicalVolumeStore::GetInstance();
 
     for (unsigned long i = 0; i < pLogicalVolume->size(); i++)
@@ -484,11 +494,17 @@ void DetectorConstruction::DefinePRadSDs()
         SetSensitiveDetector("GEM0CathodeLV", GEMSD);
     }
 
-    if (fHyCalSDOn != 0) {
+    if (fHyCalSDOn) {
         CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC");
         G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
         SetSensitiveDetector("PbWO4AbsorberLV", HyCalSD);
         SetSensitiveDetector("PbGlassAbsorberLV", HyCalSD);
+    }
+
+    if (fVirtualSDOn) {
+        StandardDetectorSD *VirtualSD = new StandardDetectorSD("VirtualSD", "VD");
+        G4SDManager::GetSDMpointer()->AddNewDetector(VirtualSD);
+        SetSensitiveDetector("VirtualDetLV", VirtualSD);
     }
 }
 
@@ -641,13 +657,8 @@ void DetectorConstruction::DefineDRadSDs()
         SetSensitiveDetector("ScintillatorPlaneLV", SciPlaneSD);
     }
 
-    if (fHyCalSDOn == 1) {
+    if (fHyCalSDOn) {
         CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC");
-        G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
-        SetSensitiveDetector("PbWO4AbsorberLV", HyCalSD);
-        SetSensitiveDetector("PbGlassAbsorberLV", HyCalSD);
-    } else if (fHyCalSDOn == 2) {
-        StandardDetectorSD *HyCalSD = new StandardDetectorSD("HyCalSD", "HC");
         G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
         SetSensitiveDetector("PbWO4AbsorberLV", HyCalSD);
         SetSensitiveDetector("PbGlassAbsorberLV", HyCalSD);
@@ -1027,7 +1038,7 @@ void DetectorConstruction::AddHyCal(G4LogicalVolume *mother)
     G4LogicalVolume *logicPbGlassCon = new G4LogicalVolume(solidPbGlassCon, HyCalConM, "PbGlassModuleContainerLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, PbGlassCenter - HyCalBoxCenter), logicPbGlassCon, "PbGlass Module Container", logicHyCalCon, false, 0);
 
-    // Lead galss module
+    // Lead glass module
     G4VSolid *solidPbGlassModule = new G4Box("PbGlassModuleS", 38.15 * mm / 2.0, 38.15 * mm / 2.0, PbGlassL / 2.0 + PlateThickness);
     G4LogicalVolume *logicPbGlassModule = new G4LogicalVolume(solidPbGlassModule, HyCalConM, "PbGlassModuleLV");
     HyCalParameterisation *PbGlass = new HyCalParameterisation("config/hycal.conf", "PbGlass");
