@@ -149,7 +149,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct()
     if (fConfig == "drad")
         return DefineDRadVolumes();
     else if (fConfig == "test")
-        return DefinetTestVolumes();
+        return DefineTestVolumes();
     else
         return DefinePRadVolumes();
 }
@@ -385,6 +385,11 @@ void DetectorConstruction::DefineMaterials()
     PbGlass->AddMaterial(As2O3, fractionmass = 0.0050);
     fVisAtts[PbGlass->GetName()] = new G4VisAttributes(G4Colour::Blue());
 
+    // Virtual Detector Material
+    G4Material *VirtualDetM = new G4Material("VirtualDetM", density = universe_mean_density, ncomponents = 1, kStateGas, 0.1 * kelvin, 1.0e-19 * pascal);
+    VirtualDetM->AddElement(H, fractionmass = 1.0);
+    fVisAtts[VirtualDetM->GetName()] = new G4VisAttributes(G4Colour::Cyan());
+
     // Print out material table
     G4cout << *(G4Material::GetMaterialTable()) << G4endl;
 }
@@ -397,9 +402,9 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     G4Material *TargetM = G4Material::GetMaterial("H2Gas");
     G4Material *TargetCellM = G4Material::GetMaterial("Copper");
     G4Material *TargetWindowM = G4Material::GetMaterial("Kapton");
-    G4Material *VacuumTubeM = G4Material::GetMaterial("SSteel");
     G4Material *UCollimatorM = G4Material::GetMaterial("Nickel");
-    G4Material *VirtualDetM = G4Material::GetMaterial("Air");
+    G4Material *VacuumTubeM = G4Material::GetMaterial("SSteel");
+    G4Material *VirtualDetM = G4Material::GetMaterial("VirtualDetM");
 
     // World
     G4VSolid *solidWorld = new G4Box("WorldS", fWorldSizeXY, fWorldSizeXY, fWorldSizeZ);
@@ -469,11 +474,11 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
     AddHyCal(logicWorld);
 
     // Virtual Detector
-    G4double VirtualDetR = 1.9 - 0.125 * cm;
+    G4double VirtualDetR = 50.0 * cm;
     G4double VirtualDetZ = 0.1 * mm;
     G4VSolid *solidVirtualDet = new G4Tubs("VirtualDetS", 0, VirtualDetR, VirtualDetZ / 2.0, 0, twopi);
     G4LogicalVolume *logicVirtualDet = new G4LogicalVolume(solidVirtualDet, VirtualDetM, "VirtualDetLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, fCrystalSurf), logicVirtualDet, "Virtual Detector", logicWorld, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, fTargetCenter + 60 * mm), logicVirtualDet, "Virtual Detector", logicWorld, false, 0);
 
     G4LogicalVolumeStore *pLogicalVolume = G4LogicalVolumeStore::GetInstance();
 
@@ -667,7 +672,7 @@ void DetectorConstruction::DefineDRadSDs()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-G4VPhysicalVolume *DetectorConstruction::DefinetTestVolumes()
+G4VPhysicalVolume *DetectorConstruction::DefineTestVolumes()
 {
     G4Material *DefaultM = G4Material::GetMaterial("Galaxy");
     G4Material *TestBoxM = G4Material::GetMaterial("PbGlass");

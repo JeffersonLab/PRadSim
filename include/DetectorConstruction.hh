@@ -85,7 +85,7 @@ private:
     G4VPhysicalVolume *DefineDRadVolumes();
     void DefineDRadSDs();
 
-    G4VPhysicalVolume *DefinetTestVolumes();
+    G4VPhysicalVolume *DefineTestVolumes();
     void DefineTestSDs();
 
     void AddVaccumBox(G4LogicalVolume *mother);
