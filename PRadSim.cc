@@ -36,12 +36,14 @@
 
 #include "DetectorConstruction.hh"
 #include "ActionInitialization.hh"
-#include "PhysicsList.hh"
 #include "RootTree.hh"
 #include "SteppingVerbose.hh"
 
+#include "G4PhysListFactory.hh"
 #include "G4RunManager.hh"
+#include "G4StepLimiterPhysics.hh"
 #include "G4UImanager.hh"
+#include "G4VModularPhysicsList.hh"
 
 #include "G4ios.hh"
 #include "G4String.hh"
@@ -177,8 +179,10 @@ int main(int argc, char **argv)
     DetectorConstruction *detector = new DetectorConstruction(conf);
     runManager->SetUserInitialization(detector);
 
-    PhysicsList *physics = new PhysicsList;
-    runManager->SetUserInitialization(physics);
+    G4PhysListFactory factory;
+    G4VModularPhysicsList *physicsList = factory.GetReferencePhysList("FTFP_BERT");
+    physicsList->RegisterPhysics(new G4StepLimiterPhysics());
+    runManager->SetUserInitialization(physicsList);
 
     ActionInitialization *action = new ActionInitialization(conf);
     runManager->SetUserInitialization(action);
