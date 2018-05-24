@@ -40,6 +40,7 @@
 #include "DetectorMessenger.hh"
 #include "HyCalParameterisation.hh"
 #include "StandardDetectorSD.hh"
+#include "StepRecordSD.hh"
 #include "TrackingDetectorSD.hh"
 
 #include "TROOT.h"
@@ -675,19 +676,48 @@ void DetectorConstruction::DefineDRadSDs()
 G4VPhysicalVolume *DetectorConstruction::DefineTestVolumes()
 {
     G4Material *DefaultM = G4Material::GetMaterial("Galaxy");
-    G4Material *TestBoxM = G4Material::GetMaterial("PbGlass");
+    G4Material *TargetM = G4Material::GetMaterial("H2Gas");
+    G4Material *TargetCellM = G4Material::GetMaterial("Copper");
+    G4Material *TargetWindowM = G4Material::GetMaterial("Kapton");
 
     // World
-    G4double WorldSizeXY = 100.0 * cm;
-    G4double WorldSizeZ = 100.0 * cm;
+    G4double WorldSizeXY = 10.0 * cm;
+    G4double WorldSizeZ = 10.0 * cm;
     G4VSolid *solidWorld = new G4Box("WorldS", WorldSizeXY, WorldSizeXY, WorldSizeZ);
     G4LogicalVolume *logicWorld = new G4LogicalVolume(solidWorld, DefaultM, "WorldLV");
     G4VPhysicalVolume *physiWorld = new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicWorld, "World", 0, false, 0);
 
-    // Test Box
-    G4VSolid *solidTestBox = new G4Box("TestBoxS", 0.5 * m, 0.5 * m, 0.5 * m);
-    G4LogicalVolume *logicTestBox = new G4LogicalVolume(solidTestBox, TestBoxM, "TestBoxLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicTestBox, "Test Box", logicWorld, false, 0);
+    // Target
+    // Target Container
+    G4VSolid *solidTargetCon = new G4Box("TargetContainerS", 3.5 * cm, 3.5 * cm, 2.1 * cm);
+    G4LogicalVolume *logicTargetCon = new G4LogicalVolume(solidTargetCon, DefaultM, "TargetContainerLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicTargetCon, "Target Container", logicWorld, false, 0);
+
+    // Target material
+    G4double TargetR = 25.0 * mm;
+    G4double TargetHalfL = 20.0 * mm;
+    G4VSolid *solidTarget = new G4Tubs("TargetS", 0, TargetR, TargetHalfL, 0, twopi);
+    G4LogicalVolume *logicTarget = new G4LogicalVolume(solidTarget, TargetM, "TargetLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicTarget, "Target Material", logicTargetCon, false, 0);
+    logicTarget->SetUserLimits(new G4UserLimits(0.1 * mm));
+
+    // Target cell
+    G4double CellXY = 3.5 * cm;
+    G4Box *CellBox = new G4Box("CellBox", CellXY, CellXY, TargetHalfL);
+    G4Tubs *CellTube = new G4Tubs("CellTube", 0, TargetR, TargetHalfL + 1.0 * mm, 0, twopi);
+    G4SubtractionSolid *solidCell = new G4SubtractionSolid("TargetCellS", CellBox, CellTube);
+    G4LogicalVolume *logicCell = new G4LogicalVolume(solidCell, TargetCellM, "TargetCellLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicCell, "Target Cell", logicTargetCon, false, 0);
+
+    // Target cell windows
+    G4double CellApertureR = 2.0 * mm;
+    G4double CellWinThickness = 7.5 * um;
+    G4Box *CellWinBox = new G4Box("CellWinBox", CellXY, CellXY, CellWinThickness / 2.0);
+    G4Tubs *CellWinTube = new G4Tubs("CellWinTube", 0, CellApertureR, CellWinThickness + 1.0 * mm, 0, twopi);
+    G4SubtractionSolid *solidCellWin = new G4SubtractionSolid("TargetWindowS", CellWinBox, CellWinTube);
+    G4LogicalVolume *logicCellWin = new G4LogicalVolume(solidCellWin, TargetWindowM, "TargetWindowLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, -TargetHalfL - CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 0);
+    new G4PVPlacement(0, G4ThreeVector(0, 0, +TargetHalfL + CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 1);
 
     G4LogicalVolumeStore *pLogicalVolume = G4LogicalVolumeStore::GetInstance();
 
@@ -701,9 +731,9 @@ G4VPhysicalVolume *DetectorConstruction::DefineTestVolumes()
 
 void DetectorConstruction::DefineTestSDs()
 {
-    CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC");
-    G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
-    SetSensitiveDetector("TestBoxLV", HyCalSD);
+    StepRecordSD *TargetSD = new StepRecordSD("TargetSD", "TG");
+    G4SDManager::GetSDMpointer()->AddNewDetector(TargetSD);
+    SetSensitiveDetector("TargetLV", TargetSD);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
