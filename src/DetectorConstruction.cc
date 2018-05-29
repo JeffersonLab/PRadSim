@@ -37,6 +37,7 @@
 #include "DetectorConstruction.hh"
 
 #include "CalorimeterSD.hh"
+#include "CheckScatteringSD.hh"
 #include "DetectorMessenger.hh"
 #include "HyCalParameterisation.hh"
 #include "StandardDetectorSD.hh"
@@ -116,12 +117,14 @@ DetectorConstruction::DetectorConstruction(G4String conf) : G4VUserDetectorConst
     fCrystalSurf = 295.0 * cm;
 
     if (fConfig == "drad") {
+        fTargetSDOn = false;
         fRecoilDetSDOn = true;
         fGEMSDOn = true;
         fSciPlaneSDOn = true;
         fHyCalSDOn = true;
         fVirtualSDOn = false;
     } else {
+        fTargetSDOn = false;
         fRecoilDetSDOn = false;
         fGEMSDOn = true;
         fSciPlaneSDOn = false;
@@ -494,6 +497,12 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
 
 void DetectorConstruction::DefinePRadSDs()
 {
+    if (fTargetSDOn) {
+        CheckScatteringSD *TargetSD = new CheckScatteringSD("TargetSD", "TG");
+        G4SDManager::GetSDMpointer()->AddNewDetector(TargetSD);
+        SetSensitiveDetector("TargetLV", TargetSD);
+    }
+
     if (fGEMSDOn) {
         TrackingDetectorSD *GEMSD = new TrackingDetectorSD("GEMSD", "GEM");
         G4SDManager::GetSDMpointer()->AddNewDetector(GEMSD);
@@ -699,7 +708,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineTestVolumes()
     G4VSolid *solidTarget = new G4Tubs("TargetS", 0, TargetR, TargetHalfL, 0, twopi);
     G4LogicalVolume *logicTarget = new G4LogicalVolume(solidTarget, TargetM, "TargetLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicTarget, "Target Material", logicTargetCon, false, 0);
-    logicTarget->SetUserLimits(new G4UserLimits(0.1 * mm));
+    //logicTarget->SetUserLimits(new G4UserLimits(0.1 * mm));
 
     // Target cell
     G4double CellXY = 3.5 * cm;
@@ -731,7 +740,8 @@ G4VPhysicalVolume *DetectorConstruction::DefineTestVolumes()
 
 void DetectorConstruction::DefineTestSDs()
 {
-    StepRecordSD *TargetSD = new StepRecordSD("TargetSD", "TG");
+    //StepRecordSD *TargetSD = new StepRecordSD("TargetSD", "TG");
+    CheckScatteringSD *TargetSD = new CheckScatteringSD("TargetSD", "TG");
     G4SDManager::GetSDMpointer()->AddNewDetector(TargetSD);
     SetSensitiveDetector("TargetLV", TargetSD);
 }

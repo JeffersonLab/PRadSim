@@ -121,6 +121,7 @@ private:
 
     G4double fCrystalSurf;
 
+    G4bool fTargetSDOn;
     G4bool fRecoilDetSDOn;
     G4bool fGEMSDOn;
     G4bool fSciPlaneSDOn;
@@ -189,6 +190,8 @@ inline void DetectorConstruction::SetTargetDensityRatio(G4double r)
 
 inline void DetectorConstruction::EnableSD(G4String detname)
 {
+    if (detname == "Target") fTargetSDOn = true;
+
     if (detname == "Recoil Detector") fRecoilDetSDOn = true;
 
     if (detname == "GEM") fGEMSDOn = true;
@@ -202,6 +205,8 @@ inline void DetectorConstruction::EnableSD(G4String detname)
 
 inline void DetectorConstruction::DisableSD(G4String detname)
 {
+    if (detname == "Target") fTargetSDOn = false;
+
     if (detname == "Recoil Detector") fRecoilDetSDOn = false;
 
     if (detname == "GEM") fGEMSDOn = false;

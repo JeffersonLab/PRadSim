@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// StepRecordSD.hh
+// CheckScatteringSD.cc
 // Developer : Chao Gu
 // History:
 //   May 2018, C. Gu, Add for beam energy loss study.
@@ -34,54 +34,88 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef StepRecordSD_h
-#define StepRecordSD_h 1
+#include "CheckScatteringSD.hh"
 
+#include "GlobalVars.hh"
+#include "RootTree.hh"
+
+#include "TROOT.h"
+#include "TError.h"
+#include "TObject.h"
+#include "TTree.h"
+
+#include "G4HCofThisEvent.hh"
+#include "G4SDManager.hh"
+#include "G4Step.hh"
+#include "G4StepPoint.hh"
+#include "G4ProcessType.hh"
+#include "G4VProcess.hh"
 #include "G4VSensitiveDetector.hh"
 
-#include "StandardHit.hh"
-
-#include "G4String.hh"
-
-#include <vector>
-
-class G4HCofThisEvent;
-class G4Step;
-class G4TouchableHistory;
-class TTree;
+#include "G4ThreeVector.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class StepRecordSD : public G4VSensitiveDetector
+CheckScatteringSD::CheckScatteringSD(G4String name, G4String abbrev) : G4VSensitiveDetector(name), fAbbrev(abbrev), fRegistered(false)
 {
-public:
-    StepRecordSD(G4String name, G4String abbrev);
-    virtual ~StepRecordSD();
+    fID = name.hash() % 100000;
+    //G4cout << name << "\t" << fAbbrev << "\t" << fID << G4endl;
 
-    virtual void Initialize(G4HCofThisEvent *);
-    virtual G4bool ProcessHits(G4Step *, G4TouchableHistory *);
+    G4String cname = "Coll";
+    cname = fAbbrev + cname;
+    collectionName.insert(cname);
 
-protected:
-    virtual void Register(TTree *);
-    virtual void Clear();
-
-    G4int fID;
-    G4String fAbbrev;
-
-    bool fRegistered;
-
-    int fN;
-    std::vector<int> fPID; // Particle ID
-    std::vector<int> fTID; // Track ID
-    std::vector<int> fPTID; // Parent Track ID
-    std::vector<double> fX;
-    std::vector<double> fY;
-    std::vector<double> fZ;
-    std::vector<double> fMomentum;
-    std::vector<double> fTheta;
-    std::vector<double> fPhi;
-};
+    fCoulomb = false;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif
+CheckScatteringSD::~CheckScatteringSD()
+{
+    //
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void CheckScatteringSD::Initialize(G4HCofThisEvent *)
+{
+    if (!fRegistered) {
+        Register(gRootTree->GetTree());
+        fRegistered = true;
+    }
+
+    Clear();
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+G4bool CheckScatteringSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
+{
+    G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
+    const G4VProcess *Process = preStepPoint->GetProcessDefinedStep();
+
+    if (Process) {
+        if (Process->GetProcessType() == G4ProcessType::fElectromagnetic && Process->GetProcessSubType() == 1)
+            fCoulomb = true;
+    }
+
+    return true;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void CheckScatteringSD::Register(TTree *tree)
+{
+    const char *abbr = fAbbrev.data();
+
+    tree->Branch(Form("%s.Coulomb", abbr), &fCoulomb, Form("%s.Coulomb/O", abbr));
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void CheckScatteringSD::Clear()
+{
+    fCoulomb = false;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

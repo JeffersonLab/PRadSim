@@ -60,6 +60,13 @@
 
 StepRecordSD::StepRecordSD(G4String name, G4String abbrev) : G4VSensitiveDetector(name), fAbbrev(abbrev), fRegistered(false)
 {
+    fID = name.hash() % 100000;
+    //G4cout << name << "\t" << fAbbrev << "\t" << fID << G4endl;
+
+    G4String cname = "Coll";
+    cname = fAbbrev + cname;
+    collectionName.insert(cname);
+
     fN = 0;
 
     fPID.clear();

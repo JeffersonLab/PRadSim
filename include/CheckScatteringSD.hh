@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// StepRecordSD.hh
+// CheckScatteringSD.hh
 // Developer : Chao Gu
 // History:
 //   May 2018, C. Gu, Add for beam energy loss study.
@@ -34,16 +34,12 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef StepRecordSD_h
-#define StepRecordSD_h 1
+#ifndef CheckScatteringSD_h
+#define CheckScatteringSD_h 1
 
 #include "G4VSensitiveDetector.hh"
 
-#include "StandardHit.hh"
-
 #include "G4String.hh"
-
-#include <vector>
 
 class G4HCofThisEvent;
 class G4Step;
@@ -52,11 +48,11 @@ class TTree;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class StepRecordSD : public G4VSensitiveDetector
+class CheckScatteringSD : public G4VSensitiveDetector
 {
 public:
-    StepRecordSD(G4String name, G4String abbrev);
-    virtual ~StepRecordSD();
+    CheckScatteringSD(G4String name, G4String abbrev);
+    virtual ~CheckScatteringSD();
 
     virtual void Initialize(G4HCofThisEvent *);
     virtual G4bool ProcessHits(G4Step *, G4TouchableHistory *);
@@ -70,16 +66,7 @@ protected:
 
     bool fRegistered;
 
-    int fN;
-    std::vector<int> fPID; // Particle ID
-    std::vector<int> fTID; // Track ID
-    std::vector<int> fPTID; // Parent Track ID
-    std::vector<double> fX;
-    std::vector<double> fY;
-    std::vector<double> fZ;
-    std::vector<double> fMomentum;
-    std::vector<double> fTheta;
-    std::vector<double> fPhi;
+    bool fCoulomb;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

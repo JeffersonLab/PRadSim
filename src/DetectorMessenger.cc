@@ -144,6 +144,10 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
     SDDir = new G4UIdirectory("/pradsim/det/sensitive/");
     SDDir->SetGuidance("Sensitive detector control");
 
+    TargetSDCmd = new G4UIcmdWithABool("/pradsim/det/sensitive/target", this);
+    TargetSDCmd->SetGuidance("Turn on TargetSD");
+    TargetSDCmd->SetParameterName("targetsd", false);
+
     RecoilDetSDCmd = new G4UIcmdWithABool("/pradsim/det/sensitive/recoil", this);
     RecoilDetSDCmd->SetGuidance("Turn on RecoilDetSD");
     RecoilDetSDCmd->SetParameterName("recoilsd", false);
@@ -169,6 +173,7 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
 
 DetectorMessenger::~DetectorMessenger()
 {
+    delete TargetSDCmd;
     delete RecoilDetSDCmd;
     delete GEMSDCmd;
     delete SciPlaneSDCmd;
@@ -245,6 +250,11 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 
     if (command == RecoilDetL2ThicknessCmd)
         Detector->SetRecoilDetector(-10000, -10000, -10000,  -10000, RecoilDetL2ThicknessCmd->GetNewDoubleValue(newValue));
+
+    if (command == TargetSDCmd) {
+        if (TargetSDCmd->GetNewBoolValue(newValue)) Detector->EnableSD("Target");
+        else Detector->DisableSD("Target");
+    }
 
     if (command == RecoilDetSDCmd) {
         if (RecoilDetSDCmd->GetNewBoolValue(newValue)) Detector->EnableSD("Recoil Detector");

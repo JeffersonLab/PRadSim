@@ -84,6 +84,7 @@ private:
     G4UIcmdWithADoubleAndUnit *RecoilDetL1ThicknessCmd;
     G4UIcmdWithADoubleAndUnit *RecoilDetL2ThicknessCmd;
     G4UIdirectory             *SDDir;
+    G4UIcmdWithABool          *TargetSDCmd;
     G4UIcmdWithABool          *RecoilDetSDCmd;
     G4UIcmdWithABool          *GEMSDCmd;
     G4UIcmdWithABool          *SciPlaneSDCmd;
