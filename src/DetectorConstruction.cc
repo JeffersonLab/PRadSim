@@ -708,7 +708,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineTestVolumes()
     G4VSolid *solidTarget = new G4Tubs("TargetS", 0, TargetR, TargetHalfL, 0, twopi);
     G4LogicalVolume *logicTarget = new G4LogicalVolume(solidTarget, TargetM, "TargetLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicTarget, "Target Material", logicTargetCon, false, 0);
-    //logicTarget->SetUserLimits(new G4UserLimits(0.1 * mm));
+    logicTarget->SetUserLimits(new G4UserLimits(0.1 * mm));
 
     // Target cell
     G4double CellXY = 3.5 * cm;
@@ -740,8 +740,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineTestVolumes()
 
 void DetectorConstruction::DefineTestSDs()
 {
-    //StepRecordSD *TargetSD = new StepRecordSD("TargetSD", "TG");
-    CheckScatteringSD *TargetSD = new CheckScatteringSD("TargetSD", "TG");
+    StepRecordSD *TargetSD = new StepRecordSD("TargetSD", "TG");
     G4SDManager::GetSDMpointer()->AddNewDetector(TargetSD);
     SetSensitiveDetector("TargetLV", TargetSD);
 }
