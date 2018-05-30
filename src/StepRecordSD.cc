@@ -52,6 +52,7 @@
 #include "G4TouchableHandle.hh"
 #include "G4Track.hh"
 #include "G4VPhysicalVolume.hh"
+#include "G4VProcess.hh"
 #include "G4VSensitiveDetector.hh"
 
 #include "G4ThreeVector.hh"
@@ -74,6 +75,7 @@ StepRecordSD::StepRecordSD(G4String name, G4String abbrev) : G4VSensitiveDetecto
     fMomentum.clear();
     fTheta.clear();
     fPhi.clear();
+    fProcessID.clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -100,8 +102,8 @@ void StepRecordSD::Initialize(G4HCofThisEvent *)
 G4bool StepRecordSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 {
     G4Track *theTrack = aStep->GetTrack();
-
     G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
+    const G4VProcess *theProcess = preStepPoint->GetProcessDefinedStep();
 
     G4int PID = theTrack->GetParticleDefinition()->GetPDGEncoding();
     G4int TrackID = theTrack->GetTrackID();
@@ -109,6 +111,11 @@ G4bool StepRecordSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 
     G4ThreeVector InPos = preStepPoint->GetPosition();
     G4ThreeVector InMom = preStepPoint->GetMomentum();
+
+    G4int ProcessID = -1;
+
+    if (theProcess)
+        ProcessID = int(theProcess->GetProcessType()) * 1000 + theProcess->GetProcessSubType();
 
     fPID.push_back(PID);
     fTID.push_back(TrackID);
@@ -119,6 +126,7 @@ G4bool StepRecordSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
     fMomentum.push_back(InMom.mag());
     fTheta.push_back(InMom.theta());
     fPhi.push_back(InMom.phi());
+    fProcessID.push_back(ProcessID);
 
     fN++;
 
@@ -141,6 +149,7 @@ void StepRecordSD::Register(TTree *tree)
     tree->Branch(Form("%s.P", abbr), &fMomentum);
     tree->Branch(Form("%s.Theta", abbr), &fTheta);
     tree->Branch(Form("%s.Phi", abbr), &fPhi);
+    tree->Branch(Form("%s.ProcessID", abbr), &fProcessID);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -156,6 +165,7 @@ void StepRecordSD::Clear()
     fMomentum.clear();
     fTheta.clear();
     fPhi.clear();
+    fProcessID.clear();
 
     fN = 0;
 }

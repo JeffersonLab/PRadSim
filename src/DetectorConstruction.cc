@@ -498,7 +498,7 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
 void DetectorConstruction::DefinePRadSDs()
 {
     if (fTargetSDOn) {
-        CheckScatteringSD *TargetSD = new CheckScatteringSD("TargetSD", "TG");
+        StepRecordSD *TargetSD = new StepRecordSD("TargetSD", "TG");
         G4SDManager::GetSDMpointer()->AddNewDetector(TargetSD);
         SetSensitiveDetector("TargetLV", TargetSD);
     }
