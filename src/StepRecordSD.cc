@@ -103,7 +103,7 @@ G4bool StepRecordSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 {
     G4Track *theTrack = aStep->GetTrack();
     G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
-    const G4VProcess *theProcess = preStepPoint->GetProcessDefinedStep();
+    const G4VProcess *theProcess = aStep->GetPostStepPoint()->GetProcessDefinedStep();
 
     G4int PID = theTrack->GetParticleDefinition()->GetPDGEncoding();
     G4int TrackID = theTrack->GetTrackID();

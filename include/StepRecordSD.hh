@@ -80,7 +80,7 @@ protected:
     std::vector<double> fMomentum;
     std::vector<double> fTheta;
     std::vector<double> fPhi;
-    std::vector<double> fProcessID;
+    std::vector<int> fProcessID;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
