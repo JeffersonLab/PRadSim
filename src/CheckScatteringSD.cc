@@ -87,8 +87,8 @@ void CheckScatteringSD::Initialize(G4HCofThisEvent *)
 
 G4bool CheckScatteringSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
 {
-    G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
-    const G4VProcess *Process = preStepPoint->GetProcessDefinedStep();
+    G4StepPoint *postStepPoint = aStep->GetPostStepPoint();
+    const G4VProcess *Process = postStepPoint->GetProcessDefinedStep();
 
     if (Process) {
         if (Process->GetProcessType() == G4ProcessType::fElectromagnetic && Process->GetProcessSubType() == 1)
