@@ -38,6 +38,7 @@
 
 #include "G4UserEventAction.hh"
 
+#include "G4String.hh"
 #include "G4Types.hh"
 
 class EventMessenger;
@@ -50,7 +51,7 @@ class TTree;
 class EventAction : public G4UserEventAction
 {
 public:
-    EventAction();
+    EventAction(G4String conf);
     virtual ~EventAction();
 
     void BeginOfEventAction(const G4Event *);
@@ -66,6 +67,8 @@ private:
 
     G4int fPrintModulo;
     G4bool fOnlyRecordHits;
+
+    G4String fCollName;
 
     EventMessenger *eventMessenger;
 };

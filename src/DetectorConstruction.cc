@@ -688,6 +688,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineTestVolumes()
     G4Material *TargetM = G4Material::GetMaterial("H2Gas");
     G4Material *TargetCellM = G4Material::GetMaterial("Copper");
     G4Material *TargetWindowM = G4Material::GetMaterial("Kapton");
+    G4Material *VirtualDetM = G4Material::GetMaterial("VirtualDetM");
 
     // World
     G4double WorldSizeXY = 10.0 * cm;
@@ -708,7 +709,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineTestVolumes()
     G4VSolid *solidTarget = new G4Tubs("TargetS", 0, TargetR, TargetHalfL, 0, twopi);
     G4LogicalVolume *logicTarget = new G4LogicalVolume(solidTarget, TargetM, "TargetLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicTarget, "Target Material", logicTargetCon, false, 0);
-    logicTarget->SetUserLimits(new G4UserLimits(0.1 * mm));
+    logicTarget->SetUserLimits(new G4UserLimits(0.5 * mm));
 
     // Target cell
     G4double CellXY = 3.5 * cm;
@@ -728,6 +729,15 @@ G4VPhysicalVolume *DetectorConstruction::DefineTestVolumes()
     new G4PVPlacement(0, G4ThreeVector(0, 0, -TargetHalfL - CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 0);
     new G4PVPlacement(0, G4ThreeVector(0, 0, +TargetHalfL + CellWinThickness / 2.0), logicCellWin, "Target Window", logicTargetCon, false, 1);
 
+    // Virtual Detector
+    G4double VirtualDetZ = 0.1 * mm;
+    G4double VirtualDetL = 30.0 * mm;
+    G4double VirtualDetIR = VirtualDetL * tan(0.5 / 180.0 * pi);
+    G4double VirtualDetOR = VirtualDetL * tan(10.0 / 180.0 * pi);
+    G4VSolid *solidVirtualDet = new G4Tubs("VirtualDetS", VirtualDetIR, VirtualDetOR, VirtualDetZ, 0, twopi);
+    G4LogicalVolume *logicVirtualDet = new G4LogicalVolume(solidVirtualDet, VirtualDetM, "VirtualDetLV");
+    new G4PVPlacement(0, G4ThreeVector(0, 0, VirtualDetL), logicVirtualDet, "Virtual Detector", logicWorld, false, 0);
+
     G4LogicalVolumeStore *pLogicalVolume = G4LogicalVolumeStore::GetInstance();
 
     for (unsigned long i = 0; i < pLogicalVolume->size(); i++)
@@ -743,6 +753,10 @@ void DetectorConstruction::DefineTestSDs()
     StepRecordSD *TargetSD = new StepRecordSD("TargetSD", "TG");
     G4SDManager::GetSDMpointer()->AddNewDetector(TargetSD);
     SetSensitiveDetector("TargetLV", TargetSD);
+
+    StandardDetectorSD *VirtualSD = new StandardDetectorSD("VirtualSD", "VD");
+    G4SDManager::GetSDMpointer()->AddNewDetector(VirtualSD);
+    SetSensitiveDetector("VirtualDetLV", VirtualSD);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

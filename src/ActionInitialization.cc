@@ -63,7 +63,7 @@ ActionInitialization::~ActionInitialization()
 void ActionInitialization::Build() const
 {
     SetUserAction(new PrimaryGeneratorAction(fConfig));
-    SetUserAction(new EventAction());
+    SetUserAction(new EventAction(fConfig));
     SetUserAction(new TrackingAction());
 }
 

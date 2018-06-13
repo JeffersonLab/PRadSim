@@ -51,12 +51,18 @@
 #include "G4RunManager.hh"
 #include "G4UserEventAction.hh"
 
+#include "G4String.hh"
 #include "G4ios.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-EventAction::EventAction() : G4UserEventAction(), fEventID(0), fPrintModulo(1000), fOnlyRecordHits(false)
+EventAction::EventAction(G4String conf) : G4UserEventAction(), fEventID(0), fPrintModulo(1000), fOnlyRecordHits(false)
 {
+    fCollName = "HCColl";
+
+    if (conf == "test")
+        fCollName = "VDColl";
+
     Register(gRootTree->GetTree());
 
     eventMessenger = new EventMessenger(this);
@@ -91,7 +97,7 @@ void EventAction::EndOfEventAction(const G4Event *evt)
         for (G4int i = 0; i < nHC; i++) {
             G4String ColName = HCE->GetHC(i)->GetName();
 
-            if (ColName == "HCColl")  { // Hard-coded detector name in DetectorConstruction.cc
+            if (ColName == fCollName)  { // Hard-coded detector name in DetectorConstruction.cc
                 StandardHitsCollection *HyCalColl = (StandardHitsCollection *) HCE->GetHC(i);
                 G4int nHits = HyCalColl->entries();
 

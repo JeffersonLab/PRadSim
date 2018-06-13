@@ -145,14 +145,14 @@ void TrackingAction::PostUserTrackingAction(const G4Track *aTrack)
 
 void TrackingAction::Register(TTree *tree)
 {
-    tree->Branch("TR.N", &fN, "TRACK.N/I");
-    tree->Branch("TR.PID", fPID, "TRACK.PID[TRACK.N]/I");
-    tree->Branch("TR.TID", fTID, "TRACK.TID[TRACK.N]/I");
-    tree->Branch("TR.PTID", fPTID, "TRACK.PTID[TRACK.N]/I");
-    tree->Branch("TR.X", fX, "TRACK.X[TRACK.N]/D");
-    tree->Branch("TR.Y", fY, "TRACK.Y[TRACK.N]/D");
-    tree->Branch("TR.Z", fZ, "TRACK.Z[TRACK.N]/D");
-    tree->Branch("TR.ProcessID", fProcessID, "TRACK.ProcessID[TRACK.N]/I");
+    tree->Branch("TR.N", &fN, "TR.N/I");
+    tree->Branch("TR.PID", fPID, "TR.PID[TR.N]/I");
+    tree->Branch("TR.TID", fTID, "TR.TID[TR.N]/I");
+    tree->Branch("TR.PTID", fPTID, "TR.PTID[TR.N]/I");
+    tree->Branch("TR.X", fX, "TR.X[TR.N]/D");
+    tree->Branch("TR.Y", fY, "TR.Y[TR.N]/D");
+    tree->Branch("TR.Z", fZ, "TR.Z[TR.N]/D");
+    tree->Branch("TR.ProcessID", fProcessID, "TR.ProcessID[TR.N]/I");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
