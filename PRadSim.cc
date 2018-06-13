@@ -128,16 +128,16 @@ int main(int argc, char **argv)
         macro = argv[optind++];
 
     // Initialize the random engine
-    CLHEP::HepRandom::setTheEngine(new CLHEP::Ranlux64Engine);
+    G4Random::setTheEngine(new CLHEP::Ranlux64Engine);
 
     if (seed == "random") {
         struct timespec ts;
         clock_gettime(CLOCK_REALTIME, &ts);
         long randseed =  ts.tv_sec * 1000000000L + ts.tv_nsec;
         std::cout << "Using random seed " << randseed << std::endl;
-        CLHEP::HepRandom::setTheSeed(randseed);
+        G4Random::setTheSeed(randseed);
     } else
-        CLHEP::HepRandom::setTheSeed(stol(seed));
+        G4Random::setTheSeed(stol(seed));
 
     // Initialize output root tree
     std::ifstream data_file("output/file.output");
