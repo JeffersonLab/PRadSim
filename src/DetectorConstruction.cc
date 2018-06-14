@@ -692,7 +692,7 @@ G4VPhysicalVolume *DetectorConstruction::DefineTestVolumes()
 
     // World
     G4double WorldSizeXY = 10.0 * cm;
-    G4double WorldSizeZ = 10.0 * cm;
+    G4double WorldSizeZ = 100.0 * cm;
     G4VSolid *solidWorld = new G4Box("WorldS", WorldSizeXY, WorldSizeXY, WorldSizeZ);
     G4LogicalVolume *logicWorld = new G4LogicalVolume(solidWorld, DefaultM, "WorldLV");
     G4VPhysicalVolume *physiWorld = new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicWorld, "World", 0, false, 0);
@@ -731,9 +731,9 @@ G4VPhysicalVolume *DetectorConstruction::DefineTestVolumes()
 
     // Virtual Detector
     G4double VirtualDetZ = 0.1 * mm;
-    G4double VirtualDetL = 30.0 * mm;
-    G4double VirtualDetIR = VirtualDetL * tan(0.5 / 180.0 * pi);
-    G4double VirtualDetOR = VirtualDetL * tan(10.0 / 180.0 * pi);
+    G4double VirtualDetL = 99.0 * cm;
+    G4double VirtualDetIR = (VirtualDetL - 20.0 * mm) * tan(0.5 / 180.0 * pi);
+    G4double VirtualDetOR = (VirtualDetL + 20.0 * mm) * tan(10.0 / 180.0 * pi);
     G4VSolid *solidVirtualDet = new G4Tubs("VirtualDetS", VirtualDetIR, VirtualDetOR, VirtualDetZ, 0, twopi);
     G4LogicalVolume *logicVirtualDet = new G4LogicalVolume(solidVirtualDet, VirtualDetM, "VirtualDetLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, VirtualDetL), logicVirtualDet, "Virtual Detector", logicWorld, false, 0);

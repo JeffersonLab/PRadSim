@@ -180,7 +180,7 @@ int main(int argc, char **argv)
     runManager->SetUserInitialization(detector);
 
     G4PhysListFactory factory;
-    G4VModularPhysicsList *physicsList = factory.GetReferencePhysList("FTFP_BERT_EMY");
+    G4VModularPhysicsList *physicsList = factory.GetReferencePhysList("FTFP_BERT_EMZ");
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
     runManager->SetUserInitialization(physicsList);
 
