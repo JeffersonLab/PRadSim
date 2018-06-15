@@ -38,6 +38,7 @@
 
 #include "G4UImessenger.hh"
 #include "G4UIcommand.hh"
+#include "G4UIdirectory.hh"
 #include "G4UIcmdWithABool.hh"
 
 #include "G4String.hh"
@@ -46,11 +47,14 @@
 
 TrackingMessenger::TrackingMessenger(TrackingAction *act) : G4UImessenger(), Action(act)
 {
-    NoSecondaryCmd = new G4UIcmdWithABool("/tracking/nosecondary", this);
+    TrackingDir = new G4UIdirectory("/pradsim/tracking/");
+    TrackingDir->SetGuidance("Tracking control");
+
+    NoSecondaryCmd = new G4UIcmdWithABool("/pradsim/tracking/nosecondary", this);
     NoSecondaryCmd->SetGuidance("Turn on/off secondary particles");
     NoSecondaryCmd->SetParameterName("nosecondary", false);
 
-    SaveTrackInfoCmd = new G4UIcmdWithABool("/tracking/savetrackinfo", this);
+    SaveTrackInfoCmd = new G4UIcmdWithABool("/pradsim/tracking/savetrackinfo", this);
     SaveTrackInfoCmd->SetGuidance("Turn on/off saving tracking infomation");
     SaveTrackInfoCmd->SetParameterName("savetrackinfo", false);
 }
@@ -61,6 +65,7 @@ TrackingMessenger::~TrackingMessenger()
 {
     delete NoSecondaryCmd;
     delete SaveTrackInfoCmd;
+    delete TrackingDir;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

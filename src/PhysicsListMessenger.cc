@@ -23,46 +23,54 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// TrackingMessenger.hh
+// PhysicsListMessenger.cc
 // Developer : Chao Gu
 // History:
-//   Apr 2017, C. Gu, Original version.
+//   May 2018, C. Gu, For Brems test.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef TrackingMessenger_h
-#define TrackingMessenger_h 1
+#include "PhysicsListMessenger.hh"
+
+#include "PhysListEmModified.hh"
 
 #include "G4UImessenger.hh"
+#include "G4UIcommand.hh"
+#include "G4UIdirectory.hh"
+#include "G4UIcmdWithAString.hh"
 
 #include "G4String.hh"
 
-class TrackingAction;
-
-class G4UIcommand;
-class G4UIdirectory;
-class G4UIcmdWithABool;
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class TrackingMessenger: public G4UImessenger
+PhysicsListMessenger::PhysicsListMessenger(PhysListEmModified *phys) : G4UImessenger(), PhysicsList(phys)
 {
-public:
-    TrackingMessenger(TrackingAction *);
-    virtual ~TrackingMessenger();
+    PhysicsListDir = new G4UIdirectory("/pradsim/physics/");
+    PhysicsListDir->SetGuidance("Physics list control");
 
-    void SetNewValue(G4UIcommand *, G4String);
-
-private:
-    TrackingAction   *Action;
-
-    G4UIdirectory    *TrackingDir;
-    G4UIcmdWithABool *NoSecondaryCmd;
-    G4UIcmdWithABool *SaveTrackInfoCmd;
-};
+    BremsAngGenCmd = new G4UIcmdWithAString("/pradsim/physics/bremsanggen", this);
+    BremsAngGenCmd->SetGuidance("Choose a angular generator for e-/e+ bremsstrahlung processes.");
+    BremsAngGenCmd->SetGuidance("  Choice : dipbust tsai 2BS 2BN penelope");
+    BremsAngGenCmd->SetParameterName("bremsanggen", false);
+    BremsAngGenCmd->SetCandidates("dipbust tsai 2BS 2BN penelope");
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#endif
+PhysicsListMessenger::~PhysicsListMessenger()
+{
+    delete BremsAngGenCmd;
+    delete PhysicsListDir;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void PhysicsListMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
+{
+    if (command == BremsAngGenCmd)
+        PhysicsList->SetBremsstrahlungAngularGenerator(newValue);
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

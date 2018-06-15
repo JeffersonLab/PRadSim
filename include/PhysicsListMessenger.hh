@@ -23,44 +23,47 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// TrackingMessenger.hh
+// PhysicsListMessenger.hh
 // Developer : Chao Gu
 // History:
-//   Apr 2017, C. Gu, Original version.
+//   May 2018, C. Gu, For Brems test.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef TrackingMessenger_h
-#define TrackingMessenger_h 1
+#ifndef PhysicsListMessenger_h
+#define PhysicsListMessenger_h 1
 
 #include "G4UImessenger.hh"
 
 #include "G4String.hh"
 
-class TrackingAction;
+class PhysListEmModified;
 
 class G4UIcommand;
 class G4UIdirectory;
 class G4UIcmdWithABool;
+class G4UIcmdWithADouble;
+class G4UIcmdWithADoubleAndUnit;
+class G4UIcmdWithAnInteger;
+class G4UIcmdWithAString;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class TrackingMessenger: public G4UImessenger
+class PhysicsListMessenger: public G4UImessenger
 {
 public:
-    TrackingMessenger(TrackingAction *);
-    virtual ~TrackingMessenger();
+    PhysicsListMessenger(PhysListEmModified *);
+    ~PhysicsListMessenger();
 
     void SetNewValue(G4UIcommand *, G4String);
 
 private:
-    TrackingAction   *Action;
+    PhysListEmModified        *PhysicsList;
 
-    G4UIdirectory    *TrackingDir;
-    G4UIcmdWithABool *NoSecondaryCmd;
-    G4UIcmdWithABool *SaveTrackInfoCmd;
+    G4UIdirectory             *PhysicsListDir;
+    G4UIcmdWithAString        *BremsAngGenCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

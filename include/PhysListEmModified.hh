@@ -23,46 +23,65 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// TrackingMessenger.hh
-// Developer : Chao Gu
+// PhysListEmModified.hh
+// Developer : Geant4
+// Modified by Chao Gu from G4EmStandardPhysics_option4.hh
 // History:
-//   Apr 2017, C. Gu, Original version.
+//   May 2018, C. Gu, For Brems test.
 //
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef TrackingMessenger_h
-#define TrackingMessenger_h 1
+#ifndef PhysListEmModified_h
+#define PhysListEmModified_h 1
 
-#include "G4UImessenger.hh"
+#include "G4VPhysicsConstructor.hh"
+#include "G4EmParticleList.hh"
 
 #include "G4String.hh"
 
-class TrackingAction;
+class PhysicsListMessenger;
 
-class G4UIcommand;
-class G4UIdirectory;
-class G4UIcmdWithABool;
+class G4VEmModel;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class TrackingMessenger: public G4UImessenger
+class PhysListEmModified : public G4VPhysicsConstructor
 {
 public:
-    TrackingMessenger(TrackingAction *);
-    virtual ~TrackingMessenger();
+    PhysListEmModified(G4int ver = 1, const G4String &name = "");
+    virtual ~PhysListEmModified();
 
-    void SetNewValue(G4UIcommand *, G4String);
+    void ConstructParticle();
+    void ConstructProcess();
+
+    inline void SetBremsstrahlungAngularGenerator(G4String val);
 
 private:
-    TrackingAction   *Action;
+    void SetBremsstrahlungAngularGenerator(G4VEmModel *, const G4String &);
 
-    G4UIdirectory    *TrackingDir;
-    G4UIcmdWithABool *NoSecondaryCmd;
-    G4UIcmdWithABool *SaveTrackInfoCmd;
+    G4String fBremsAngularGeneratorType;
+
+    G4int verbose;
+    G4EmParticleList partList;
+
+    PhysicsListMessenger *physlistMessenger;
 };
+
+inline void PhysListEmModified::SetBremsstrahlungAngularGenerator(G4String val)
+{
+    fBremsAngularGeneratorType = val;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 #endif
+
+
+
+
+
+
+
+

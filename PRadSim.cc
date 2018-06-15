@@ -34,8 +34,9 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#include "DetectorConstruction.hh"
 #include "ActionInitialization.hh"
+#include "DetectorConstruction.hh"
+#include "PhysListEmModified.hh"
 #include "RootTree.hh"
 #include "SteppingVerbose.hh"
 
@@ -45,6 +46,7 @@
 #include "G4UImanager.hh"
 #include "G4VModularPhysicsList.hh"
 
+#include "G4BuilderType.hh"
 #include "G4ios.hh"
 #include "G4String.hh"
 #include "Randomize.hh"
@@ -74,6 +76,7 @@ void usage(int, char **argv)
     printf("usage: %s [options] [MACRO_NAME]\n", argv[0]);
     printf("  -c, --conf=prad          Set configuration\n");
     printf("  -s, --seed=1             Set random seed\n");
+    printf("  -p, --physics=FTFP_BERT  Set physics list\n");
     printf("  -h, --help               Print usage\n");
 }
 
@@ -82,6 +85,7 @@ void usage(int, char **argv)
 int main(int argc, char **argv)
 {
     std::string conf = "prad";
+    std::string physics_list = "FTFP_BERT";
     std::string seed = "random";
     std::string macro;
     macro.clear();
@@ -90,12 +94,13 @@ int main(int argc, char **argv)
         static struct option long_options[] = {
             {"help", no_argument, 0, 'h'},
             {"conf", required_argument, 0, 'c'},
+            {"physics", required_argument, 0, 'p'},
             {"seed", required_argument, 0, 's'},
             {0, 0, 0, 0}
         };
 
         int option_index = 0;
-        int c = getopt_long(argc, argv, "c:hs:", long_options, &option_index);
+        int c = getopt_long(argc, argv, "c:hp:s:", long_options, &option_index);
 
         if (c == -1)
             break;
@@ -108,6 +113,10 @@ int main(int argc, char **argv)
         case 'h':
             usage(argc, argv);
             exit(0);
+            break;
+
+        case 'p':
+            physics_list = optarg;
             break;
 
         case 's':
@@ -175,14 +184,38 @@ int main(int argc, char **argv)
     G4VSteppingVerbose::SetInstance(new SteppingVerbose);
     G4RunManager *runManager = new G4RunManager;
 
+    // Set physics list
+    bool local = false;
+
+    G4PhysListFactory factory;
+
+    if (physics_list.size() > 6) {
+        std::size_t found = physics_list.find_last_of("_");
+
+        if (found != std::string::npos && physics_list.substr(found + 1) == "LOCAL") {
+            local = true;
+            physics_list = physics_list.substr(0, found);
+        }
+    }
+
+    if (!factory.IsReferencePhysList(physics_list)) {
+        std::cout << "Physics list " << physics_list << " is not available in PhysListFactory." << std::endl;
+        physics_list = "FTFP_BERT";
+    }
+
+    G4VModularPhysicsList *physicsList = factory.GetReferencePhysList(physics_list);
+    physicsList->RegisterPhysics(new G4StepLimiterPhysics());
+
+    if (local) {
+        physicsList->RemovePhysics(bElectromagnetic);
+        physicsList->RegisterPhysics(new PhysListEmModified());
+    }
+
+    runManager->SetUserInitialization(physicsList);
+
     // Set mandatory initialization classes
     DetectorConstruction *detector = new DetectorConstruction(conf);
     runManager->SetUserInitialization(detector);
-
-    G4PhysListFactory factory;
-    G4VModularPhysicsList *physicsList = factory.GetReferencePhysList("FTFP_BERT_EMZ");
-    physicsList->RegisterPhysics(new G4StepLimiterPhysics());
-    runManager->SetUserInitialization(physicsList);
 
     ActionInitialization *action = new ActionInitialization(conf);
     runManager->SetUserInitialization(action);
