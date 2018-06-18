@@ -37,7 +37,6 @@
 #define PhysListEmModified_h 1
 
 #include "G4VPhysicsConstructor.hh"
-#include "G4EmParticleList.hh"
 
 #include "G4String.hh"
 
@@ -64,7 +63,6 @@ private:
     G4String fBremsAngularGeneratorType;
 
     G4int verbose;
-    G4EmParticleList partList;
 
     PhysicsListMessenger *physlistMessenger;
 };
