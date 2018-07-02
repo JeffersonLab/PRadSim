@@ -116,6 +116,8 @@ DetectorConstruction::DetectorConstruction(G4String conf) : G4VUserDetectorConst
 
     fCrystalSurf = 295.0 * cm;
 
+    fExtDensityRatio = 1.0;
+
     if (fConfig == "drad") {
         fTargetSDOn = false;
         fRecoilDetSDOn = true;
@@ -235,13 +237,15 @@ void DetectorConstruction::DefineMaterials()
     H2Gas->AddElement(H, natoms = 2);
     fVisAtts[H2Gas->GetName()] = new G4VisAttributes(G4Colour::Cyan());
 
+    G4cout << fTargetDensityRatio << " " << fExtDensityRatio << G4endl;
+
     // Deuteron Gas
     G4Material *D2Gas = new G4Material("D2Gas", density = fTargetDensityRatio * 0.47 / 760.0 * 273.15 / 19.5 * 0.1796 * mg / cm3, ncomponents = 1, kStateGas, 19.5 * kelvin, fTargetDensityRatio * 0.47 / 760.0 * atmosphere);
     D2Gas->AddElement(D, natoms = 2);
     fVisAtts[D2Gas->GetName()] = new G4VisAttributes(G4Colour::Cyan());
 
     // Copper C101
-    G4Material *Copper = new G4Material("Copper", density = 8.92 * g / cm3, ncomponents = 1);
+    G4Material *Copper = new G4Material("Copper", density = fExtDensityRatio * 8.92 * g / cm3, ncomponents = 1);
     Copper->AddElement(Cu, natoms = 1);
     fVisAtts[Copper->GetName()] = new G4VisAttributes(G4Colour::Brown());
     G4Material *Copper0d2 = new G4Material("Copper0.2", Copper->GetDensity() * 0.2, Copper);
@@ -252,7 +256,7 @@ void DetectorConstruction::DefineMaterials()
     fVisAtts[Copper0d8->GetName()] = new G4VisAttributes(G4Colour::Brown());
 
     // Kapton
-    G4Material *Kapton = new G4Material("Kapton", density = 1.42 * g / cm3, ncomponents = 4);
+    G4Material *Kapton = new G4Material("Kapton", density = fExtDensityRatio * 1.42 * g / cm3, ncomponents = 4);
     Kapton->AddElement(H, fractionmass = 0.0273);
     Kapton->AddElement(C, fractionmass = 0.7213);
     Kapton->AddElement(N, fractionmass = 0.0765);
@@ -269,7 +273,7 @@ void DetectorConstruction::DefineMaterials()
     fVisAtts[Silicon->GetName()] = new G4VisAttributes(G4Colour::Green());
 
     // Aluminum
-    G4Material *Aluminum = new G4Material("Aluminum", density = 2.700 * g / cm3, ncomponents = 1);
+    G4Material *Aluminum = new G4Material("Aluminum", density = fExtDensityRatio * 2.700 * g / cm3, ncomponents = 1);
     Aluminum->AddElement(Al, natoms = 1);
     fVisAtts[Aluminum->GetName()] = new G4VisAttributes(G4Colour::Grey());
 
@@ -281,7 +285,7 @@ void DetectorConstruction::DefineMaterials()
     fVisAtts[Tedlar->GetName()] = new G4VisAttributes(G4Colour::Grey());
 
     // Stainless Steel
-    G4Material *SSteel = new G4Material("SSteel", density = 7.9 * g / cm3, ncomponents = 9);
+    G4Material *SSteel = new G4Material("SSteel", density = fExtDensityRatio * 7.9 * g / cm3, ncomponents = 9);
     SSteel->AddElement(C, fractionmass = 0.0007);
     SSteel->AddElement(Si, fractionmass = 0.01);
     SSteel->AddElement(Mn, fractionmass = 0.02);
@@ -294,12 +298,12 @@ void DetectorConstruction::DefineMaterials()
     fVisAtts[SSteel->GetName()] = new G4VisAttributes(G4Colour::Grey());
 
     // Nickel
-    G4Material *Nickel = new G4Material("Nickel", density = 8.908 * g / cm3, ncomponents = 1);
+    G4Material *Nickel = new G4Material("Nickel", density = fExtDensityRatio * 8.908 * g / cm3, ncomponents = 1);
     Nickel->AddElement(Ni, natoms = 1);
     fVisAtts[Nickel->GetName()] = new G4VisAttributes(G4Colour::Black());
 
     // GEM Frame G10
-    G4Material *NemaG10 = new G4Material("NemaG10", density = 1.700 * g / cm3, ncomponents = 4);
+    G4Material *NemaG10 = new G4Material("NemaG10", density = fExtDensityRatio * 1.700 * g / cm3, ncomponents = 4);
     NemaG10->AddElement(Si, natoms = 1);
     NemaG10->AddElement(O, natoms = 2);
     NemaG10->AddElement(C, natoms = 3);
@@ -307,27 +311,27 @@ void DetectorConstruction::DefineMaterials()
     fVisAtts[NemaG10->GetName()] = new G4VisAttributes(G4Colour::Brown());
 
     // Ar/CO2 Gas
-    G4Material *CO2 = new G4Material("CO2", density = 1.842e-3 * g / cm3, ncomponents = 2);
+    G4Material *CO2 = new G4Material("CO2", density = fExtDensityRatio * 1.842e-3 * g / cm3, ncomponents = 2);
     CO2->AddElement(C, natoms = 1);
     CO2->AddElement(O, natoms = 2);
-    G4Material *ArCO2 = new G4Material("ArCO2", density = 1.715e-3 * g / cm3, ncomponents = 2);
+    G4Material *ArCO2 = new G4Material("ArCO2", density = fExtDensityRatio * 1.715e-3 * g / cm3, ncomponents = 2);
     ArCO2->AddElement(Ar, fractionmass = 0.7);
     ArCO2->AddMaterial(CO2, fractionmass = 0.3);
     fVisAtts[ArCO2->GetName()] = new G4VisAttributes(G4Colour::Yellow());
 
     // He Gas
-    G4Material *HeGas = new G4Material("HeGas", density = 0.1786e-3 * g / cm3, ncomponents = 1);
+    G4Material *HeGas = new G4Material("HeGas", density = fExtDensityRatio * 0.1786e-3 * g / cm3, ncomponents = 1);
     HeGas->AddElement(He, natoms = 1);
     fVisAtts[HeGas->GetName()] = new G4VisAttributes(G4Colour::Cyan());
 
     // Scintillator EJ204
-    G4Material *EJ204 = new G4Material("EJ204", density = 1.032 * g / cm3, ncomponents = 2);
+    G4Material *EJ204 = new G4Material("EJ204", density = fExtDensityRatio * 1.032 * g / cm3, ncomponents = 2);
     EJ204->AddElement(H, natoms = 521);
     EJ204->AddElement(C, natoms = 474);
     fVisAtts[EJ204->GetName()] = new G4VisAttributes(G4Colour::Green());
 
     // Rohacell 31 IG
-    G4Material *Rohacell = new G4Material("Rohacell", density = 0.023 * g / cm3, ncomponents = 3);
+    G4Material *Rohacell = new G4Material("Rohacell", density = fExtDensityRatio * 0.023 * g / cm3, ncomponents = 3);
     Rohacell->AddElement(C, natoms = 5);
     Rohacell->AddElement(H, natoms = 8);
     Rohacell->AddElement(O, natoms = 2);

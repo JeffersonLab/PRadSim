@@ -141,6 +141,10 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
     RecoilDetL2ThicknessCmd->SetParameterName("recoilt2", false);
     RecoilDetL2ThicknessCmd->SetDefaultUnit("um");
 
+    ExtDensityRatioCmd = new G4UIcmdWithADouble("/pradsim/det/extdensityratio", this);
+    ExtDensityRatioCmd->SetGuidance("Set fExtDensityRatio");
+    ExtDensityRatioCmd->SetParameterName("extr", false);
+
     SDDir = new G4UIdirectory("/pradsim/det/sensitive/");
     SDDir->SetGuidance("Sensitive detector control");
 
@@ -180,6 +184,7 @@ DetectorMessenger::~DetectorMessenger()
     delete HyCalSDCmd;
     delete VirtualSDCmd;
     delete SDDir;
+    delete ExtDensityRatioCmd;
     delete RecoilDetNSegCmd;
     delete RecoilDetRCmd;
     delete RecoilDetHalfLCmd;
@@ -250,6 +255,9 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
 
     if (command == RecoilDetL2ThicknessCmd)
         Detector->SetRecoilDetector(-10000, -10000, -10000,  -10000, RecoilDetL2ThicknessCmd->GetNewDoubleValue(newValue));
+
+    if (command == ExtDensityRatioCmd)
+        Detector->SetExtDensityRatio(ExtDensityRatioCmd->GetNewDoubleValue(newValue));
 
     if (command == TargetSDCmd) {
         if (TargetSDCmd->GetNewBoolValue(newValue)) Detector->EnableSD("Target");

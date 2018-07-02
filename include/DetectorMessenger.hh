@@ -83,6 +83,7 @@ private:
     G4UIcmdWithADoubleAndUnit *RecoilDetHalfLCmd;
     G4UIcmdWithADoubleAndUnit *RecoilDetL1ThicknessCmd;
     G4UIcmdWithADoubleAndUnit *RecoilDetL2ThicknessCmd;
+    G4UIcmdWithADouble        *ExtDensityRatioCmd;
     G4UIdirectory             *SDDir;
     G4UIcmdWithABool          *TargetSDCmd;
     G4UIcmdWithABool          *RecoilDetSDCmd;

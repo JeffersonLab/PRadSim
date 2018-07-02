@@ -73,6 +73,8 @@ public:
     inline void SetTargetMaterial(G4String val);
     inline void SetTargetDensityRatio(G4double r);
 
+    inline void SetExtDensityRatio(G4double r);
+
     inline void EnableSD(G4String detname);
     inline void DisableSD(G4String detname);
 
@@ -120,6 +122,8 @@ private:
     G4double fSciPlaneCenter;
 
     G4double fCrystalSurf;
+
+    G4double fExtDensityRatio;
 
     G4bool fTargetSDOn;
     G4bool fRecoilDetSDOn;
@@ -186,6 +190,11 @@ inline void DetectorConstruction::SetTargetMaterial(G4String val)
 inline void DetectorConstruction::SetTargetDensityRatio(G4double r)
 {
     fTargetDensityRatio = r;
+}
+
+inline void DetectorConstruction::SetExtDensityRatio(G4double r)
+{
+    fExtDensityRatio = r;
 }
 
 inline void DetectorConstruction::EnableSD(G4String detname)
