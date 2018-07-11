@@ -37,6 +37,7 @@
 #include "ActionInitialization.hh"
 #include "DetectorConstruction.hh"
 #include "PhysListEmModified.hh"
+#include "PhysListPureEm.hh"
 #include "RootTree.hh"
 #include "SteppingVerbose.hh"
 
@@ -185,9 +186,11 @@ int main(int argc, char **argv)
     G4RunManager *runManager = new G4RunManager;
 
     // Set physics list
+    bool pure_em = false;
     bool local = false;
 
-    G4PhysListFactory factory;
+    if (physics_list.size() >= 2 && physics_list.substr(0, 2) == "EM")
+        pure_em = true;
 
     if (physics_list.size() > 6) {
         std::size_t found = physics_list.find_last_of("_");
@@ -198,12 +201,21 @@ int main(int argc, char **argv)
         }
     }
 
-    if (!factory.IsReferencePhysList(physics_list)) {
-        std::cout << "Physics list " << physics_list << " is not available in PhysListFactory." << std::endl;
-        physics_list = "FTFP_BERT";
+    G4VModularPhysicsList *physicsList = NULL;
+
+    if (pure_em)
+        physicsList = new PhysicsListPureEm(physics_list);
+    else {
+        G4PhysListFactory factory;
+
+        if (!factory.IsReferencePhysList(physics_list)) {
+            std::cout << "Physics list " << physics_list << " is not available in PhysListFactory." << std::endl;
+            physics_list = "FTFP_BERT";
+        }
+
+        physicsList = factory.GetReferencePhysList(physics_list);
     }
 
-    G4VModularPhysicsList *physicsList = factory.GetReferencePhysList(physics_list);
     physicsList->RegisterPhysics(new G4StepLimiterPhysics());
 
     if (local) {
