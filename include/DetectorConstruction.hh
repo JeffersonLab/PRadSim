@@ -78,6 +78,9 @@ public:
     inline void EnableSD(G4String detname);
     inline void DisableSD(G4String detname);
 
+    inline void SetAttenuation(G4double cr, G4double lg);
+    inline void SetReflectance(G4double val);
+
 private:
     void DefineMaterials();
 
@@ -131,6 +134,9 @@ private:
     G4bool fSciPlaneSDOn;
     G4bool fHyCalSDOn;
     G4bool fVirtualSDOn;
+
+    G4double fAttenuationCR, fAttenuationLG;
+    G4double fReflectance;
 
     DetectorMessenger *detectorMessenger; // pointer to the messenger
 };
@@ -225,6 +231,18 @@ inline void DetectorConstruction::DisableSD(G4String detname)
     if (detname == "HyCal") fHyCalSDOn = false;
 
     if (detname == "Virtual Detector") fVirtualSDOn = false;
+}
+
+inline void DetectorConstruction::SetAttenuation(G4double cr, G4double lg)
+{
+    if (cr > -9999) fAttenuationCR = cr;
+
+    if (lg > -9999) fAttenuationLG = lg;
+}
+
+inline void DetectorConstruction::SetReflectance(G4double val)
+{
+    fReflectance = val;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

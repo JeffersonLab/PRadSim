@@ -50,7 +50,7 @@ class TTree;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class CalorimeterSD : public StandardDetectorSD
+class CalorimeterSD: public StandardDetectorSD
 {
 public:
     CalorimeterSD(G4String name, G4String abbrev);
@@ -60,17 +60,35 @@ public:
     virtual G4bool ProcessHits(G4Step *, G4TouchableHistory *);
     virtual void EndOfEvent(G4HCofThisEvent *);
 
+    inline void SetAttenuation(G4double cr, G4double lg);
+    inline void SetReflectance(G4double val);
+
 protected:
     virtual void Register(TTree *);
     virtual void Clear();
 
     CalorimeterHitsCollection *fCalorHitsCollection;
 
+    double fAttenuationCR, fAttenuationLG;
+    double fReflectance;
+
     double fTotalEdep;
     double fTotalTrackL;
     double fModuleEdep[NModules];
     double fModuleTrackL[NModules];
 };
+
+inline void CalorimeterSD::SetAttenuation(G4double cr, G4double lg)
+{
+    if (cr > -9999) fAttenuationCR = cr;
+
+    if (lg > -9999) fAttenuationLG = lg;
+}
+
+inline void CalorimeterSD::SetReflectance(G4double val)
+{
+    fReflectance = val;
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

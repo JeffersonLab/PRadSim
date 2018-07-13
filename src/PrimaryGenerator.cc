@@ -204,7 +204,7 @@ void PrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
         y = G4RandGauss::shoot(0, 0.08) * mm;
         z = fTargetCenter + fTargetHalfL * 2 * (0.5 - G4UniformRand());
         theta_l = fReactThetaLo + (fReactThetaHi - fReactThetaLo) * G4UniformRand();
-        phi_l = twopi * G4UniformRand();
+        phi_l = twopi / 72 * (0.5 - G4UniformRand());
     }
 
     double M = fTargetMass;

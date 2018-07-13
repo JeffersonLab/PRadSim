@@ -134,6 +134,11 @@ DetectorConstruction::DetectorConstruction(G4String conf) : G4VUserDetectorConst
         fVirtualSDOn = false;
     }
 
+    fAttenuationCR = 1.0e-10;
+    fAttenuationLG = 1.0e-10;
+
+    fReflectance = 1.0;
+
     detectorMessenger = new DetectorMessenger(this);
 }
 
@@ -236,8 +241,6 @@ void DetectorConstruction::DefineMaterials()
     G4Material *H2Gas = new G4Material("H2Gas", density = fTargetDensityRatio * 0.47 / 760.0 * 273.15 / 19.5 * 0.08988 * mg / cm3, ncomponents = 1, kStateGas, 19.5 * kelvin, fTargetDensityRatio * 0.47 / 760.0 * atmosphere);
     H2Gas->AddElement(H, natoms = 2);
     fVisAtts[H2Gas->GetName()] = new G4VisAttributes(G4Colour::Cyan());
-
-    G4cout << fTargetDensityRatio << " " << fExtDensityRatio << G4endl;
 
     // Deuteron Gas
     G4Material *D2Gas = new G4Material("D2Gas", density = fTargetDensityRatio * 0.47 / 760.0 * 273.15 / 19.5 * 0.1796 * mg / cm3, ncomponents = 1, kStateGas, 19.5 * kelvin, fTargetDensityRatio * 0.47 / 760.0 * atmosphere);
@@ -515,6 +518,7 @@ void DetectorConstruction::DefinePRadSDs()
 
     if (fHyCalSDOn) {
         CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC");
+        HyCalSD->SetAttenuation(fAttenuationCR, fAttenuationLG);
         G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
         SetSensitiveDetector("PbWO4AbsorberLV", HyCalSD);
         SetSensitiveDetector("PbGlassAbsorberLV", HyCalSD);

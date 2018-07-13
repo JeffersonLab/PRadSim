@@ -91,6 +91,10 @@ private:
     G4UIcmdWithABool          *SciPlaneSDCmd;
     G4UIcmdWithABool          *HyCalSDCmd;
     G4UIcmdWithABool          *VirtualSDCmd;
+    G4UIdirectory             *CalorimeterDir;
+    G4UIcmdWithADoubleAndUnit *AttenuationCRCmd;
+    G4UIcmdWithADoubleAndUnit *AttenuationLGCmd;
+    G4UIcmdWithADouble        *ReflectanceCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
