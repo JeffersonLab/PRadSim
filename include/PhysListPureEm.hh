@@ -23,7 +23,7 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// PhysicsListPureEm.hh
+// PhysListPureEm.hh
 // Developer : Chao Gu
 // History:
 //   Jul 2018, C. Gu, Original version.
@@ -32,8 +32,8 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef PhysicsListPureEm_h
-#define PhysicsListPureEm_h 1
+#ifndef PhysListPureEm_h
+#define PhysListPureEm_h 1
 
 #include "G4VModularPhysicsList.hh"
 
@@ -41,11 +41,11 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PhysicsListPureEm: public G4VModularPhysicsList
+class PhysListPureEm: public G4VModularPhysicsList
 {
 public:
-    PhysicsListPureEm(G4String type = "EM", G4int ver = 1);
-    virtual ~PhysicsListPureEm();
+    PhysListPureEm(G4String type = "EM", G4int ver = 1);
+    virtual ~PhysListPureEm();
 
 public:
     virtual void SetCuts();

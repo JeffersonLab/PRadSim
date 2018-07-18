@@ -50,7 +50,7 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PhysicsListPureEm::PhysicsListPureEm(G4String type, G4int ver) : G4VModularPhysicsList()
+PhysListPureEm::PhysListPureEm(G4String type, G4int ver) : G4VModularPhysicsList()
 {
     this->defaultCutValue = 0.7 * CLHEP::mm;
     this->SetVerboseLevel(ver);
@@ -77,14 +77,14 @@ PhysicsListPureEm::PhysicsListPureEm(G4String type, G4int ver) : G4VModularPhysi
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PhysicsListPureEm::~PhysicsListPureEm()
+PhysListPureEm::~PhysListPureEm()
 {
     //
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void PhysicsListPureEm::SetCuts()
+void PhysListPureEm::SetCuts()
 {
     this->SetCutsWithDefault();
 }

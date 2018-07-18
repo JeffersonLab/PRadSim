@@ -204,7 +204,7 @@ int main(int argc, char **argv)
     G4VModularPhysicsList *physicsList = NULL;
 
     if (pure_em)
-        physicsList = new PhysicsListPureEm(physics_list);
+        physicsList = new PhysListPureEm(physics_list);
     else {
         G4PhysListFactory factory;
 
