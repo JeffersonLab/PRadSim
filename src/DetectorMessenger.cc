@@ -175,28 +175,22 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction *det) : G4UImessenger(
     CalorimeterDir = new G4UIdirectory("/pradsim/det/calorimeter/");
     CalorimeterDir->SetGuidance("Calorimeter SD control");
 
-    AttenuationCRCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/calorimeter/depthcrystal", this);
-    AttenuationCRCmd->SetGuidance("Set fAttenuationCRCmd");
-    AttenuationCRCmd->SetParameterName("attenuationcr", false);
-    AttenuationCRCmd->SetDefaultUnit("m");
-
     AttenuationLGCmd = new G4UIcmdWithADoubleAndUnit("/pradsim/det/calorimeter/depthleadglass", this);
     AttenuationLGCmd->SetGuidance("Set fAttenuationLGCmd");
     AttenuationLGCmd->SetParameterName("attenuationlg", false);
     AttenuationLGCmd->SetDefaultUnit("m");
 
-    ReflectanceCmd = new G4UIcmdWithADouble("/pradsim/det/calorimeter/reflectance", this);
-    ReflectanceCmd->SetGuidance("Set fReflectance");
-    ReflectanceCmd->SetParameterName("reflectance", false);
+    ReflectanceLGCmd = new G4UIcmdWithADouble("/pradsim/det/calorimeter/reflectance", this);
+    ReflectanceLGCmd->SetGuidance("Set fReflectanceLG");
+    ReflectanceLGCmd->SetParameterName("reflectancelg", false);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorMessenger::~DetectorMessenger()
 {
-    delete AttenuationCRCmd;
     delete AttenuationLGCmd;
-    delete ReflectanceCmd;
+    delete ReflectanceLGCmd;
     delete CalorimeterDir;
     delete TargetSDCmd;
     delete RecoilDetSDCmd;
@@ -310,14 +304,11 @@ void DetectorMessenger::SetNewValue(G4UIcommand *command, G4String newValue)
         else Detector->DisableSD("Virtual Detector");
     }
 
-    if (command == AttenuationCRCmd)
-        Detector->SetAttenuation(1.0 / AttenuationCRCmd->GetNewDoubleValue(newValue), -10000);
-
     if (command == AttenuationLGCmd)
-        Detector->SetAttenuation(-10000, 1.0 / AttenuationLGCmd->GetNewDoubleValue(newValue));
+        Detector->SetAttenuationLG(1.0 / AttenuationLGCmd->GetNewDoubleValue(newValue));
 
-    if (command == ReflectanceCmd)
-        Detector->SetReflectance(ReflectanceCmd->GetNewDoubleValue(newValue));
+    if (command == ReflectanceLGCmd)
+        Detector->SetReflectanceLG(ReflectanceLGCmd->GetNewDoubleValue(newValue));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

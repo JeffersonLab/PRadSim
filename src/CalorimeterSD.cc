@@ -44,7 +44,10 @@
 #include "TROOT.h"
 #include "TError.h"
 #include "TObject.h"
+#include "TMath.h"
 #include "TTree.h"
+
+#include "Math/Interpolator.h"
 
 #include "G4HCofThisEvent.hh"
 #include "G4SDManager.hh"
@@ -58,9 +61,12 @@
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 
+#include <iostream>
+#include <fstream>
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-//static const G4double ZCRFrontSurf = 272.5 * cm;
+static const G4double ZCRFrontSurf = 272.5 * cm;
 //static const G4double ZCRBackSurf = ZCRFrontSurf + 18.0 * cm;
 static const G4double ZLGFrontSurf = 272.5 * cm - 9.73 * cm;
 static const G4double ZLGBackSurf = ZLGFrontSurf + 45.0 * cm;
@@ -69,16 +75,14 @@ static const G4double cos_phi_c[100] = {0.99987663, 0.99888987, 0.99691733, 0.99
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-CalorimeterSD::CalorimeterSD(G4String name, G4String abbrev) : StandardDetectorSD(name, abbrev)
+CalorimeterSD::CalorimeterSD(G4String name, G4String abbrev, G4String pwo_filename) : StandardDetectorSD(name, abbrev)
 {
     G4String cname = "ModuleColl";
     cname = fAbbrev + cname;
     collectionName.insert(cname);
 
-    fAttenuationCR = 1.0e-10;
-    fAttenuationLG = 1.0e-10;
-
-    fReflectance = 1.0;
+    fAttenuationLG = 0.0;
+    fReflectanceLG = 1.0;
 
     fTotalEdep = 0;
     fTotalTrackL = 0;
@@ -87,6 +91,21 @@ CalorimeterSD::CalorimeterSD(G4String name, G4String abbrev) : StandardDetectorS
         fModuleEdep[i] = 1e+38;
         fModuleTrackL[i] = 1e+38;
     }
+
+    fInterpolator = new ROOT::Math::Interpolator(InterpolPoints, InterpolType);
+
+    std::ifstream attenuation_file;
+    attenuation_file.open(pwo_filename.c_str());
+    G4double d[InterpolPoints], a[InterpolPoints];
+
+    for (int i = 0; i < InterpolPoints - 1; i++)
+        attenuation_file >> d[i] >> a[i];
+
+    d[InterpolPoints - 1] = d[InterpolPoints - 2] + 1;
+    a[InterpolPoints - 1] = a[InterpolPoints - 2];
+
+    fInterpolator->SetData(InterpolPoints, d, a);
+    attenuation_file.close();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -190,7 +209,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
                     } else
                         continue;
 
-                    factor = factor + exp(-distance * fAttenuationLG) * pow(fReflectance, nreflect);
+                    factor = factor + exp(-distance * fAttenuationLG) * pow(fReflectanceLG, nreflect);
                 }
 
                 factor = factor / 100.0;
@@ -198,33 +217,9 @@ G4bool CalorimeterSD::ProcessHits(G4Step *aStep, G4TouchableHistory *)
                 StepLength = aStep->GetStepLength() * factor * sin_theta_c * sin_theta_c;
             } // else beta < 1 / n, no Cherenkov light
         } else { // PbWO4
-            // Edep = aStep->GetTotalEnergyDeposit();
-
-            // G4double distance = 0;
-            // G4int nreflect = 0;
-
-            // G4double factor = 0;
-
-            // for (G4int i = 0; i < 101; i++) {
-            //     G4double cos_theta = 1.0 - 2.0 * i / 100.0;
-            //     G4double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
-
-            //     if (cos_theta > 0) {
-            //         distance = (ZCRBackSurf - InZ) / cos_theta;
-            //         nreflect = int(distance * sin_theta / 20.5);
-            //     } else if (cos_theta < 0) {
-            //         distance = -(InZ - ZCRFrontSurf + 180.0) / cos_theta;
-            //         nreflect = int(distance * sin_theta / 20.5) + 1;
-            //     } else
-            //         continue;
-
-            //     factor = factor + exp(-distance * fAttenuationCR) * pow(fReflectance, nreflect);
-            // }
-
-            // factor = factor / 101.0;
-
-            // Edep = Edep * factor;
-
+            G4double depth = InZ - ZCRFrontSurf;
+            G4double factor = fInterpolator->Eval(depth);
+            Edep = Edep * factor;
             StepLength = aStep->GetStepLength();
         }
     }

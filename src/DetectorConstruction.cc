@@ -134,10 +134,8 @@ DetectorConstruction::DetectorConstruction(G4String conf) : G4VUserDetectorConst
         fVirtualSDOn = false;
     }
 
-    fAttenuationCR = 1.0e-10;
-    fAttenuationLG = 1.0e-10;
-
-    fReflectance = 1.0;
+    fAttenuationLG = 0.0;
+    fReflectanceLG = 1.0;
 
     detectorMessenger = new DetectorMessenger(this);
 }
@@ -517,8 +515,8 @@ void DetectorConstruction::DefinePRadSDs()
     }
 
     if (fHyCalSDOn) {
-        CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC");
-        HyCalSD->SetAttenuation(fAttenuationCR, fAttenuationLG);
+        CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC", "database/pwo_attenuation.dat");
+        HyCalSD->SetAttenuationLG(fAttenuationLG);
         G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
         SetSensitiveDetector("PbWO4AbsorberLV", HyCalSD);
         SetSensitiveDetector("PbGlassAbsorberLV", HyCalSD);
@@ -681,7 +679,8 @@ void DetectorConstruction::DefineDRadSDs()
     }
 
     if (fHyCalSDOn) {
-        CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC");
+        CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC", "database/pwo_attenuation.dat");
+        HyCalSD->SetAttenuationLG(fAttenuationLG);
         G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
         SetSensitiveDetector("PbWO4AbsorberLV", HyCalSD);
         SetSensitiveDetector("PbGlassAbsorberLV", HyCalSD);

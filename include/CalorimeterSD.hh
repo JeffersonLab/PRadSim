@@ -39,7 +39,11 @@
 
 #include "CalorimeterHit.hh"
 
+#include "Math/Interpolator.h"
 #include "G4String.hh"
+
+#define InterpolPoints 181
+#define InterpolType ROOT::Math::Interpolation::kCSPLINE
 
 #define NModules 1728
 
@@ -53,15 +57,15 @@ class TTree;
 class CalorimeterSD: public StandardDetectorSD
 {
 public:
-    CalorimeterSD(G4String name, G4String abbrev);
+    CalorimeterSD(G4String name, G4String abbrev, G4String pwo_filename);
     virtual ~CalorimeterSD();
 
     virtual void Initialize(G4HCofThisEvent *);
     virtual G4bool ProcessHits(G4Step *, G4TouchableHistory *);
     virtual void EndOfEvent(G4HCofThisEvent *);
 
-    inline void SetAttenuation(G4double cr, G4double lg);
-    inline void SetReflectance(G4double val);
+    inline void SetAttenuationLG(G4double val);
+    inline void SetReflectanceLG(G4double val);
 
 protected:
     virtual void Register(TTree *);
@@ -69,25 +73,25 @@ protected:
 
     CalorimeterHitsCollection *fCalorHitsCollection;
 
-    double fAttenuationCR, fAttenuationLG;
-    double fReflectance;
+    double fAttenuationLG;
+    double fReflectanceLG;
 
     double fTotalEdep;
     double fTotalTrackL;
     double fModuleEdep[NModules];
     double fModuleTrackL[NModules];
+
+    ROOT::Math::Interpolator *fInterpolator;
 };
 
-inline void CalorimeterSD::SetAttenuation(G4double cr, G4double lg)
+inline void CalorimeterSD::SetAttenuationLG(G4double val)
 {
-    if (cr > -9999) fAttenuationCR = cr;
-
-    if (lg > -9999) fAttenuationLG = lg;
+    fAttenuationLG = val;
 }
 
-inline void CalorimeterSD::SetReflectance(G4double val)
+inline void CalorimeterSD::SetReflectanceLG(G4double val)
 {
-    fReflectance = val;
+    fReflectanceLG = val;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
