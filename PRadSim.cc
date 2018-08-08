@@ -187,10 +187,19 @@ int main(int argc, char **argv)
 
     // Set physics list
     bool pure_em = false;
+    bool extra_em = false;
     bool local = false;
 
-    if (physics_list.size() >= 2 && physics_list.substr(0, 2) == "EM")
+    if (physics_list.size() >= 2 && physics_list.substr(0, 2) == "EM") {
         pure_em = true;
+
+        std::size_t found = physics_list.find_last_of("_");
+
+        if (found != std::string::npos && physics_list.substr(found + 1) == "EXTRA") {
+            extra_em = true;
+            physics_list = physics_list.substr(0, found);
+        }
+    }
 
     if (physics_list.size() > 6) {
         std::size_t found = physics_list.find_last_of("_");
@@ -204,7 +213,7 @@ int main(int argc, char **argv)
     G4VModularPhysicsList *physicsList = NULL;
 
     if (pure_em)
-        physicsList = new PhysListPureEm(physics_list);
+        physicsList = new PhysListPureEm(physics_list, extra_em, 1);
     else {
         G4PhysListFactory factory;
 

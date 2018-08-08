@@ -46,11 +46,19 @@
 #include "G4EmStandardPhysicsSS.hh"
 #include "G4EmStandardPhysicsWVI.hh"
 
+#include "G4BosonConstructor.hh"
+#include "G4LeptonConstructor.hh"
+#include "G4MesonConstructor.hh"
+#include "G4BaryonConstructor.hh"
+#include "G4IonConstructor.hh"
+#include "G4ShortLivedConstructor.hh"
+#include "G4EmExtraPhysics.hh"
+
 #include "G4String.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PhysListPureEm::PhysListPureEm(G4String type, G4int ver) : G4VModularPhysicsList()
+PhysListPureEm::PhysListPureEm(G4String type, G4bool extra, G4int ver) : G4VModularPhysicsList(), fEmExtra(extra)
 {
     this->defaultCutValue = 0.7 * CLHEP::mm;
     this->SetVerboseLevel(ver);
@@ -73,6 +81,9 @@ PhysListPureEm::PhysListPureEm(G4String type, G4int ver) : G4VModularPhysicsList
         this->RegisterPhysics(new G4EmStandardPhysicsGS(ver));
     else if (type == "EM__SS")
         this->RegisterPhysics(new G4EmStandardPhysicsSS(ver));
+
+    if (fEmExtra)
+        this->RegisterPhysics(new G4EmExtraPhysics(ver));
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -80,6 +91,33 @@ PhysListPureEm::PhysListPureEm(G4String type, G4int ver) : G4VModularPhysicsList
 PhysListPureEm::~PhysListPureEm()
 {
     //
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void PhysListPureEm::ConstructParticle()
+{
+    G4VModularPhysicsList::ConstructParticle();
+
+    if (fEmExtra) {
+        G4BosonConstructor pBosonConstructor;
+        pBosonConstructor.ConstructParticle();
+
+        G4LeptonConstructor pLeptonConstructor;
+        pLeptonConstructor.ConstructParticle();
+
+        G4MesonConstructor pMesonConstructor;
+        pMesonConstructor.ConstructParticle();
+
+        G4BaryonConstructor pBaryonConstructor;
+        pBaryonConstructor.ConstructParticle();
+
+        G4IonConstructor pIonConstructor;
+        pIonConstructor.ConstructParticle();
+
+        G4ShortLivedConstructor pShortLivedConstructor;
+        pShortLivedConstructor.ConstructParticle();
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

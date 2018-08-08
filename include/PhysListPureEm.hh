@@ -44,11 +44,15 @@
 class PhysListPureEm: public G4VModularPhysicsList
 {
 public:
-    PhysListPureEm(G4String type = "EM", G4int ver = 1);
+    PhysListPureEm(G4String type = "EM", G4bool extra = false, G4int ver = 1);
     virtual ~PhysListPureEm();
+
+    virtual void ConstructParticle();
 
 public:
     virtual void SetCuts();
+
+    G4bool fEmExtra;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
