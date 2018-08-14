@@ -71,6 +71,8 @@ const double mkb = 389.379; // MeV^{-2} to mkbarn conversion
 const char *filename = "elastic_ep.dat";
 const char *ifilename = "elastic_ep.info";
 
+int Use_TPE;
+
 double Ei_e;
 
 double theta_min, theta_max;
@@ -103,6 +105,8 @@ double BornXS_Sin(double theta);
 double ElasticXS_Sin(double theta);
 
 ROOT::Math::Interpolator Interpolator_ElasticXS_Sin(InterpolPoints, InterpolType);
+ROOT::Math::Interpolator TPE_Feshbach(32, InterpolType);
+ROOT::Math::Interpolator TPE_Oleksandr(32, InterpolType);
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -387,8 +391,19 @@ double NonRadXS(double s, double q2)
     double f1 = 4.0 * t * M2 * Pow2(GMp(q2));
     double f2 = 4.0 * M2 * (Pow2(GEp(q2)) + t * Pow2(GMp(q2))) / (1.0 + t);
     double sigma_AMM = alpha3 * m2 * l_m * (12.0 * M2 * f1 - (q2 + 4.0 * M2) * f2) / (4.0 * pi * M2 * q2 * lambda_s);
-    
-    double result = (1.0 + alpha_pi * (delta_VR + delta_vac - delta_inf)) * sig_0 * Exp(alpha_pi * delta_inf) + sigma_AMM + sig_0 * delta_Fs + sig_Fs;
+
+    // soft part of the TPE contribution
+    double delta_2g = 0.0;
+
+    if (Use_TPE != 0)
+        delta_2g = -(Log(Ei_e / Ef_e) * Log(q2 * q2 / (4.0 * M2 * Ei_e * Ef_e)) + 2.0 * DiLog(1.0 - 0.5 * M / Ei_e) - 2.0 * DiLog(1.0 - 0.5 * M / Ef_e));
+
+    double result = (1.0 + alpha_pi * (delta_VR + delta_vac + delta_2g - delta_inf)) * sig_0 * Exp(alpha_pi * delta_inf) + sigma_AMM + sig_0 * delta_Fs + sig_Fs;
+
+    if (Use_TPE == 1)
+        result = result * (1 + TPE_Feshbach.Eval(q2));
+    else if (Use_TPE == 2)
+        result = result * (1 + TPE_Oleksandr.Eval(q2));
 
     return result;
 }
@@ -542,7 +557,7 @@ public:
 
         double xs = matrix * (1.0 / (1024.0 * Pow5(pi) * Sqrt(Pow2(Ei_e) - m2) * M)) * E_g * ((Pow2(Ef_e) - m2) / Abs(A * Ef_e - B * Sqrt(Pow2(Ef_e) - m2)));
 
-        return (theta_max - theta_min) * (E_g_cut - E_g_min) * pi * (2.0 * pi) * (2.0 * pi) * xs * Sin(theta_e) * Sin(theta_g) *mkb;
+        return (theta_max - theta_min) * (E_g_cut - E_g_min) * pi * (2.0 * pi) * (2.0 * pi) * xs * Sin(theta_e) * Sin(theta_g) * mkb;
     }
 };
 

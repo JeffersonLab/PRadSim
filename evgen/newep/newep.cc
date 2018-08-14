@@ -19,6 +19,7 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <fstream>
 #include <time.h>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -57,6 +58,15 @@ int main()
     else
         E_g_cut = tempegcut * 1e-3;
 
+    std::cout << "Select TPE modes (1: Feshbach, 2: Oleksandr TPE, 0: No TPE): " << std::flush;
+    std::cin.getline(mychar, 64);
+    double temptpe = atoi(mychar);
+
+    if (temptpe == 1 || temptpe == 2 || temptpe == 3)
+        Use_TPE = temptpe;
+    else
+        Use_TPE = 0;
+
     std::cout << "Number of events to generate: " << std::flush;
     std::cin.getline(mychar, 64);
     int N = atoi(mychar);
@@ -75,6 +85,27 @@ int main()
 
     vi_e.SetPxPyPzE(0.0, 0.0, Sqrt(Pow2(Ei_e) - m2), Ei_e);
     vi_p.SetPxPyPzE(0.0, 0.0, 0.0, M);
+
+    if (Use_TPE == 1 || Use_TPE == 2) {
+        std::ifstream tpe_file;
+
+        if (Ei_e > 2)
+            tpe_file.open("TPE_beam_2_2_GeV.dat");
+        else
+            tpe_file.open("TPE_beam_1_1_GeV.dat");
+
+        double x[32], c1[32], c2[32];
+
+        for (int i = 0; i < 32; i++) {
+            tpe_file >> x[i] >> c1[i] >> c2[i];
+            c1[i] = c1[i] / 100.0;
+            c2[i] = c2[i] / 100.0;
+        }
+
+        TPE_Feshbach.SetData(32, x, c1);
+        TPE_Oleksandr.SetData(32, x, c2);
+        tpe_file.close();
+    }
 
     for (int i = 0; i < InterpolPoints; i++) {
         theta_e = theta_min + i * (theta_max - theta_min) / (InterpolPoints - 1);
@@ -177,7 +208,7 @@ int main()
             count_elastic++;
         } else {
             FoamBrems->MakeEvent();
-   
+
             double phi = 2.0 * pi * PseRan->Rndm();
 
             vf_e.RotateZ(phi);
