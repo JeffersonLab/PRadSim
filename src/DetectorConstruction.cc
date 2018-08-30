@@ -474,12 +474,12 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
 
     AddVaccumBox(logicWorld);
 
-    // Center of two GEM should be at -3000.0 + 89.0 + (5219.0 + 5179.0) / 2 + 4 = 2292 mm // (5219.0 + 5179.0) / 2 from Weizhi
-    fGEMCenter[0] = 229.2 * cm;
+    // Center of two GEM should be at -3000.0 + 89.0 + (5224.0 + 5184.0) / 2 + 4.6 = 2292 mm // (5224.0 + 5184.0) / 2 from Weizhi
+    fGEMCenter[0] = 229.76 * cm;
     AddGEM(logicWorld, 0, false);
 
-    // The crystal surface should be at -3000.0 + 89.0 + 5636.0 = 2725.0 mm // 5636.0 from Weizhi
-    fCrystalSurf = 272.5 * cm; // Surface of the PWO
+    // The crystal surface should be at -3000.0 + 89.0 + 5642.0 = 2725.0 mm // 5642.0 from Weizhi
+    fCrystalSurf = 273.1 * cm; // Surface of the PWO
     AddHyCal(logicWorld);
 
     // Virtual Detector
