@@ -39,7 +39,6 @@
 #include "CalorimeterSD.hh"
 #include "CheckScatteringSD.hh"
 #include "DetectorMessenger.hh"
-#include "HyCalParameterisation.hh"
 #include "StandardDetectorSD.hh"
 #include "StepRecordSD.hh"
 #include "TrackingDetectorSD.hh"
@@ -79,7 +78,6 @@
 #include "G4VisAttributes.hh"
 
 #include <cmath>
-#include <map>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -474,11 +472,11 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
 
     AddVaccumBox(logicWorld);
 
-    // Center of two GEM should be at -3000.0 + 89.0 + (5224.0 + 5184.0) / 2 + 4.6 = 2292 mm // (5224.0 + 5184.0) / 2 from Weizhi
+    // Center of two GEM should be at -3000.0 + 89.0 + (5224.0 + 5184.0) / 2 + 4.6 = 2297.6 mm // (5224.0 + 5184.0) / 2 from Weizhi
     fGEMCenter[0] = 229.76 * cm;
     AddGEM(logicWorld, 0, false);
 
-    // The crystal surface should be at -3000.0 + 89.0 + 5642.0 = 2725.0 mm // 5642.0 from Weizhi
+    // The crystal surface should be at -3000.0 + 89.0 + 5648.0 = 2731.0 mm // 5648.0 from Weizhi
     fCrystalSurf = 273.1 * cm; // Surface of the PWO
     AddHyCal(logicWorld);
 
@@ -518,8 +516,12 @@ void DetectorConstruction::DefinePRadSDs()
         CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC", "database/pwo_attenuation.dat");
         HyCalSD->SetAttenuationLG(fAttenuationLG);
         G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
-        SetSensitiveDetector("PbWO4AbsorberLV", HyCalSD);
-        SetSensitiveDetector("PbGlassAbsorberLV", HyCalSD);
+
+        for (int i = 0; i < 1152; i++)
+            SetSensitiveDetector(Form("PbWO4Absorber%04dLV", i), HyCalSD);
+
+        for (int i = 0; i < 576; i++)
+            SetSensitiveDetector(Form("PbGlassAbsorber%04dLV", i), HyCalSD);
     }
 
     if (fVirtualSDOn) {
@@ -682,8 +684,12 @@ void DetectorConstruction::DefineDRadSDs()
         CalorimeterSD *HyCalSD = new CalorimeterSD("HyCalSD", "HC", "database/pwo_attenuation.dat");
         HyCalSD->SetAttenuationLG(fAttenuationLG);
         G4SDManager::GetSDMpointer()->AddNewDetector(HyCalSD);
-        SetSensitiveDetector("PbWO4AbsorberLV", HyCalSD);
-        SetSensitiveDetector("PbGlassAbsorberLV", HyCalSD);
+
+        for (int i = 0; i < 1152; i++)
+            SetSensitiveDetector(Form("PbWO4Absorber%04dLV", i), HyCalSD);
+
+        for (int i = 0; i < 576; i++)
+            SetSensitiveDetector(Form("PbGlassAbsorber%04dLV", i), HyCalSD);
     }
 }
 
@@ -1053,14 +1059,22 @@ void DetectorConstruction::AddHyCal(G4LogicalVolume *mother)
     G4Material *ReflectorM = G4Material::GetMaterial("Polyester");
     G4Material *PlateM = G4Material::GetMaterial("Brass");
 
+    std::ifstream dimension_file;
+    dimension_file.open("database/hycal_module_shuffled.dat");
+    G4double pwo[1152][4], lg[576][4];
+
+    for (int i = 0; i < 576; i++)
+        dimension_file >> lg[i][0] >> lg[i][1] >> lg[i][2] >> lg[i][3];
+
+    for (int i = 0; i < 1152; i++)
+        dimension_file >> pwo[i][0] >> pwo[i][1] >> pwo[i][2] >> pwo[i][3];
+
+    dimension_file.close();
+
     G4double MaxStep = 1.0 * mm;
 
     // HyCal
-    G4double CrystalX = 20.5 * mm;
-    G4double CrystalY = 20.5 * mm;
     G4double CrystalL = 18.0 * cm;
-    G4double PbGlassX = 38.0 * mm;
-    G4double PbGlassY = 38.0 * mm;
     G4double PbGlassL = 45.0 * cm;
     G4double CrystalDiffL = 9.73 * cm; // according to last survey (april 2017)
     G4double CrystalCenter = fCrystalSurf + CrystalL / 2.0;
@@ -1094,80 +1108,99 @@ void DetectorConstruction::AddHyCal(G4LogicalVolume *mother)
     G4double PlateThickness = 25.4 * 0.08 * mm; // 0.08 in
     G4double PbGlassPlateHoleR = 25.4 * 0.5 * mm; // 0.5 in
     G4double ReflectorT = 25.0 * um;
-    G4double StripWidth = 38.0 * mm;
     G4double StripThickness = 25.4 * 0.001 * mm; // 0.001 in
 
-    G4Box *PbGlassConBox = new G4Box("PbGlassConBox", 58.165 * cm, 58.165 * cm, PbGlassL / 2.0 + PlateThickness);
+    G4Box *PbGlassConBox = new G4Box("PbGlassConBox", 58.199 * cm, 58.165 * cm, PbGlassL / 2.0 + PlateThickness);
     G4Box *PbGlassConHole = new G4Box("PbGlassConHole", 35.309 * cm, 35.275 * cm, PbGlassL / 2.0 + PlateThickness + 1.0 * mm);
     G4SubtractionSolid *solidPbGlassCon = new G4SubtractionSolid("PbGlassModuleContainerS", PbGlassConBox, PbGlassConHole);
     G4LogicalVolume *logicPbGlassCon = new G4LogicalVolume(solidPbGlassCon, HyCalConM, "PbGlassModuleContainerLV");
     new G4PVPlacement(0, G4ThreeVector(0, 0, PbGlassCenter - HyCalBoxCenter), logicPbGlassCon, "PbGlass Module Container", logicHyCalCon, false, 0);
 
-    // Lead glass module
-    G4VSolid *solidPbGlassModule = new G4Box("PbGlassModuleS", 38.15 * mm / 2.0, 38.15 * mm / 2.0, PbGlassL / 2.0 + PlateThickness);
-    G4LogicalVolume *logicPbGlassModule = new G4LogicalVolume(solidPbGlassModule, HyCalConM, "PbGlassModuleLV");
-    HyCalParameterisation *PbGlass = new HyCalParameterisation("config/hycal.conf", "PbGlass");
-    new G4PVParameterised("PbGlass Module", logicPbGlassModule, logicPbGlassCon, kUndefined, PbGlass->GetNumber(), PbGlass, false);
+    for (int i = 0; i < 576; i++) {
+        G4double PbGlassX = lg[i][0] - 0.15 * mm;
+        G4double PbGlassY = lg[i][1] - 0.15 * mm;
 
-    G4VSolid *solidPbGlassReflector = new G4Box("PbGlassReflectorS", PbGlassX / 2.0 + ReflectorT, PbGlassY / 2.0 + ReflectorT, PbGlassL / 2.0);
-    G4LogicalVolume *logicPbGlassReflector = new G4LogicalVolume(solidPbGlassReflector, ReflectorM, "PbGlassReflectorLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicPbGlassReflector, "Reflector", logicPbGlassModule, false, 0);
+        // Lead glass module
+        G4VSolid *solidPbGlassModule = new G4Box(Form("PbGlassModule%04dS", i), lg[i][0] * mm / 2.0, lg[i][1] * mm / 2.0, PbGlassL / 2.0 + PlateThickness);
+        G4LogicalVolume *logicPbGlassModule = new G4LogicalVolume(solidPbGlassModule, HyCalConM, Form("PbGlassModule%04dLV", i));
+        new G4PVPlacement(0, G4ThreeVector(lg[i][2] * mm, lg[i][3] * mm, 0), logicPbGlassModule, "PbGlass Module", logicPbGlassCon, false, i);
 
-    G4VSolid *solidPbGlassAbsorber = new G4Box("PbGlassAbsorberS", PbGlassX / 2.0, PbGlassY / 2.0, PbGlassL / 2.0);
-    G4LogicalVolume *logicPbGlassAbsorber = new G4LogicalVolume(solidPbGlassAbsorber, PbGlassModuleM, "PbGlassAbsorberLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicPbGlassAbsorber, "PbGlass Absorber", logicPbGlassReflector, false, 0);
+        G4VSolid *solidPbGlassReflector = new G4Box(Form("PbGlassReflector%04dS", i), PbGlassX / 2.0 + ReflectorT, PbGlassY / 2.0 + ReflectorT, PbGlassL / 2.0);
+        G4LogicalVolume *logicPbGlassReflector = new G4LogicalVolume(solidPbGlassReflector, ReflectorM, Form("PbGlassReflector%04dLV", i));
+        new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicPbGlassReflector, "Reflector", logicPbGlassModule, false, 0);
 
-    G4Box *PbGlassPlateBox = new G4Box("PbGlassPlateBox", PbGlassX / 2.0, PbGlassY / 2.0, PlateThickness / 2.0);
-    G4Tubs *PbGlassPlateHole = new G4Tubs("PbGlassPlateHole", 0, PbGlassPlateHoleR, PlateThickness / 2.0 + 1.0 * mm, 0, twopi);
-    G4SubtractionSolid *solidPbGlassPlate = new G4SubtractionSolid("PbGlassPlateS", PbGlassPlateBox, PbGlassPlateHole);
-    G4LogicalVolume *logicPbGlassPlate = new G4LogicalVolume(solidPbGlassPlate, PlateM, "PbGlassPlateLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, - PbGlassL / 2.0 - PlateThickness / 2.0), logicPbGlassPlate, "Brass Plate", logicPbGlassModule, false, 0);
+        G4VSolid *solidPbGlassAbsorber = new G4Box(Form("PbGlassAbsorber%04dS", i), PbGlassX / 2.0, PbGlassY / 2.0, PbGlassL / 2.0);
+        G4LogicalVolume *logicPbGlassAbsorber = new G4LogicalVolume(solidPbGlassAbsorber, PbGlassModuleM, Form("PbGlassAbsorber%04dLV", i));
+        new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicPbGlassAbsorber, "PbGlass Absorber", logicPbGlassReflector, false, 0);
 
-    G4VSolid *solidPbGlassStrip = new G4Box("PbGlassStripS", StripThickness / 2.0, StripWidth / 2.0, PbGlassL / 2.0);
-    G4LogicalVolume *logicPbGlassStrip = new G4LogicalVolume(solidPbGlassStrip, PlateM, "PbGlassStripLV");
-    new G4PVPlacement(0, G4ThreeVector(38.15 * mm / 2.0 - StripThickness / 2.0, 0, 0), logicPbGlassStrip, "Brass Strip", logicPbGlassModule, false, 0);
-    new G4PVPlacement(0, G4ThreeVector(-38.15 * mm / 2.0 + StripThickness / 2.0, 0, 0), logicPbGlassStrip, "Brass Strip", logicPbGlassModule, false, 1);
+        G4Box *PbGlassPlateBox = new G4Box("PbGlassPlateBox", PbGlassX / 2.0, PbGlassY / 2.0, PlateThickness / 2.0);
+        G4Tubs *PbGlassPlateHole = new G4Tubs("PbGlassPlateHole", 0, PbGlassPlateHoleR, PlateThickness / 2.0 + 1.0 * mm, 0, twopi);
+        G4SubtractionSolid *solidPbGlassPlate = new G4SubtractionSolid(Form("PbGlassPlate%04dS", i), PbGlassPlateBox, PbGlassPlateHole);
+        G4LogicalVolume *logicPbGlassPlate = new G4LogicalVolume(solidPbGlassPlate, PlateM, Form("PbGlassPlate%04dLV", i));
+        new G4PVPlacement(0, G4ThreeVector(0, 0, - PbGlassL / 2.0 - PlateThickness / 2.0), logicPbGlassPlate, "Brass Plate", logicPbGlassModule, false, 0);
+
+
+        if ((lg[i][2] > -353.09 && lg[i][3] > 352.75) || (lg[i][2] < 353.09 && lg[i][3] < -352.75)) {
+            G4double StripWidth = PbGlassX;
+
+            G4VSolid *solidPbGlassStrip = new G4Box(Form("PbGlassStrip%04dS", i), StripWidth / 2.0, StripThickness / 2.0,  PbGlassL / 2.0);
+            G4LogicalVolume *logicPbGlassStrip = new G4LogicalVolume(solidPbGlassStrip, PlateM, Form("PbGlassStrip%04dLV", i));
+            new G4PVPlacement(0, G4ThreeVector(0, (lg[i][1] * mm - StripThickness) / 2.0, 0), logicPbGlassStrip, "Brass Strip", logicPbGlassModule, false, 0);
+            new G4PVPlacement(0, G4ThreeVector(0, (-lg[i][1] * mm + StripThickness) / 2.0, 0), logicPbGlassStrip, "Brass Strip", logicPbGlassModule, false, 1);
+        } else {
+            G4double StripWidth = PbGlassY;
+
+            G4VSolid *solidPbGlassStrip = new G4Box(Form("PbGlassStrip%04dS", i), StripThickness / 2.0, StripWidth / 2.0, PbGlassL / 2.0);
+            G4LogicalVolume *logicPbGlassStrip = new G4LogicalVolume(solidPbGlassStrip, PlateM, Form("PbGlassStrip%04dLV", i));
+            new G4PVPlacement(0, G4ThreeVector((lg[i][0] * mm - StripThickness) / 2.0, 0, 0), logicPbGlassStrip, "Brass Strip", logicPbGlassModule, false, 0);
+            new G4PVPlacement(0, G4ThreeVector((-lg[i][0] * mm + StripThickness) / 2.0, 0, 0), logicPbGlassStrip, "Brass Strip", logicPbGlassModule, false, 1);
+        }
+    }
 
     // PbWO4 module container
     G4double CrystalPlateHoleR = 25.4 * 0.25 * mm; // 0.25 in
     G4double TedlarTapeT = 38.1 * um;
     ReflectorT = 63.0 * um;
-    StripWidth = 25.4 * 0.5 * mm; // 0.5 in
 
     G4Box *PbWO4ConBox = new G4Box("PbWO4ConBox", 35.309 * cm, 35.275 * cm, CrystalL / 2.0 + PlateThickness);
     G4Box *PbWO4ConHole = new G4Box("PbWO4ConHole", 2.0 * cm, 2.0 * cm, CrystalL / 2.0 + PlateThickness + 1.0 * mm);
     G4SubtractionSolid *solidPbWO4Con = new G4SubtractionSolid("PbWO4ModuleContainerS", PbWO4ConBox, PbWO4ConHole);
     G4LogicalVolume *logicPbWO4Con = new G4LogicalVolume(solidPbWO4Con, HyCalConM, "PbWO4ModuleContainerLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, CrystalCenter - HyCalBoxCenter), logicPbWO4Con, "PbWO4 Module Container", logicHyCalCon, false, PbGlass->GetNumber());
+    new G4PVPlacement(0, G4ThreeVector(0, 0, CrystalCenter - HyCalBoxCenter), logicPbWO4Con, "PbWO4 Module Container", logicHyCalCon, false, 576);
 
-    // PbWO4 module
-    G4VSolid *solidPbWO4Module = new G4Box("PbWO4ModuleS", 20.77 * mm / 2.0, 20.75 * mm / 2.0, CrystalL / 2.0 + PlateThickness);
-    G4LogicalVolume *logicPbWO4Module = new G4LogicalVolume(solidPbWO4Module, HyCalConM, "PbWO4ModuleLV");
-    HyCalParameterisation *PbWO4 = new HyCalParameterisation("config/hycal.conf", "PbWO4");
-    new G4PVParameterised("PbWO4 Module", logicPbWO4Module, logicPbWO4Con, kUndefined, PbWO4->GetNumber(), PbWO4, false);
+    for (int i = 0; i < 1152; i++) {
+        G4double CrystalX = pwo[i][0] - 0.27 * mm;
+        G4double CrystalY = pwo[i][1] - 0.25 * mm;
+        G4double StripWidth = 25.4 * 0.5 * mm; // 0.5 in
 
-    G4VSolid *solidPbWO4TedlarTape = new G4Box("PbWO4TedlarTapeS", CrystalX / 2.0 + TedlarTapeT + ReflectorT, CrystalY / 2.0 + TedlarTapeT + ReflectorT, CrystalL / 2.0);
-    G4LogicalVolume *logicPbWO4TedlarTape = new G4LogicalVolume(solidPbWO4TedlarTape, TedlarTapeM, "PbWO4TedlarTapeLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicPbWO4TedlarTape, "Tedlar Tape", logicPbWO4Module, false, 0);
+        // PbWO4 module
+        G4VSolid *solidPbWO4Module = new G4Box(Form("PbWO4Module%04dS", i), pwo[i][0] * mm / 2.0, pwo[i][1] * mm / 2.0, CrystalL / 2.0 + PlateThickness);
+        G4LogicalVolume *logicPbWO4Module = new G4LogicalVolume(solidPbWO4Module, HyCalConM, Form("PbWO4Module%04dLV", i));
+        new G4PVPlacement(0, G4ThreeVector(pwo[i][2] * mm, pwo[i][3] * mm, 0), logicPbWO4Module, "PbGlass Module", logicPbWO4Con, false, i);
 
-    G4VSolid *solidPbWO4Reflector = new G4Box("PbWO4ReflectorS", CrystalX / 2.0 + ReflectorT, CrystalY / 2.0 + ReflectorT, CrystalL / 2.0);
-    G4LogicalVolume *logicPbWO4Reflector = new G4LogicalVolume(solidPbWO4Reflector, ReflectorM, "PbWO4ReflectorLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicPbWO4Reflector, "Reflector", logicPbWO4TedlarTape, false, 0);
+        G4VSolid *solidPbWO4TedlarTape = new G4Box(Form("PbWO4TedlarTape%04dS", i), CrystalX / 2.0 + TedlarTapeT + ReflectorT, CrystalY / 2.0 + TedlarTapeT + ReflectorT, CrystalL / 2.0);
+        G4LogicalVolume *logicPbWO4TedlarTape = new G4LogicalVolume(solidPbWO4TedlarTape, TedlarTapeM, Form("PbWO4TedlarTape%04dLV", i));
+        new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicPbWO4TedlarTape, "Tedlar Tape", logicPbWO4Module, false, 0);
 
-    G4VSolid *solidPbWO4Absorber = new G4Box("PbWO4AbsorberS", CrystalX / 2.0, CrystalY / 2.0, CrystalL / 2.0);
-    G4LogicalVolume *logicPbWO4Absorber = new G4LogicalVolume(solidPbWO4Absorber, PbWO4ModuleM, "PbWO4AbsorberLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicPbWO4Absorber, "PbWO4 Absorber", logicPbWO4Reflector, false, 0);
+        G4VSolid *solidPbWO4Reflector = new G4Box(Form("PbWO4Reflector%04dS", i), CrystalX / 2.0 + ReflectorT, CrystalY / 2.0 + ReflectorT, CrystalL / 2.0);
+        G4LogicalVolume *logicPbWO4Reflector = new G4LogicalVolume(solidPbWO4Reflector, ReflectorM, Form("PbWO4Reflector%04dLV", i));
+        new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicPbWO4Reflector, "Reflector", logicPbWO4TedlarTape, false, 0);
 
-    G4Box *PbWO4PlateBox = new G4Box("PbWO4PlateBox", CrystalX / 2.0, CrystalY / 2.0, PlateThickness / 2.0);
-    G4Tubs *PbWO4PlateHole = new G4Tubs("PbWO4PlateHole", 0, CrystalPlateHoleR, PlateThickness / 2.0 + 1.0 * mm, 0, twopi);
-    G4SubtractionSolid *solidPbWO4Plate = new G4SubtractionSolid("PbWO4PlateS", PbWO4PlateBox, PbWO4PlateHole);
-    G4LogicalVolume *logicPbWO4Plate = new G4LogicalVolume(solidPbWO4Plate, PlateM, "PbWO4PlateLV");
-    new G4PVPlacement(0, G4ThreeVector(0, 0, -(CrystalL + PlateThickness) / 2.0), logicPbWO4Plate, "Brass Plate", logicPbWO4Module, false, 0);
+        G4VSolid *solidPbWO4Absorber = new G4Box(Form("PbWO4Absorber%04dS", i), CrystalX / 2.0, CrystalY / 2.0, CrystalL / 2.0);
+        G4LogicalVolume *logicPbWO4Absorber = new G4LogicalVolume(solidPbWO4Absorber, PbWO4ModuleM, Form("PbWO4Absorber%04dLV", i));
+        new G4PVPlacement(0, G4ThreeVector(0, 0, 0), logicPbWO4Absorber, "PbWO4 Absorber", logicPbWO4Reflector, false, 0);
 
-    G4VSolid *solidPbWO4Strip = new G4Box("PbWO4StripS", StripThickness / 2.0, StripWidth / 2.0, CrystalL / 2.0);
-    G4LogicalVolume *logicPbWO4Strip = new G4LogicalVolume(solidPbWO4Strip, PlateM, "PbWO4StripLV");
-    new G4PVPlacement(0, G4ThreeVector((20.77 * mm - StripThickness) / 2.0, 0, 0), logicPbWO4Strip, "Brass Strip", logicPbWO4Module, false, 0);
-    new G4PVPlacement(0, G4ThreeVector((-20.77 * mm + StripThickness) / 2.0, 0, 0), logicPbWO4Strip, "Brass Strip", logicPbWO4Module, false, 1);
+        G4Box *PbWO4PlateBox = new G4Box("PbWO4PlateBox", CrystalX / 2.0, CrystalY / 2.0, PlateThickness / 2.0);
+        G4Tubs *PbWO4PlateHole = new G4Tubs("PbWO4PlateHole", 0, CrystalPlateHoleR, PlateThickness / 2.0 + 1.0 * mm, 0, twopi);
+        G4SubtractionSolid *solidPbWO4Plate = new G4SubtractionSolid(Form("PbWO4Plate%04dS", i), PbWO4PlateBox, PbWO4PlateHole);
+        G4LogicalVolume *logicPbWO4Plate = new G4LogicalVolume(solidPbWO4Plate, PlateM, Form("PbWO4Plate%04dLV", i));
+        new G4PVPlacement(0, G4ThreeVector(0, 0, -(CrystalL + PlateThickness) / 2.0), logicPbWO4Plate, "Brass Plate", logicPbWO4Module, false, 0);
+
+        G4VSolid *solidPbWO4Strip = new G4Box(Form("PbWO4Strip%04dS", i), StripThickness / 2.0, StripWidth / 2.0, CrystalL / 2.0);
+        G4LogicalVolume *logicPbWO4Strip = new G4LogicalVolume(solidPbWO4Strip, PlateM, Form("PbWO4Strip%04dLV", i));
+        new G4PVPlacement(0, G4ThreeVector((pwo[i][0] * mm - StripThickness) / 2.0, 0, 0), logicPbWO4Strip, "Brass Strip", logicPbWO4Module, false, 0);
+        new G4PVPlacement(0, G4ThreeVector((-pwo[i][0] * mm + StripThickness) / 2.0, 0, 0), logicPbWO4Strip, "Brass Strip", logicPbWO4Module, false, 1);
+    }
 
     // Collimator
     G4Box *CollimatorBox = new G4Box("CollimatorBox", 4.07 * cm, 4.07 * cm, 3.02 * cm);
