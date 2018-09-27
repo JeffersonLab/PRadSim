@@ -107,6 +107,8 @@ int main()
         tpe_file.close();
     }
 
+    FILE *fp = fopen("xs.dat", "w");
+
     for (int i = 0; i < InterpolPoints; i++) {
         theta_e = theta_min + i * (theta_max - theta_min) / (InterpolPoints - 1);
         theta[i] = theta_e;
@@ -116,23 +118,33 @@ int main()
         double e_ef = e_elastic - E_g_min;
         vf_e.SetPxPyPzE(Sqrt(Pow2(e_ef) - m2) * Sin(theta_e), 0, Sqrt(Pow2(e_ef) - m2) * Cos(theta_e), e_ef);
         v_min = (vi_e + vi_p - vf_e) * (vi_e + vi_p - vf_e) - M2;
-        e_ef = e_elastic - E_g_cut;
+
+        if (E_g_cut < e_elastic - m)
+            e_ef = e_elastic - E_g_cut;
+        else
+            e_ef = m;
+
         vf_e.SetPxPyPzE(Sqrt(Pow2(e_ef) - m2) * Sin(theta_e), 0, Sqrt(Pow2(e_ef) - m2) * Cos(theta_e), e_ef);
         v_cut = (vi_e + vi_p - vf_e) * (vi_e + vi_p - vf_e) - M2;
 
         xs_elastic_sin[i] = ElasticXS_Sin(theta_e);
+        xs_born_sin[i] = BornXS_Sin(theta_e);
 
-        double sigma_born = BornXS_Sin(theta_e) / sinth;
+        double sigma_born = xs_born_sin[i] / sinth;
         double sigma_elastic = xs_elastic_sin[i] / sinth;
 
         e_ef = e_elastic;
         vf_e.SetPxPyPzE(Sqrt(Pow2(e_ef) - m2) * Sin(theta_e), 0, Sqrt(Pow2(e_ef) - m2) * Cos(theta_e), e_ef);
         double q2 = -(vi_e - vf_e) * (vi_e - vf_e);
 
-        printf("%8.6lf %10.4le %10.4le %10.4le %8.6lf\n", theta_e * 180.0 / pi, q2, sigma_born, sigma_elastic, sigma_elastic / sigma_born);
+        //printf("%8.6lf %10.4le %10.4le %10.4le %8.6lf\n", theta_e * 180.0 / pi, q2, sigma_born, sigma_elastic, sigma_elastic / sigma_born);
+        fprintf(fp, "%8.6lf %12.6le %12.6le %12.6le %8.6lf\n", theta_e * 180.0 / pi, q2, sigma_born, sigma_elastic, sigma_elastic / sigma_born);
     }
 
+    fclose(fp);
+
     Interpolator_ElasticXS_Sin.SetData(InterpolPoints, theta, xs_elastic_sin);
+    Interpolator_BornXS_Sin.SetData(InterpolPoints, theta, xs_born_sin);
 
     TFoam *FoamElastic = new TFoam("FoamElastic");
     TFoamIntegrand *pFoamElastic = new ElasticIntegrand();
@@ -163,6 +175,7 @@ int main()
     }
 
     double xsint_elastic = 2 * pi * Interpolator_ElasticXS_Sin.Integ(theta_min, theta_max);
+    double xsint_born = 2 * pi * Interpolator_BornXS_Sin.Integ(theta_min, theta_max);
     double xsint_brems, xsint_brems_error;
     FoamBrems->GetIntegMC(xsint_brems, xsint_brems_error);
 
@@ -171,9 +184,9 @@ int main()
 
     int n_elastic = int(N * (xsint_elastic / xsint));
 
-    std::cout << xsint_elastic << " " << 0.0 << " " << xsint_brems << " " << xsint_brems_error << " " << xsint << " " << xsint_error << std::endl;
+    std::cout << xsint_born << " " << xsint << " " << xsint_error << " " << xsint_elastic << " " << 0.0 << " " << xsint_brems << " " << xsint_brems_error << std::endl;
 
-    FILE *fp = fopen(filename, "w");
+    fp = fopen(filename, "w");
 
     int count_elastic = 0, count_brems = 0;
 

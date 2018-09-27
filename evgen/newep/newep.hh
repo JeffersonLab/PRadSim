@@ -93,6 +93,7 @@ TLorentzVector v_g;
 
 double theta[InterpolPoints];
 double xs_elastic_sin[InterpolPoints];
+double xs_born_sin[InterpolPoints];
 
 TRandom *PseRan;
 
@@ -105,6 +106,7 @@ double BornXS_Sin(double theta);
 double ElasticXS_Sin(double theta);
 
 ROOT::Math::Interpolator Interpolator_ElasticXS_Sin(InterpolPoints, InterpolType);
+ROOT::Math::Interpolator Interpolator_BornXS_Sin(InterpolPoints, InterpolType);
 ROOT::Math::Interpolator TPE_Feshbach(32, InterpolType);
 ROOT::Math::Interpolator TPE_Oleksandr(32, InterpolType);
 
