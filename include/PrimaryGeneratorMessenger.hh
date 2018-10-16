@@ -75,6 +75,7 @@ private:
     G4UIcmdWithADoubleAndUnit *EnpLowCmd;
     G4UIcmdWithADoubleAndUnit *EnpHighCmd;
     G4UIcmdWithAString        *EventFileCmd;
+    G4UIcmdWithAString        *PileUpProfileCmd;
     G4UIcmdWithAString        *TargetProfileCmd;
 };
 

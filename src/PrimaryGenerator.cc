@@ -44,8 +44,11 @@
 #include "TError.h"
 #include "TObject.h"
 #include "TMath.h"
+#include "TFile.h"
 #include "TFoam.h"
 #include "TFoamIntegrand.h"
+#include "TH1D.h"
+#include "TH2D.h"
 #include "TRandom2.h"
 #include "TTree.h"
 #include "Math/InterpolationTypes.h"
@@ -204,7 +207,7 @@ void PrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
         y = G4RandGauss::shoot(0, 0.08) * mm;
         z = fTargetCenter + fTargetHalfL * 2 * (0.5 - G4UniformRand());
         theta_l = fReactThetaLo + (fReactThetaHi - fReactThetaLo) * G4UniformRand();
-        phi_l = twopi / 72 * (0.5 - G4UniformRand());
+        phi_l = twopi * (0.5 - G4UniformRand());
     }
 
     double M = fTargetMass;
@@ -376,10 +379,16 @@ PRadPrimaryGenerator::PRadPrimaryGenerator(G4String type, G4bool rec, G4String p
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PRadPrimaryGenerator::PRadPrimaryGenerator(G4String type, G4bool rec, G4String par, G4String path, G4String profile): PrimaryGenerator(), fEventType(type), fRecoilOn(rec), fRecoilParticle(par), fTargetProfile(NULL), fZGenerator(NULL), fPseRan(NULL), fFoamI(NULL)
+PRadPrimaryGenerator::PRadPrimaryGenerator(G4String type, G4bool rec, G4String par, G4String path, G4String pile_up_profile, G4String target_profile): PrimaryGenerator(), fEventType(type), fRecoilOn(rec), fRecoilParticle(par), fPileUpProfile(NULL), fTargetProfile(NULL), fZGenerator(NULL), fPseRan(NULL), fFoamI(NULL)
 {
-    if (!profile.empty())
-        LoadTargetProfile(profile);
+    if (!pile_up_profile.empty()) {
+        fPileUpProfile = new TFile(pile_up_profile.c_str(), "READ");
+        fClusterNumber = (TH1D *)fPileUpProfile->Get("cluster_number");
+        fClusterEvsTheta = (TH2D *)fPileUpProfile->Get("signal_cluster_E_theta");
+    }
+
+    if (!target_profile.empty())
+        LoadTargetProfile(target_profile);
 
     if (path.empty()) {
         if (fEventType == "elastic")
@@ -399,6 +408,9 @@ PRadPrimaryGenerator::PRadPrimaryGenerator(G4String type, G4bool rec, G4String p
 
 PRadPrimaryGenerator::~PRadPrimaryGenerator()
 {
+    if (fPileUpProfile)
+        fPileUpProfile->Close();
+
     if (fZGenerator)
         delete fZGenerator;
 
@@ -571,6 +583,43 @@ void PRadPrimaryGenerator::GeneratePrimaryVertex(G4Event *anEvent)
         fTheta[fN] = theta_p;
         fPhi[fN] = phi_p;
         fN++;
+    }
+
+    if (fPileUpProfile && G4UniformRand() < 0.0202) {
+        int n_pile_up = int(fClusterNumber->GetRandom());
+
+        if (fN + n_pile_up > MaxN)
+            n_pile_up = MaxN - fN;
+
+        for (int i = 0; i < n_pile_up; i++) {
+            double e_add, theta_add;
+            fClusterEvsTheta->GetRandom2(theta_add, e_add);
+
+            theta_add = theta_add / 180.0 * pi;
+            e_add = e_add * MeV;
+            double phi_add = twopi * (0.5 - G4UniformRand());
+
+            G4PrimaryVertex *vertexA = new G4PrimaryVertex(x, y, z, 0);
+            G4PrimaryParticle *particleA = new G4PrimaryParticle(particleTable->FindParticle("gamma"));
+            double kx_add = sin(theta_add) * cos(phi_add);
+            double ky_add = sin(theta_add) * sin(phi_add);
+            double kz_add = cos(theta_add);
+            particleA->SetMomentumDirection(G4ThreeVector(kx_add, ky_add, kz_add));
+            particleA->SetTotalEnergy(e_add);
+            vertexA->SetPrimary(particleA);
+
+            anEvent->AddPrimaryVertex(vertexA);
+
+            fPID[fN] = particleA->GetPDGcode();
+            fX[fN] = x;
+            fY[fN] = y;
+            fZ[fN] = z;
+            fE[fN] = e_add;
+            fMomentum[fN] = e_add;
+            fTheta[fN] = theta_add;
+            fPhi[fN] = phi_add;
+            fN++;
+        }
     }
 }
 

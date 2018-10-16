@@ -116,6 +116,10 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction *act
     EventFileCmd->SetGuidance("Choose path of event file");
     EventFileCmd->SetParameterName("path", false);
 
+    PileUpProfileCmd = new G4UIcmdWithAString("/pradsim/gun/pileup", this);
+    PileUpProfileCmd->SetGuidance("Choose path of pile-up profile");
+    PileUpProfileCmd->SetParameterName("pileup", false);
+
     TargetProfileCmd = new G4UIcmdWithAString("/pradsim/gun/target", this);
     TargetProfileCmd->SetGuidance("Choose path of target profile");
     TargetProfileCmd->SetParameterName("target", false);
@@ -137,6 +141,7 @@ PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
     delete EnpLowCmd;
     delete EnpHighCmd;
     delete EventFileCmd;
+    delete PileUpProfileCmd;
     delete TargetProfileCmd;
     delete GunDir;
 }
@@ -180,6 +185,9 @@ void PrimaryGeneratorMessenger::SetNewValue(G4UIcommand *command, G4String newVa
 
     if (command == EventFileCmd)
         Action->SetEventFile(newValue);
+
+    if (command == PileUpProfileCmd)
+        Action->SetPileUpProfile(newValue);
 
     if (command == TargetProfileCmd)
         Action->SetTargetProfile(newValue);

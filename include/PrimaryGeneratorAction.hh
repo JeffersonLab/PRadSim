@@ -69,6 +69,7 @@ public:
     inline void SetEnpRange(G4double lo, G4double hi);
 
     inline void SetEventFile(G4String path);
+    inline void SetPileUpProfile(G4String profile);
     inline void SetTargetProfile(G4String profile);
 
 private:
@@ -87,6 +88,7 @@ private:
 
     G4String fEventFile;
     G4String fTargetProfile;
+    G4String fPileUpProfile;
 
     G4VPrimaryGenerator *fPrimaryGenerator;
 
@@ -147,6 +149,11 @@ inline void PrimaryGeneratorAction::SetEnpRange(G4double lo, G4double hi)
 inline void PrimaryGeneratorAction::SetEventFile(G4String path)
 {
     fEventFile = path;
+}
+
+inline void PrimaryGeneratorAction::SetPileUpProfile(G4String profile)
+{
+    fPileUpProfile = profile;
 }
 
 inline void PrimaryGeneratorAction::SetTargetProfile(G4String profile)

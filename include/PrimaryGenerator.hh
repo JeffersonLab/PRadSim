@@ -46,12 +46,15 @@
 
 #include "G4String.hh"
 
-#define MaxN 10
+#define MaxN 30
 
 class G4Event;
 
 class TTree;
+class TFile;
 class TFoam;
+class TH1D;
+class TH2D;
 class TRandom2;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -119,7 +122,7 @@ class PRadPrimaryGenerator : public PrimaryGenerator
 
 public:
     PRadPrimaryGenerator(G4String type, G4bool rec, G4String par); // DRadPrimaryGenerator uses this
-    PRadPrimaryGenerator(G4String type, G4bool rec, G4String par, G4String path, G4String profile);
+    PRadPrimaryGenerator(G4String type, G4bool rec, G4String par, G4String path, G4String pile_up_profile, G4String target_profile);
     virtual ~PRadPrimaryGenerator();
 
     virtual void GeneratePrimaryVertex(G4Event *);
@@ -133,6 +136,10 @@ protected:
 
     G4bool fRecoilOn;
     G4String fRecoilParticle;
+
+    TFile *fPileUpProfile;
+    TH1D *fClusterNumber;
+    TH2D *fClusterEvsTheta;
 
     ROOT::Math::Interpolator *fTargetProfile;
     double fZMin, fZMax;
