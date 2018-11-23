@@ -472,12 +472,12 @@ G4VPhysicalVolume *DetectorConstruction::DefinePRadVolumes()
 
     AddVaccumBox(logicWorld);
 
-    // Center of two GEM should be at -3000.0 + 89.0 + (5224.0 + 5184.0) / 2 + 4.6 = 2297.6 mm // (5224.0 + 5184.0) / 2 from Weizhi
-    fGEMCenter[0] = 229.76 * cm;
+    // Center of two GEM should be at -3000.0 + 89.0 + (5226.16 + 5184.45) / 2 + 5.125 = 2298.9575 mm // (5226.16 + 5184.45) / 2 from Weizhi
+    fGEMCenter[0] = 229.89575 * cm;
     AddGEM(logicWorld, 0, false);
 
-    // The crystal surface should be at -3000.0 + 89.0 + 5648.0 = 2731.0 mm // 5648.0 from Weizhi
-    fCrystalSurf = 273.1 * cm; // Surface of the PWO
+    // The crystal surface should be at -3000.0 + 89.0 + 5646.15 = 2735.15 mm // 5646.15 from Weizhi
+    fCrystalSurf = 273.515 * cm; // Surface of the PWO
     AddHyCal(logicWorld);
 
     // Virtual Detector
@@ -865,7 +865,7 @@ void DetectorConstruction::AddGEM(G4LogicalVolume *mother, int layerid, bool cul
 
     // GEM
     G4double GEMCenter = fGEMCenter[layerid];
-    G4double GEMGap = 4.0 * cm; // Gap between two GEM
+    G4double GEMGap = 4.171 * cm; // Gap between two GEM // 4.171 - 0.0025 from Weizhi
     G4double GEMHalfX = 55.04 * cm / 2.0;
     G4double GEMHalfY = 122.88 * cm / 2.0;
     G4double GEMHalfT = (15.0 * mm + 455.0 * um) / 2.0; // 2 * 25 + 5 + 50 (win) + 6 * 5 + 3 * 50 (foil) + 5 + 5 + 50 + 50 + 60 (readout)
