@@ -123,17 +123,29 @@ parser.add_argument(
 
 args = vars(parser.parse_args())
 
-att_input = 1 / float(args['inputs'][0])
-ref_input = float(args['inputs'][1])
-
-print(att_input, ref_input)
-if ref_input > 1:
-    print('bad input')
-    quit()
+use_ilya_method = False
+if args['inputs'][0] == '-1' and args['inputs'][1] == '-1':
+    use_ilya_method = True
+    print('use ilya method')
+else:
+    att_input = 1 / float(args['inputs'][0])
+    ref_input = float(args['inputs'][1])
+    print(att_input, ref_input)
+    if ref_input > 1 or np.isnan(att_input):
+        print('bad input')
+        quit()
 
 with open('pwo_attenuation.dat', 'w') as f:
-    for dep in range(180):
-        factor = attenuation_fwd(dep / 1000, att_input, ref_input)
-        factor += attenuation_bwd(dep / 1000, att_input, ref_input)
-        print(dep, factor)
-        f.write('{}  {}\n'.format(dep, factor))
+    if use_ilya_method:
+        factor0 = np.exp(-1) + 1
+        for dep in range(180):
+            z = (dep - 90) / 180
+            factor = (np.exp(-z - 0.5) + np.exp(z - 0.5)) / factor0
+            print(dep, factor)
+            f.write('{}  {}\n'.format(dep, factor))
+    else:
+        for dep in range(180):
+            factor = attenuation_fwd(dep / 1000, att_input, ref_input)
+            factor += attenuation_bwd(dep / 1000, att_input, ref_input)
+            print(dep, factor)
+            f.write('{}  {}\n'.format(dep, factor))
