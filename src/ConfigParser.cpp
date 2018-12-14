@@ -6,69 +6,77 @@
 //============================================================================//
 
 #include "ConfigParser.h"
-#include <streambuf>
 #include <cstring>
 #include <climits>
 #include <algorithm>
-#include <list>
 
 using namespace std;
 
 
 
 //============================================================================//
-// Constructor, Destructor                                                    //
+// Constructors, Destructor, Assignment Operators                             //
 //============================================================================//
-ConfigParser::ConfigParser(const string &s,
-                           const string &w,
-                           const vector<string> &c,
-                           const string_pair &p,
-                           const string &g)
-: splitters(s), white_spaces(w), comment_marks(c), comment_pair(p), line_glues(g),
-  line_number(0), in_comment_pair(false)
+
+// constructor, with format input
+ConfigParser::ConfigParser(Format f)
+: form(f), line_number(0)
 {
     // place holder
 }
 
-ConfigParser::~ConfigParser()
+// copy constructor, only copy format
+ConfigParser::ConfigParser(const ConfigParser &that)
+: form(that.form), line_number(0)
 {
     // place holder
+}
+
+// move constructor, only move format
+ConfigParser::ConfigParser(ConfigParser &&that)
+: form(that.form), line_number(0)
+{
+    // place holder
+}
+
+// desctructor
+ConfigParser::~ConfigParser()
+{
+    CloseFile();
+}
+
+// copy assignment operator
+ConfigParser &ConfigParser::operator = (const ConfigParser &rhs)
+{
+    form = rhs.form;
+    return *this;
+}
+
+// move assignment operator
+ConfigParser &ConfigParser::operator = (ConfigParser &&rhs)
+{
+    form = rhs.form;
+    return *this;
 }
 
 //============================================================================//
 // Public Member Function                                                     //
 //============================================================================//
 
-// add comment mark
-void ConfigParser::AddCommentMark(const string &c)
-{
-    auto it = find(comment_marks.begin(), comment_marks.end(), c);
-    if(it == comment_marks.end())
-        comment_marks.push_back(c);
-}
-
-// remove certain comment mark
-void ConfigParser::RemoveCommentMark(const string &c)
-{
-    auto it = find(comment_marks.begin(), comment_marks.end(), c);
-    if(it != comment_marks.end())
-        comment_marks.erase(it);
-}
-
-// clear all comment marks
-void ConfigParser::EraseCommentMarks()
-{
-    comment_marks.clear();
-}
-
 // open a file for future parsing
-bool ConfigParser::OpenFile(const string &path)
+bool ConfigParser::OpenFile(const string &path, size_t cap)
 {
     Clear();
 
     infile.open(path);
 
-    return infile.is_open();
+    if(!infile.is_open())
+        return false;
+
+    buf.data.resize(cap);
+
+    // success!
+    return true;
 }
 
 // read the whole file into a buffer and break it into lines
@@ -76,92 +84,102 @@ bool ConfigParser::ReadFile(const string &path)
 {
     Clear();
 
-    string buffer = file_to_string(path);
+    infile.open(path);
 
-    if(buffer.empty())
+    if(!infile.is_open())
         return false;
 
-    // remove comments and break the buffers into lines
-    bufferProcess(buffer);
+    infile.seekg(0, ios::end);
+    buf.end = infile.tellg();
+    buf.data.resize(buf.end);
+    infile.seekg(0, ios::beg);
+
+    infile.read(&buf.data[0], buf.end);
+    infile.close();
 
     return true;
-}
-
-// read a buffer and break it into lines
-void ConfigParser::ReadBuffer(const char *buf)
-{
-    Clear();
-
-    string buffer = buf;
-
-    // remove comments and break the buffers into lines
-    bufferProcess(buffer);
-}
-
-// clear stored lines
-void ConfigParser::Clear()
-{
-    line_number = 0;
-    infile.close();
-    lines.clear();
 }
 
 // close file
 void ConfigParser::CloseFile()
 {
-    infile.close();
+    return infile.close();
 }
 
-// take a line
-string ConfigParser::TakeLine()
+// clear stored lines
+void ConfigParser::Clear()
 {
-    if(lines.size()) {
-        string out = lines.front();
-        lines.pop_front();
-        return out;
-    }
+    buf.Reset();
 
-    return "";
+    // reset line
+    line_number = 0;
+    cur_line.Reset();
+
+    // close file
+    CloseFile();
 }
 
-// parse a line, take the line either from the opening file (if it is opened)
-// or from the stored lines
-// return false if empty
+// read a buffer in
+void ConfigParser::ReadBuffer(const char *buf_in)
+{
+    Clear();
+
+    buf.end = strlen(buf_in);
+    buf.data.resize(buf.end + 2);
+
+    strncpy(&buf.data[0], buf_in, buf.end);
+}
+
+// parse a line from the file or buffer
+// if the line is empty (all white spaces or comments), it will be skipped
+// return false if reached the end
 bool ConfigParser::ParseLine()
 {
     elements.clear();
 
-    if(infile.is_open())
-        return parseFile();
-    else
-        return parseBuffer();
+    while(elements.empty())
+    {
+        if(!getLine(cur_line))
+            return false;
+
+        // count the line number
+        ++line_number;
+
+        parseBuffer(cur_line);
+    }
+
+    return true;
 }
 
-// parse the whole file all buffer
+// parse the whole file or buffer
+// return false if nothing was found
 bool ConfigParser::ParseAll()
 {
     elements.clear();
-    if(infile.is_open()) {
-        while(parseFile()) {;}
-    } else {
-        while(parseBuffer()) {;}
-    }
 
-    return !(elements.empty());
+    while(true)
+    {
+        if(!getLine(cur_line))
+            return !elements.empty();
+
+        // count the line number
+        ++line_number;
+
+        parseBuffer(cur_line);
+    }
 }
 
-// parse a input string, trim the white space and split the string into elements
-// by defined splitters, the elements will also be trimmed
-// NOTICE: comments between a pair of marks are erased before input
+// parse an input string, split the string into elements
+// the trail white spaces in the elements will be trimmed
 int ConfigParser::ParseString(const string &line)
 {
-    deque<string> eles = split(line.c_str(), getCommentPoint(line), splitters);
+    deque<string> eles = split(line.c_str(), line.size(), form.split);
 
     int count = 0;
     for(auto &ele : eles)
     {
-        string trim_ele = trim(ele, white_spaces);
-        if(trim_ele.size()) {
+        string trim_ele = trim(ele, form.white);
+        if(!trim_ele.empty()) {
             elements.emplace_back(move(trim_ele));
             count++;
         }
@@ -205,7 +223,7 @@ bool ConfigParser::CheckElements(int num, int optional)
          << line_number
          << ", expecting " << num_str << " elements. "
          << endl
-         << "\"" << current_line << "\""
+         << "\"" << cur_line.String() << "\""
          << endl;
     return false;
 }
@@ -232,195 +250,163 @@ ConfigValue ConfigParser::TakeFirst()
 // Private Member Function                                                    //
 //============================================================================//
 
-// process the read-in buffer
-void ConfigParser::bufferProcess(string &buffer)
+// get buffer from the file or the input buffer
+// return false if reached input end
+bool ConfigParser::getBuffer()
 {
-    if(comment_pair.first.size() && comment_pair.second.size()) {
-        // comment by pair marks
-        comment_between(buffer, comment_pair.first, comment_pair.second);
-    }
+    if(buf.begin < buf.end)
+        return true;
 
-    string line;
-    for(auto &c : buffer)
-    {
-        if(c != '\n') {
-            line += c;
-        } else {
-            lines.push_back(line);
-            line.clear();
-        }
-    }
+    if(!infile.is_open() || infile.bad() || infile.eof())
+        return false;
 
-    // final line if not ended with \n
-    if(line.size())
-        lines.push_back(line);
+    infile.read(&buf.data[0], buf.data.size());
+
+    buf.begin = 0;
+    buf.end = infile.gcount();
+
+    return true;
 }
 
-// take a line from opened file and parse it
-// comment with comment pair will be removed here
-bool ConfigParser::parseFile()
+// trim white spaces
+inline void trimbuf(const vector<char> &buf, size_t &begin, size_t &end, const string &w)
 {
-    int count = 0;
-    // comment pair needs to be taken care here
-    while(!count)
+    while(begin < end)
     {
-        if(infile.bad() || infile.eof())
+        if(w.find(buf[begin]) == string::npos)
+            break;
+
+        begin++;
+    }
+
+    while(end > begin)
+    {
+        if(w.find(buf[end - 1]) == string::npos)
+            break;
+
+        end--;
+    }
+}
+
+inline bool compare(const char ch, const string &str, size_t &c1)
+{
+    if(str.empty())
+        return false;
+
+    c1 = (ch == str[c1]) ? (c1 + 1) : 0;
+
+    return (c1 >= str.size());
+}
+
+inline bool rcompare(const ConfigParser::CharBuffer &buf, const string &str)
+{
+    if(str.empty() || buf.end <= buf.begin || buf.end - buf.begin < str.size())
+        return false;
+
+    for(size_t i = 1; i <= str.size(); ++i)
+    {
+        if(str[str.size() - i] != buf[buf.end - i])
             return false;
-
-        string parse_string;
-        getLineFromFile(parse_string);
-
-        if(parse_string.empty())
-            continue;
-
-        // no need to take care comment pair
-        if(comment_pair.first.empty() || comment_pair.second.empty()) {
-            count = ParseString(parse_string);
-        } else {
-            // if we had comment pair opened
-            if(in_comment_pair) {
-                // see if there is an end to the comment pair
-                auto c_end = parse_string.find(comment_pair.second);
-                // end of a comment pair
-                if(c_end != string::npos) {
-                    count = ParseString(parse_string.substr(c_end + comment_pair.second.size()));
-                    in_comment_pair = false;
-                }
-            // if no previous comment pair opened
-            } else {
-                // remove complete comment pair in one line
-                comment_between(parse_string, comment_pair.first, comment_pair.second);
-                // see if there is any comment pair opening
-                auto c_beg = parse_string.find(comment_pair.first);
-                // find comment pair openning
-                if(c_beg != string::npos) {
-                    count = ParseString(parse_string.substr(0, c_beg));
-                    in_comment_pair = true;
-                } else {
-                    // no special treatment
-                    count = ParseString(parse_string);
-                }
-            }
-        }
     }
 
     return true;
 }
 
-// get a line from ifstream, it takes care of empty line and concatenated lines
-inline void ConfigParser::getLineFromFile(string &to_be_parsed)
+// a helper structure to check context status
+struct TextStatus
 {
-    bool continuation;
+    int val;
+    size_t cmt1, cmt2, delim;
 
-    do {
-        continuation = false;
-        // end or error reached
-        if(!getline(infile, current_line))
-            break;
+    TextStatus() : val(0), cmt1(0), cmt2(0), delim(0) {}
+    inline void Set(int i) {val = i; cmt1 = 0; cmt2 = 0;}
+};
 
-        // count the line number
-        ++line_number;
+// get a line from the file or buffer
+// it deals with comments, white spaces
+// return false if reached the end
+bool ConfigParser::getLine(CharBuffer &line_buf, bool recursive)
+{
+    if(!recursive)
+        line_buf.Reset();
+    bool success = false;
+    TextStatus stat;
 
-        // trim white spaces at both ends
-        current_line = trim(current_line, white_spaces);
+    while(getBuffer())
+    {
+        success = true;
 
-        // should continue to read next line
-        if(current_line.empty()) {
-            continuation = true;
-        } else {
-            for(auto &c : line_glues)
+        while(buf.begin < buf.end)
+        {
+            auto &ch = buf[buf.begin++];
+            switch(stat.val)
             {
-                if(current_line.back() == c) {
-                    current_line.pop_back();
-                    continuation = true;
-                    break;
+            default:
+            case 0:
+                line_buf.Add(ch);
+                // check if it is the end
+                if(compare(ch, form.delim, stat.delim)) {
+                    line_buf.end -= form.delim.size();
+                    trimbuf(line_buf.data, line_buf.begin, line_buf.end, form.white);
+                    // glue lines
+                    if(rcompare(line_buf, form.glue)) {
+                        line_buf.end -= form.glue.size();
+                        return getLine(line_buf, true);
+                    } else {
+                        return success;
+                    }
+                } else if(compare(ch, form.cmtopen, stat.cmt1)) {
+                    stat.Set(1);
+                    line_buf.end -= form.cmtopen.size();
+                } else if(compare(ch, form.cmtmark, stat.cmt2)) {
+                    stat.Set(2);
+                    line_buf.end -= form.cmtmark.size();
                 }
+                break;
+            case 1:
+                if(compare(ch, form.cmtclose, stat.cmt1)) {
+                    stat.Set(0);
+                }
+                break;
+            case 2:
+                if(ch == '\n') {
+                    stat.Set(0);
+                    buf.begin -= 1;
+                }
+                break;
             }
         }
+    }
 
-        // add current line to be parsed
-        to_be_parsed.append(current_line);
-
-    } while(continuation);
+    trimbuf(line_buf.data, line_buf.begin, line_buf.end, form.white);
+    return success;
 }
 
-// take a line from the stored lines buffer and parse it
-// comment by comment pair has been already removed before going into the lines
-bool ConfigParser::parseBuffer()
+// parse an input char buffer, split the string into elements
+// the trail white spaces in the elements will be trimmed
+int ConfigParser::parseBuffer(const CharBuffer &line)
 {
-    // comment pair has been taken care before breaking into lines,
-    // so it's simple here
+    if(line.begin >= line.end)
+        return 0;
+
+    size_t ele_begin = line.begin;
     int count = 0;
-    while(!count)
+
+    // intended to visit i == line.end, so the rest of the string get parsed
+    for(size_t i = 0; i <= line.end; ++i)
     {
-        if(lines.empty())
-            return false;
-
-        string parse_string;
-        getLineFromBuffer(parse_string);
-        if(parse_string.empty())
-            continue;
-
-        count = ParseString(parse_string);
-    }
-
-    return true; // parsed a line
-}
-
-inline void ConfigParser::getLineFromBuffer(string &to_be_parsed)
-{
-    bool continuation;
-
-    do {
-        continuation = false;
-
-        // end reached
-        if(lines.empty())
-            break;
-
-        // take line
-        current_line = move(lines.front());
-        lines.pop_front();
-
-        // count the line number
-        ++line_number;
-
-        // trim white spaces at both ends
-        current_line = trim(current_line, white_spaces);
-
-        // should continue to read next line
-        if(current_line.empty()) {
-            continuation = true;
-        } else {
-            for(auto &c : line_glues)
-            {
-                if(current_line.back() == c) {
-                    current_line.pop_back();
-                    continuation = true;
-                    break;
-                }
+        if(i == line.end || form.split.find(line[i]) != string::npos) {
+            size_t ele_end = i;
+            trimbuf(line.data, ele_begin, ele_end, form.white);
+            if(ele_begin < ele_end) {
+                elements.emplace_back(&line[ele_begin], ele_end - ele_begin);
+                count++;
             }
-        }
-
-        // add current line to be parsed
-        to_be_parsed.append(current_line);
-
-    } while(continuation);
-}
-
-// comment out the characters with certain mark
-size_t ConfigParser::getCommentPoint(const string &str)
-{
-    size_t res = str.size();
-
-    for(auto &mark : comment_marks)
-    {
-        const auto c_begin = str.find(mark);
-        if(c_begin != string::npos && c_begin < res) {
-            res = c_begin;
+            ele_begin = i + 1;
         }
     }
-    return res;
+
+    return count;
 }
 
 //============================================================================//
@@ -523,16 +509,15 @@ deque<string> ConfigParser::split(const string &str, const string &s)
 }
 
 // split a char array into several pieces
-deque<string> ConfigParser::split(const char* str, const size_t &size, const string &s)
+deque<string> ConfigParser::split(const char* str, const size_t &len, const string &s)
 {
     deque<string> eles;
 
-    char *str_cpy = new char[size + 1];
+    char *str_cpy = new char[len + 1];
 
+    strncpy(str_cpy, str, len);
     // end of C string
-    str_cpy[size] = '\0';
-
-    strncpy(str_cpy, str, size);
+    str_cpy[len] = '\0';
 
     char *pch = strtok(str_cpy, s.c_str());
 
@@ -545,6 +530,105 @@ deque<string> ConfigParser::split(const char* str, const size_t &size, const str
     delete[] str_cpy;
 
     return eles;
+}
+
+// split a string and convert all parts to float numbers
+vector<int> ConfigParser::stois(const string &str, const string &s, const string &w)
+{
+    vector<int> res;
+    for(auto &val : split(str, s))
+    {
+        res.push_back(stoi(trim(val, w)));
+    }
+    return res;
+}
+
+// split a string and convert all parts to float numbers
+vector<float> ConfigParser::stofs(const string &str, const string &s, const string &w)
+{
+    vector<float> res;
+    for(auto &val : split(str, s))
+    {
+        res.push_back(stof(trim(val, w)));
+    }
+    return res;
+}
+
+// split a string and convert all parts to double numbers
+vector<double> ConfigParser::stods(const string &str, const string &s, const string &w)
+{
+    vector<double> res;
+    for(auto &val : split(str, s))
+    {
+        res.push_back(stod(trim(val, w)));
+    }
+    return res;
+}
+
+// get the split part at num
+string ConfigParser::get_split_part(int num, const char *str, const char &s)
+{
+    // unavailable
+    if(num < 0) return "";
+
+    int beg = 0, cur = 0;
+    while(str[cur] != '\0')
+    {
+        if(str[cur] == s) {
+            // number macthed
+            if(num-- == 0) {
+                return string(&str[beg], cur - beg);
+            // update segment
+            } else {
+                beg = cur + 1;
+            }
+        }
+        ++cur;
+    }
+
+    // last element
+    if(num == 0)
+        return string(&str[beg], cur - beg);
+
+    return "";
+}
+
+// check if the short string is the same with the first part of a long string
+bool cstr_cmp_helper(const char *cmp, const char *str, int size)
+{
+    for(int i = 0; i < size; ++i)
+    {
+        if(cmp[i] != str[i] || cmp[i] == '\0' || str[i] == '\0')
+            return false;
+    }
+
+    if(cmp[size] != '\0')
+        return false;
+
+    return true;
+}
+
+// split a long string and find if a short string is belong to its elements
+int ConfigParser::get_part_count(const char *cmp, const char *str, const char &s)
+{
+    int cnt = 0, beg = 0, cur = 0;
+    while(str[cur] != '\0')
+    {
+        if(str[cur] == s) {
+            if(cstr_cmp_helper(cmp, &str[beg], cur - beg)) {
+                return cnt;
+            }
+
+            ++cnt;
+            beg = cur + 1;
+        }
+        ++cur;
+    }
+
+    if(cstr_cmp_helper(cmp, &str[beg], cur-beg))
+        return cnt;
+
+    return -1;
 }
 
 // find the integer in a string
@@ -806,7 +890,7 @@ string ConfigParser::form_path(const string &dir, const string &file)
 }
 
 // read a file and return its content in a char string
-string ConfigParser::file_to_string(const std::string &path)
+string ConfigParser::file_to_string(const string &path)
 {
     ifstream inf(path);
 
@@ -814,42 +898,30 @@ string ConfigParser::file_to_string(const std::string &path)
         return "";
 
     // read the whole file in
-    string buf;
+    string str;
 
     inf.seekg(0, ios::end);
-    buf.reserve(inf.tellg());
+    str.reserve(inf.tellg());
     inf.seekg(0, ios::beg);
 
-    buf.assign((istreambuf_iterator<char>(inf)), istreambuf_iterator<char>());
+    str.assign((istreambuf_iterator<char>(inf)), istreambuf_iterator<char>());
     inf.close();
 
-    return buf;
+    return str;
 }
 
-// break a string into several blocks with the format
+// break text file into several blocks in the format
 // <label> <open_mark> <content> <close_mark>
-// label and marks can be separated by separator chars
-// return extracted <label> and <content>
-vector<ConfigParser::TextBlock> ConfigParser::break_into_blocks(const string &buf,
-                                                                const string &open,
-                                                                const string &close,
-                                                                const string &sep)
+// return extracted <residual> {<label> <content>}
+ConfigParser::TextBlocks ConfigParser::break_into_blocks(const string &buf,
+                                                         const string &open,
+                                                         const string &close,
+                                                         const string &seps)
 {
-    vector<TextBlock> result;
+    TextBlocks result;
 
     if(buf.empty() || open.empty() || close.empty())
         return result;
-
-    // prepare white spaces removal for determining block label
-    // lambda to check if a character is a white space
-    auto is_sep = [](const char &c, const string &ws)
-                  {
-                      for(auto &w : ws)
-                      {
-                          if(c == w) return true;
-                      }
-                      return false;
-                  };
 
     size_t last_end = 0;
     // loop until no blocks found
@@ -864,39 +936,31 @@ vector<ConfigParser::TextBlock> ConfigParser::break_into_blocks(const string &bu
 
         // add content
         TextBlock block;
-        block.content = buf.substr(p.first + open.size(), p.second - p.first - open.size());
+        block.content = trim(buf.substr(p.first + open.size(), p.second - p.first - open.size()), seps);
 
         // find label
-        if(p.first <= last_end) {
+        string head = buf.substr(last_end, p.first - last_end);
+        if(head.empty()) {
             block.label = "";
-        } else if (!sep.empty()) {
-            bool find_end = false;
-            int beg = last_end, end = p.first - 1;
-
-            // the word before pair is the label
-            // white spaces will be trimmed
-            for(int i = end; i >= beg; --i)
-            {
-                // label end not determined
-                if(!find_end) {
-                    // find last not of white spaces
-                    if(is_sep(buf.at(i), sep)) end--;
-                    else find_end = true;
-                // find label begin
-                } else {
-                    // find chars until white spaces
-                    if(is_sep(buf.at(i), sep))
-                        beg = i + 1;
-                }
-            }
-            block.label = (end > beg) ? buf.substr(beg, end - beg + 1) : "";
         } else {
-            block.label = buf.substr(last_end, p.first - last_end);
+            // find end of label
+            auto end = head.find_last_not_of(seps);
+            if(end == string::npos) end = head.size() - 1;
+            // find begin of label
+            auto beg = head.find_last_of(seps, end);
+            if(beg == string::npos) beg = 0;
+            // add label
+            block.label = trim(head.substr(beg, end - beg + 1), seps);
+            // other content goes to residual
+            result.residual += head.substr(0, beg);
         }
-
-        result.emplace_back(std::move(block));
+        // combine blocks
+        result.blocks.emplace_back(move(block));
         last_end = p.second + close.size();
     }
+
+    // trim
+    result.residual = trim(result.residual, seps);
 
     return result;
 }
