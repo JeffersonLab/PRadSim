@@ -1,4 +1,3 @@
-//
 // moller.hh
 // Developer : Chao Gu
 // Beased on Chao Peng's RC moller cross section code in PRadAnalyzer
@@ -199,6 +198,7 @@ double NonRadXS(double s, double t, double u0)
     double sig_Fs = merad_sigfs(v_min, t, 0.0);
 
     double result = (1.0 + alp_pi * (delta_1H + delta_1S + delta_1inf)) * (sig_0t + sig_0u) + sig_St + sig_Su + sig_vertt + sig_vertu + sig_Bt + sig_Bu;
+
     return result * (s - 2.0 * m2) + sig_Fs;
 }
 
@@ -206,7 +206,7 @@ double NonRadXS(double s, double t, double u0)
 
 double RadXS(double s, double t, double u0)
 {
-    double v_limit = (s * t + Sqrt(s * (s - 4.0 * m2) * t * (t - 4.0 * m2))) / 2.0 / m2 - 1.0;
+    double v_limit = 0.99 * ((s * t + Sqrt(s * (s - 4.0 * m2) * t * (t - 4.0 * m2))) / 2.0 / m2);
     double v_max = (v_limit > v_cut) ? v_cut : v_limit;
     // the "hard" Bremsstrahlung part of the radiative cross section
     double sig_Fh = merad_sigfh(v_min, v_max, t, 0.0);
@@ -353,8 +353,8 @@ void InfraredDivergent(double s, double t, double u0, double &delta_1H, double &
     double log_u0 = Log((1.0 + xi_u0) / (xi_u0 - 1.0));
 
     // equation (A.5) - (A.13)
-    double v_limit = (s * t + Sqrt(s * (s - 4.0 * m2) * t * (t - 4.0 * m2))) / 2.0 / m2 - 1.0; // equation (A.6)
-    double v_max = (v_min > v_limit) ? v_limit : v_min;
+    double v_limit = 0.99 * ((s * t + Sqrt(s * (s - 4.0 * m2) * t * (t - 4.0 * m2))) / 2.0 / m2); // equation (A.6)
+    double v_max = (v_limit > v_min) ? v_min : v_limit;
 
     double z_u1 = Sqrt((xi_u02 * (v_max + u0) - v_max) / u0) / xi_u0;
     double z_u2 = Sqrt((v_max + xi_u02 * u0) / (v_max + u0)) / xi_u0;
@@ -516,7 +516,7 @@ void RecBremsKins(double theta)
     double s, t, u0;
     Mandelstam(theta, s, t, u0);
 
-    double v_limit = (s * t + Sqrt(s * (s - 4.0 * m2) * t * (t - 4.0 * m2))) / 2.0 / m2 - 1.0;
+    double v_limit = 0.99 * ((s * t + Sqrt(s * (s - 4.0 * m2) * t * (t - 4.0 * m2))) / 2.0 / m2);
     double v_max = (v_limit > v_cut) ? v_cut : v_limit;
 
     double v = 0.0, t1 = 0.0, z = 0.0;
@@ -609,7 +609,7 @@ public:
         double t_max = -m2;
         double t = t_min + arg[0] * (t_max - t_min);
 
-        double v_limit = (s * t + Sqrt(s * (s - 4.0 * m2) * t * (t - 4.0 * m2))) / 2.0 / m2 - 1.0;
+        double v_limit = 0.99 * ((s * t + Sqrt(s * (s - 4.0 * m2) * t * (t - 4.0 * m2))) / 2.0 / m2);
         double v_max = (v_limit > v_cut) ? v_cut : v_limit;
         double v = v_min + arg[1] * (v_max - v_min);
 
