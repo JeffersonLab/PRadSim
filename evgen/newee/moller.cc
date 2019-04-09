@@ -118,11 +118,14 @@ int main()
 
         double q2 = - (vf_1 - vi_1) * (vf_1 - vi_1) / 1e6;
 
+        //printf("%8.6lf %10.4le %10.4le %10.4le %10.4le %10.4le %8.6lf %8.6lf %8.6lf\n", theta_1 * 180.0 / pi, q2, sigma_born, sigma_total, sigma_elastic, sigma_brems, sigma_total / sigma_born - 1, sigma_elastic / sigma_born, sigma_brems / sigma_born);
         fprintf(fp, "%8.6lf %10.4le %10.4le %10.4le %10.4le %10.4le %8.6lf %8.6lf %8.6lf\n", theta_1 * 180.0 / pi, q2, sigma_born, sigma_total, sigma_elastic, sigma_brems, sigma_total / sigma_born - 1, sigma_elastic / sigma_born, sigma_brems / sigma_born);
-        printf("%8.6lf %10.4le %10.4le %10.4le %10.4le %10.4le %8.6lf %8.6lf %8.6lf\n", theta_1 * 180.0 / pi, q2, sigma_born, sigma_total, sigma_elastic, sigma_brems, sigma_total / sigma_born - 1, sigma_elastic / sigma_born, sigma_brems / sigma_born);
     }
 
     fclose(fp);
+
+    Integrator_BornXS_Sin.SetFunction(Func_BornXS_Sin);
+    Integrator_BornXS_Sin.SetRelTolerance(IntTol);
 
     Integrator_MollerXS_Sin.SetFunction(Func_MollerXS_Sin);
     Integrator_MollerXS_Sin.SetRelTolerance(IntTol);
@@ -130,10 +133,13 @@ int main()
     Integrator_ElasticXS_Sin.SetFunction(Func_ElasticXS_Sin);
     Integrator_ElasticXS_Sin.SetRelTolerance(IntTol);
 
+    double xsint_born = 2 * pi * Integrator_BornXS_Sin.Integral(theta_min, theta_max);
     double xsint = 2 * pi * Integrator_MollerXS_Sin.Integral(theta_min, theta_max);
     double elxsint = 2 * pi * Integrator_ElasticXS_Sin.Integral(theta_min, theta_max);
 
     int n_elastic = int(N * (elxsint / xsint));
+
+    std::cerr << xsint_born << " " << xsint << std::endl;
 
     Interpolator_ElasticXS_Sin.SetData(InterpolPoints, theta, xs_elastic_sin);
     Interpolator_BremsXS_Sin.SetData(InterpolPoints, theta, xs_brems_sin);
@@ -219,8 +225,8 @@ int main()
             count_brems++;
         }
 
-        fprintf(fp, "%11.5lf %10.8lf %11.8lf %11.5lf %10.8lf %11.8lf %11.5lf %10.8lf %11.8lf\n", Ef_1, theta_1, phi_1, Ef_2, theta_2, phi_2, E_g, theta_g, phi_g);
         //printf("%11.5lf %10.8lf %11.8lf %11.5lf %10.8lf %11.8lf %11.5lf %10.8lf %11.8lf\n", Ef_1, theta_1, phi_1, Ef_2, theta_2, phi_2, E_g, theta_g, phi_g);
+        fprintf(fp, "%11.5lf %10.8lf %11.8lf %11.5lf %10.8lf %11.8lf %11.5lf %10.8lf %11.8lf\n", Ef_1, theta_1, phi_1, Ef_2, theta_2, phi_2, E_g, theta_g, phi_g);
     }
 
     fclose(fp);

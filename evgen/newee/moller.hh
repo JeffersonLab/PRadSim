@@ -120,6 +120,9 @@ double MollerXS_Sin(double theta);
 
 void RecBremsKins(double theta);
 
+ROOT::Math::Functor1D Func_BornXS_Sin(&BornXS_Sin);
+ROOT::Math::GSLIntegrator Integrator_BornXS_Sin(IntOpt);
+
 ROOT::Math::Functor1D Func_MollerXS_Sin(&MollerXS_Sin);
 ROOT::Math::GSLIntegrator Integrator_MollerXS_Sin(IntOpt);
 

@@ -184,7 +184,7 @@ int main()
 
     int n_elastic = int(N * (xsint_elastic / xsint));
 
-    std::cout << xsint_born << " " << xsint << " " << xsint_error << " " << xsint_elastic << " " << 0.0 << " " << xsint_brems << " " << xsint_brems_error << std::endl;
+    std::cerr << xsint_born << " " << xsint << " " << xsint_error << " " << xsint_elastic << " " << 0.0 << " " << xsint_brems << " " << xsint_brems_error << std::endl;
 
     fp = fopen(filename, "w");
 
@@ -243,8 +243,8 @@ int main()
             count_brems++;
         }
 
-        fprintf(fp, "%11.5lf %10.8lf %11.8lf %11.5lf %10.8lf %11.8lf %11.5lf %10.8lf %11.8lf\n", Ef_e * 1000, theta_e, phi_e, Ef_p * 1000, theta_p, phi_p, E_g * 1000, theta_g, phi_g);
         //printf("%11.5lf %10.8lf %11.8lf %11.5lf %10.8lf %11.8lf %11.5lf %10.8lf %11.8lf\n", Ef_e * 1000, theta_e, phi_e, Ef_p * 1000, theta_p, phi_p, E_g * 1000, theta_g, phi_g);
+        fprintf(fp, "%11.5lf %10.8lf %11.8lf %11.5lf %10.8lf %11.8lf %11.5lf %10.8lf %11.8lf\n", Ef_e * 1000, theta_e, phi_e, Ef_p * 1000, theta_p, phi_p, E_g * 1000, theta_g, phi_g);
     }
 
     fclose(fp);
